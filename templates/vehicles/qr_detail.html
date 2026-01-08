@@ -5,23 +5,17 @@
 {% block content %}
 <style>
 /* =====================================================
-   RDFS – VEHICLE QR (SCOPED)
-   Prefix: rdfs-vehicle-qr-
+   RDFS – VEHICLE QR (LANDSCAPE ID CARD)
 ===================================================== */
 :root{
   --rdfs-blue:#112666;
   --rdfs-blue-dark:#0c1c4a;
-  --rdfs-blue-soft:#e8f4fd;
-
   --rdfs-bg:#f7fafc;
   --rdfs-card:#ffffff;
-
   --rdfs-text:#0f172a;
   --rdfs-muted:#64748b;
-
   --rdfs-border:#e2e8f0;
   --rdfs-radius:16px;
-
   --rdfs-shadow-sm:0 4px 10px rgba(15,23,42,.08);
   --rdfs-shadow-md:0 14px 32px rgba(15,23,42,.14);
 }
@@ -39,8 +33,8 @@
 /* CARD */
 .rdfs-vehicle-qr-card{
   position:relative;
+  max-width:900px;
   width:100%;
-  max-width:460px;
   background:var(--rdfs-card);
   border-radius:var(--rdfs-radius);
   padding:2rem;
@@ -48,7 +42,7 @@
   box-shadow:var(--rdfs-shadow-md);
 }
 
-/* TOP RIGHT BACK */
+/* BACK BUTTON */
 .rdfs-vehicle-qr-cancel{
   position:absolute;
   top:1rem;
@@ -57,51 +51,168 @@
   border-radius:999px;
 }
 
-/* TITLE */
+/* TITLES */
 .rdfs-vehicle-qr-title{
   font-weight:800;
   color:var(--rdfs-blue-dark);
-  margin-bottom:.25rem;
 }
-
-/* SUBTITLE */
 .rdfs-vehicle-qr-sub{
   font-size:.85rem;
   color:var(--rdfs-muted);
   margin-bottom:1.6rem;
 }
 
-/* ID CARD */
+/* QR ID CARD - LANDSCAPE */
 .rdfs-vehicle-qr-id{
-  width:260px;
+  max-width:850px;
   margin:auto;
-  padding:1rem;
-  border:1px solid var(--rdfs-border);
-  border-radius:14px;
-  background:#ffffff;
+  padding:1rem 1.5rem;
+  border:2px solid var(--rdfs-border);
+  border-radius:10px;
+  background:#fff;
   box-shadow:var(--rdfs-shadow-sm);
 }
 
-.rdfs-vehicle-qr-id h6{
-  font-weight:700;
-  color:var(--rdfs-blue-dark);
+/* TOP HEADER - Logo and Date */
+.rdfs-qr-top-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:0.8rem;
+  padding-bottom:0.6rem;
+  border-bottom:1px solid var(--rdfs-border);
 }
 
-.rdfs-vehicle-qr-image{
-  width:140px;
-  height:140px;
+.rdfs-qr-logo{
+  height:40px;
+  width:auto;
   object-fit:contain;
 }
 
-.rdfs-vehicle-qr-info{
-  font-size:.8rem;
-  line-height:1.4;
-  color:var(--rdfs-text);
+.rdfs-qr-top-header .rdfs-date{
+  color:var(--rdfs-muted);
+  font-size:0.7rem;
+  text-align:right;
+  display:flex;
+  align-items:center;
+  gap:0.3rem;
 }
 
-.rdfs-vehicle-qr-footer{
-  font-size:.7rem;
+.rdfs-qr-top-header .rdfs-date i{
+  font-size:0.7rem;
+}
+
+/* MAIN CONTENT ROW - COMPACT */
+.rdfs-qr-main-row{
+  display:flex;
+  gap:1.5rem;
+  align-items:center;
+}
+
+/* LEFT: PROFILE + DETAILS */
+.rdfs-qr-left{
+  flex:1;
+  display:flex;
+  gap:1rem;
+  align-items:center;
+}
+
+.rdfs-driver-photo{
+  width:100px;
+  height:100px;
+  object-fit:cover;
+  border-radius:8px;
+  border:2px solid var(--rdfs-blue);
+  box-shadow:var(--rdfs-shadow-sm);
+  flex-shrink:0;
+}
+
+.rdfs-driver-photo-placeholder{
+  width:100px;
+  height:100px;
+  background:#e2e8f0;
+  border-radius:8px;
+  border:2px solid var(--rdfs-border);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+}
+
+/* DETAILS - COMPACT */
+.rdfs-qr-details{
+  flex:1;
+}
+
+.rdfs-detail-item{
+  display:flex;
+  align-items:flex-start;
+  gap:0.5rem;
+  margin-bottom:0.5rem;
+  font-size:0.75rem;
+  line-height:1.3;
+}
+
+.rdfs-detail-item:last-child{
+  margin-bottom:0;
+}
+
+.rdfs-detail-item i{
+  width:16px;
+  text-align:center;
+  color:var(--rdfs-blue);
+  font-size:0.85rem;
+  margin-top:1px;
+  flex-shrink:0;
+}
+
+.rdfs-detail-item .rdfs-detail-content{
+  flex:1;
+}
+
+.rdfs-detail-item strong{
+  display:block;
   color:var(--rdfs-muted);
+  font-weight:600;
+  font-size:0.65rem;
+  text-transform:uppercase;
+  margin-bottom:0.1rem;
+  letter-spacing:0.3px;
+}
+
+.rdfs-detail-item span{
+  color:var(--rdfs-text);
+  font-weight:500;
+  font-size:0.75rem;
+}
+
+/* RIGHT: QR CODE - COMPACT */
+.rdfs-qr-code-box{
+  flex-shrink:0;
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:0.3rem;
+}
+
+.rdfs-vehicle-qr-image{
+  width:160px;
+  height:160px;
+  object-fit:contain;
+  border:2px solid var(--rdfs-blue);
+  border-radius:8px;
+  padding:0.3rem;
+  background:#fff;
+  box-shadow:var(--rdfs-shadow-sm);
+}
+
+.rdfs-qr-label{
+  font-size:0.65rem;
+  color:var(--rdfs-muted);
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
 }
 
 /* ACTIONS */
@@ -109,39 +220,103 @@
   margin-top:1.8rem;
 }
 
-/* PRINT – STRICTLY SCOPED */
-@media print{
-  .rdfs-vehicle-qr-hide,
-  nav, header, footer, .sidebar{
+/* =====================================================
+   PRINT - LANDSCAPE OPTIMIZED
+===================================================== */
+@media print {
+  @page {
+    size: landscape;
+    margin: 0.5cm;
+  }
+
+  html, body {
+    background:#ffffff !important;
+    margin:0;
+    padding:0;
+  }
+
+  nav, header, footer, .sidebar,
+  .rdfs-vehicle-qr-hide {
     display:none !important;
   }
 
-  body *{
+  body * {
     visibility:hidden !important;
   }
 
   .rdfs-vehicle-qr-print,
-  .rdfs-vehicle-qr-print *{
+  .rdfs-vehicle-qr-print * {
     visibility:visible !important;
   }
 
-  .rdfs-vehicle-qr-print{
-    position:absolute;
-    left:0;
-    top:0;
+  .rdfs-vehicle-qr-print {
+    position:fixed;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#ffffff !important;
+  }
+
+  .rdfs-vehicle-qr-id{
+    border:2px solid #000 !important;
+    box-shadow:none !important;
+  }
+  
+  .rdfs-driver-photo{
+    border-color:#000 !important;
+    box-shadow:none !important;
+  }
+  
+  .rdfs-vehicle-qr-image{
+    border-color:#000 !important;
+    box-shadow:none !important;
+  }
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .rdfs-qr-main-row{
+    flex-direction:column;
+    gap:1rem;
+  }
+  
+  .rdfs-qr-left{
+    flex-direction:column;
     width:100%;
-    text-align:center;
+  }
+  
+  .rdfs-qr-code-box{
+    width:100%;
+  }
+  
+  .rdfs-vehicle-qr-image{
+    width:140px;
+    height:140px;
+  }
+}
+
+@media (max-width: 576px) {
+  .rdfs-qr-top-header{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:0.5rem;
+  }
+  
+  .rdfs-qr-top-header .rdfs-date{
+    text-align:left;
   }
 }
 </style>
 
-<div class="container rdfs-vehicle-qr-page rdfs-vehicle-qr-hide">
+<!-- PAGE -->
+<div class="container rdfs-vehicle-qr-page">
 
   <div class="rdfs-vehicle-qr-card">
 
-    <!-- TOP RIGHT BACK -->
+    <!-- BACK -->
     <a href="{% url 'vehicles:registered_vehicles' %}"
-       class="btn btn-outline-secondary btn-sm rdfs-vehicle-qr-cancel">
+       class="btn btn-outline-secondary btn-sm rdfs-vehicle-qr-cancel rdfs-vehicle-qr-hide">
       <i class="bi bi-x-circle-fill me-1"></i>
       Back
     </a>
@@ -154,49 +329,105 @@
       {{ vehicle.vehicle_name }} — {{ vehicle.license_plate }}
     </p>
 
-    <!-- PRINTABLE AREA -->
+    <!-- PRINTABLE -->
     <div class="rdfs-vehicle-qr-print">
+      <div class="rdfs-vehicle-qr-id">
 
-      <div class="rdfs-vehicle-qr-id text-center">
-
-        <h6 class="mb-0">RDFS PASS</h6>
-        <small class="text-muted">Vehicle QR Identification</small>
-
-        <div class="mt-3">
-          {% if vehicle.qr_code %}
-            <img src="{{ vehicle.qr_code.url }}"
-                 alt="QR Code"
-                 class="rdfs-vehicle-qr-image mb-2">
-          {% else %}
-            <div class="text-muted small mb-2">No QR available.</div>
-          {% endif %}
+        <!-- TOP HEADER: Logo Left, Date Right -->
+        <div class="rdfs-qr-top-header">
+          <img
+            src="{% static 'img/RDFS-Logo.png' %}"
+            alt="RDFS Logo"
+            class="rdfs-qr-logo">
+          <div class="rdfs-date">
+            <i class="fas fa-calendar-alt"></i>
+            <span>{{ vehicle.date_registered|date:"M d, Y" }}</span>
+          </div>
         </div>
 
-        <div class="rdfs-vehicle-qr-info mt-2 text-start">
-          <strong>Driver:</strong>
-          {{ vehicle.assigned_driver.first_name }}
-          {{ vehicle.assigned_driver.last_name }}<br>
+        <!-- MAIN CONTENT ROW -->
+        <div class="rdfs-qr-main-row">
+          
+          <!-- LEFT: PROFILE + DETAILS -->
+          <div class="rdfs-qr-left">
+            
+            <!-- DRIVER PHOTO -->
+            {% if vehicle.assigned_driver.driver_photo %}
+              <img src="{{ vehicle.assigned_driver.driver_photo.url }}"
+                   class="rdfs-driver-photo"
+                   alt="Driver Photo">
+            {% else %}
+              <div class="rdfs-driver-photo-placeholder">
+                <i class="fas fa-user" style="font-size:2.5rem; color:#64748b;"></i>
+              </div>
+            {% endif %}
 
-          <strong>Plate No.:</strong>
-          {{ vehicle.license_plate }}<br>
+            <!-- DETAILS - COMPACT -->
+            <div class="rdfs-qr-details">
+              
+              <div class="rdfs-detail-item">
+                <i class="fas fa-user"></i>
+                <div class="rdfs-detail-content">
+                  <strong>Driver Name</strong>
+                  <span>{{ vehicle.assigned_driver.first_name }} {{ vehicle.assigned_driver.middle_name|default:"" }} {{ vehicle.assigned_driver.last_name }}{% if vehicle.assigned_driver.suffix %} {{ vehicle.assigned_driver.suffix }}{% endif %}</span>
+                </div>
+              </div>
 
-          <strong>CR No.:</strong>
-          {{ vehicle.cr_number }}<br>
+              <div class="rdfs-detail-item">
+                <i class="fas fa-id-card"></i>
+                <div class="rdfs-detail-content">
+                  <strong>Plate Number</strong>
+                  <span>{{ vehicle.license_plate }}</span>
+                </div>
+              </div>
 
-          <strong>OR No.:</strong>
-          {{ vehicle.or_number }}
-        </div>
+              <div class="rdfs-detail-item">
+                <i class="fas fa-map-marker-alt"></i>
+                <div class="rdfs-detail-content">
+                  <strong>Address</strong>
+                  <span>
+                    {% if vehicle.assigned_driver.house_number %}{{ vehicle.assigned_driver.house_number }} {% endif %}
+                    {% if vehicle.assigned_driver.street %}{{ vehicle.assigned_driver.street }}, {% endif %}
+                    {% if vehicle.assigned_driver.barangay %}{{ vehicle.assigned_driver.barangay }}, {% endif %}
+                    {% if vehicle.assigned_driver.city_municipality %}{{ vehicle.assigned_driver.city_municipality }}, {% endif %}
+                    {% if vehicle.assigned_driver.province %}{{ vehicle.assigned_driver.province }}{% endif %}
+                    {% if vehicle.assigned_driver.zip_code %} {{ vehicle.assigned_driver.zip_code }}{% endif %}
+                  </span>
+                </div>
+              </div>
 
-        <div class="rdfs-vehicle-qr-footer mt-2">
-          {{ vehicle.date_registered|date:"M d, Y" }}
+              <div class="rdfs-detail-item">
+                <i class="fas fa-phone"></i>
+                <div class="rdfs-detail-content">
+                  <strong>Contact Number</strong>
+                  <span>{{ vehicle.assigned_driver.mobile_number|default:"N/A" }}</span>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- RIGHT: QR CODE -->
+          <div class="rdfs-qr-code-box">
+            <span class="rdfs-qr-label">Scan QR Code</span>
+            {% if vehicle.qr_code %}
+              <img src="{{ vehicle.qr_code.url }}"
+                   class="rdfs-vehicle-qr-image"
+                   alt="QR Code">
+            {% else %}
+              <div class="text-muted small">No QR available</div>
+            {% endif %}
+          </div>
+
         </div>
 
       </div>
     </div>
 
-    <!-- ACTIONS -->
+    <!-- ACTION -->
     <div class="text-center rdfs-vehicle-qr-actions rdfs-vehicle-qr-hide">
-      <button onclick="rdfsPrintVehicleQR()"
+      <button onclick="window.print()"
               class="btn btn-primary rounded-pill px-4">
         <i class="bi bi-printer-fill me-1"></i>
         Print QR
@@ -205,10 +436,4 @@
 
   </div>
 </div>
-
-<script>
-function rdfsPrintVehicleQR(){
-  window.print();
-}
-</script>
 {% endblock %}

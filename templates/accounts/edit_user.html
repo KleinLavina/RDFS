@@ -6,26 +6,28 @@
 {% block content %}
 <style>
 /* ===============================
-   RDFS EDIT USER (SCOPED)
+   RDFS EDIT USER (SCOPED) - COMPACT
 ================================ */
 :root{
-  --rdfs-blue:#112666;
-  --rdfs-blue-dark:#180f92;
-  --rdfs-blue-soft:#e8f4fd;
-
-  --rdfs-bg:#f7fafc;
+  --rdfs-blue-dark:#0a1931;
+  --rdfs-blue:#112d4e;
+  --rdfs-blue-medium:#1d5d9b;
+  --rdfs-blue-light:#1e88e5;
+  --rdfs-blue-soft:#e3f2fd;
+  
+  --rdfs-bg:#f8fafc;
   --rdfs-card:#ffffff;
-
-  --rdfs-text:#1c1b1b;
-  --rdfs-muted:#64748b;
-
-  --rdfs-border:#e2e8f0;
-  --rdfs-radius:14px;
-
-  --rdfs-shadow-sm:0 4px 10px rgba(0,0,0,.06);
-  --rdfs-shadow-md:0 12px 28px rgba(0,0,0,.12);
-
-  --rdfs-transition:.25s ease;
+  
+  --rdfs-text:#1e293b;
+  --rdfs-muted:#475569;
+  
+  --rdfs-border:#cbd5e1;
+  --rdfs-radius:12px;
+  
+  --rdfs-shadow-sm:0 2px 8px rgba(10, 25, 49, 0.08);
+  --rdfs-shadow-md:0 8px 24px rgba(10, 25, 49, 0.12);
+  
+  --rdfs-transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* PAGE */
@@ -35,16 +37,17 @@
   align-items:center;
   justify-content:center;
   background:var(--rdfs-bg);
+  padding:1rem;
 }
 
 /* CARD */
 .rdfs-edit-card{
-  position:relative; /* REQUIRED for absolute cancel */
-  max-width:520px;
+  position:relative;
+  max-width:680px;
   width:100%;
   background:var(--rdfs-card);
   border-radius:var(--rdfs-radius);
-  padding:2rem;
+  padding:2rem 2.5rem;
   border:1px solid var(--rdfs-border);
   box-shadow:var(--rdfs-shadow-md);
 }
@@ -52,40 +55,118 @@
 /* TOP-RIGHT CANCEL */
 .rdfs-cancel-top{
   position:absolute;
-  top:1rem;
-  right:1rem;
+  top:1.25rem;
+  right:1.5rem;
   z-index:10;
-  border-radius:999px;
+  border-radius:8px;
   font-weight:600;
+  font-size:0.875rem;
+  padding:0.4rem 0.8rem;
+  color:var(--rdfs-muted);
+  border-color:var(--rdfs-border);
+  transition:var(--rdfs-transition);
+}
+
+.rdfs-cancel-top:hover{
+  background:var(--rdfs-blue-soft);
+  color:var(--rdfs-blue);
+  border-color:var(--rdfs-blue-light);
 }
 
 /* TITLE */
 .rdfs-edit-title{
   font-weight:800;
   color:var(--rdfs-blue-dark);
-  margin-bottom:.25rem;
+  margin-bottom:0.25rem;
+  font-size:1.75rem;
 }
 
 /* NOTE */
 .rdfs-edit-note{
-  font-size:.9rem;
+  font-size:0.9rem;
   color:var(--rdfs-muted);
-  margin-bottom:1.4rem;
+  margin-bottom:2rem;
+  background:var(--rdfs-blue-soft);
+  padding:0.75rem 1rem;
+  border-radius:8px;
+  border-left:4px solid var(--rdfs-blue-medium);
+}
+
+/* COMPACT FORM LAYOUT */
+.rdfs-form-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:1.5rem;
+  margin-bottom:1.5rem;
+}
+
+.rdfs-form-full{
+  grid-column:1 / -1;
+}
+
+/* FORM CONTROLS */
+.rdfs-form-group{
+  margin-bottom:0;
+}
+
+.rdfs-form-label{
+  display:flex;
+  align-items:center;
+  gap:0.5rem;
+  font-weight:600;
+  color:var(--rdfs-blue);
+  margin-bottom:0.5rem;
+  font-size:0.9rem;
+}
+
+.rdfs-form-control{
+  width:100%;
+  padding:0.75rem 1rem;
+  border:1px solid var(--rdfs-border);
+  border-radius:8px;
+  background:#fff;
+  color:var(--rdfs-text);
+  font-size:0.95rem;
+  transition:var(--rdfs-transition);
+}
+
+.rdfs-form-control:focus{
+  outline:none;
+  border-color:var(--rdfs-blue-light);
+  box-shadow:0 0 0 3px rgba(30, 136, 229, 0.15);
 }
 
 /* PASSWORD SECTION */
 .rdfs-password-section{
   display:none;
-  background:var(--rdfs-blue-soft);
-  border-radius:12px;
-  padding:1rem;
-  margin-top:1rem;
+  background:linear-gradient(135deg, var(--rdfs-blue-soft), #edf7ff);
+  border-radius:10px;
+  padding:1.5rem;
+  margin-top:1.5rem;
+  border:1px solid rgba(30, 136, 229, 0.2);
 }
 
-/* TOGGLE BUTTON */
+/* PASSWORD TOGGLE */
 .rdfs-password-toggle{
-  border-radius:999px;
+  display:inline-flex;
+  align-items:center;
+  gap:0.5rem;
+  background:transparent;
+  border:1px solid var(--rdfs-blue-medium);
+  color:var(--rdfs-blue-medium);
+  border-radius:8px;
+  padding:0.6rem 1.2rem;
   font-weight:600;
+  font-size:0.875rem;
+  transition:var(--rdfs-transition);
+  cursor:pointer;
+}
+
+.rdfs-password-toggle:hover{
+  background:var(--rdfs-blue-medium);
+  color:white;
+  transform:translateY(-2px);
+  box-shadow:0 4px 12px rgba(29, 93, 155, 0.2);
 }
 
 /* SAVE BUTTON */
@@ -98,136 +179,365 @@
   border:none;
   color:#fff;
   font-weight:700;
-  border-radius:999px;
+  border-radius:10px;
+  padding:1rem 2rem;
+  font-size:1rem;
   transition:var(--rdfs-transition);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:0.75rem;
+  width:100%;
 }
 
 .rdfs-save-btn:hover{
-  box-shadow:0 8px 18px rgba(17,38,102,.35);
-  transform:translateY(-1px);
+  background:linear-gradient(
+    135deg,
+    var(--rdfs-blue-medium),
+    var(--rdfs-blue)
+  );
+  box-shadow:0 8px 24px rgba(10, 25, 49, 0.25);
+  transform:translateY(-2px);
+}
+
+.rdfs-save-btn:active{
+  transform:translateY(0);
+}
+
+/* ERROR STATES */
+.rdfs-error{
+  border-color:#dc2626 !important;
+}
+
+.rdfs-error-text{
+  color:#dc2626;
+  font-size:0.8rem;
+  margin-top:0.25rem;
+  display:flex;
+  align-items:center;
+  gap:0.25rem;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px){
+  .rdfs-edit-card{
+    padding:1.5rem;
+    max-width:100%;
+  }
+  
+  .rdfs-form-grid{
+    grid-template-columns:1fr;
+    gap:1rem;
+  }
+  
+  .rdfs-cancel-top{
+    position:relative;
+    top:0;
+    right:0;
+    margin-bottom:1rem;
+    width:100%;
+    justify-content:center;
+  }
 }
 </style>
 
 <div class="container rdfs-edit-page">
-
   <div class="rdfs-edit-card">
-
-    <!-- TOP RIGHT CANCEL -->
-    <a href="{% url 'accounts:manage_users' %}"
-       class="btn btn-outline-secondary btn-sm rdfs-cancel-top">
-      <i class="bi bi-x-circle-fill me-1"></i>
-      Cancel
-    </a>
-
-    <!-- TITLE -->
-    <h3 class="rdfs-edit-title text-center">
-      Edit Account
-    </h3>
-    <p class="rdfs-edit-note text-center">
-      Updating: <strong>{{ user_obj.username }}</strong>
-    </p>
+    
+    <!-- TITLE SECTION -->
+    <div class="text-center mb-4">
+      <h3 class="rdfs-edit-title">
+        <i class="fas fa-user-edit me-2"></i>Edit Account
+      </h3>
+      <p class="rdfs-edit-note">
+        <i class="fas fa-info-circle me-2"></i>
+        Updating: <strong>{{ user_obj.username }}</strong>
+      </p>
+    </div>
 
     <!-- ALERTS -->
     {% if messages %}
       {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4" role="alert">
+          <i class="fas fa-{% if message.tags == 'success' %}check-circle{% else %}exclamation-triangle{% endif %} me-2"></i>
           {{ message }}
-          <button class="btn-close" data-bs-dismiss="alert"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
       {% endfor %}
     {% endif %}
 
-    <form method="POST" novalidate>
+    <!-- TOP RIGHT CANCEL -->
+    <a href="{% url 'accounts:manage_users' %}"
+       class="btn rdfs-cancel-top d-inline-flex align-items-center">
+      <i class="fas fa-times-circle me-2"></i>
+      Cancel Edit
+    </a>
+
+    <form method="POST" novalidate id="rdfsEditForm">
       {% csrf_token %}
+      
+      <!-- COMPACT FORM GRID -->
+      <div class="rdfs-form-grid">
+        
+        <!-- USERNAME -->
+        <div class="rdfs-form-group">
+          <label class="rdfs-form-label">
+            <i class="fas fa-user"></i>
+            Username
+          </label>
+          <input type="text" 
+                 name="username" 
+                 class="rdfs-form-control {% if form.username.errors %}rdfs-error{% endif %}"
+                 value="{{ form.username.value|default:'' }}"
+                 placeholder="Enter username">
+          {% if form.username.errors %}
+            <div class="rdfs-error-text">
+              <i class="fas fa-exclamation-circle"></i>
+              {{ form.username.errors.0 }}
+            </div>
+          {% endif %}
+        </div>
 
-      <!-- USERNAME -->
-      <div class="mb-3">
-        <label class="form-label fw-semibold">Username</label>
-        {{ form.username }}
-        {% if form.username.errors %}
-          <div class="text-danger small">{{ form.username.errors.0 }}</div>
-        {% endif %}
-      </div>
+        <!-- EMAIL -->
+        <div class="rdfs-form-group">
+          <label class="rdfs-form-label">
+            <i class="fas fa-envelope"></i>
+            Email Address
+          </label>
+          <input type="email" 
+                 name="email" 
+                 class="rdfs-form-control {% if form.email.errors %}rdfs-error{% endif %}"
+                 value="{{ form.email.value|default:'' }}"
+                 placeholder="user@example.com">
+          {% if form.email.errors %}
+            <div class="rdfs-error-text">
+              <i class="fas fa-exclamation-circle"></i>
+              {{ form.email.errors.0 }}
+            </div>
+          {% endif %}
+        </div>
 
-      <!-- EMAIL -->
-      <div class="mb-3">
-        <label class="form-label fw-semibold">Email Address</label>
-        {{ form.email }}
-        {% if form.email.errors %}
-          <div class="text-danger small">{{ form.email.errors.0 }}</div>
-        {% endif %}
-      </div>
+        <!-- ROLE (FULL WIDTH) -->
+        <div class="rdfs-form-group rdfs-form-full">
+          <label class="rdfs-form-label">
+            <i class="fas fa-user-tag"></i>
+            Account Role
+          </label>
+          <select name="role" 
+                  class="rdfs-form-control {% if form.role.errors %}rdfs-error{% endif %}"
+                  style="appearance: none; background-image: url('data:image/svg+xml;utf8,<svg fill=\'%231d5d9b\' viewBox=\'0 0 20 20\' xmlns=\'http://www.w3.org/2000/svg\'><path d=\'M7 7l3-3 3 3m0 6l-3 3-3-3\'/></svg>'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.5rem; padding-right: 3rem;">
+            {% for value, label in form.role.field.choices %}
+              <option value="{{ value }}" {% if form.role.value == value %}selected{% endif %}>
+                {{ label }}
+              </option>
+            {% endfor %}
+          </select>
+          {% if form.role.errors %}
+            <div class="rdfs-error-text">
+              <i class="fas fa-exclamation-circle"></i>
+              {{ form.role.errors.0 }}
+            </div>
+          {% endif %}
+        </div>
 
-      <!-- ROLE -->
-      <div class="mb-3">
-        <label class="form-label fw-semibold">Account Role</label>
-        {{ form.role }}
-        {% if form.role.errors %}
-          <div class="text-danger small">{{ form.role.errors.0 }}</div>
-        {% endif %}
       </div>
 
       <!-- PASSWORD TOGGLE -->
-      <div class="text-center my-3">
+      <div class="text-center my-4">
         <button type="button"
                 id="rdfsPasswordToggle"
-                class="btn btn-outline-primary btn-sm rdfs-password-toggle">
-          <i class="bi bi-key-fill me-1"></i>
-          Edit Password
+                class="rdfs-password-toggle">
+          <i class="fas fa-key"></i>
+          <span id="toggleText">Edit Password</span>
         </button>
       </div>
 
       <!-- PASSWORD SECTION -->
       <div id="rdfsPasswordSection" class="rdfs-password-section">
+        <div class="rdfs-form-grid">
+          <div class="rdfs-form-group">
+            <label class="rdfs-form-label">
+              <i class="fas fa-lock"></i>
+              New Password
+            </label>
+            <input type="password"
+                   name="new_password1"
+                   class="rdfs-form-control"
+                   placeholder="Enter new password"
+                   id="newPassword1">
+            <div class="form-text small mt-1">
+              <i class="fas fa-info-circle me-1"></i>
+              Minimum 8 characters
+            </div>
+          </div>
 
-        <div class="mb-3">
-          <label class="form-label fw-semibold">New Password</label>
-          <input type="password"
-                 name="new_password1"
-                 class="form-control"
-                 placeholder="Enter new password">
+          <div class="rdfs-form-group">
+            <label class="rdfs-form-label">
+              <i class="fas fa-lock"></i>
+              Confirm Password
+            </label>
+            <input type="password"
+                   name="new_password2"
+                   class="rdfs-form-control"
+                   placeholder="Confirm new password"
+                   id="newPassword2">
+            <div class="form-text small mt-1">
+              <i class="fas fa-shield-alt me-1"></i>
+              Must match above
+            </div>
+          </div>
         </div>
-
-        <div class="mb-3">
-          <label class="form-label fw-semibold">Confirm New Password</label>
-          <input type="password"
-                 name="new_password2"
-                 class="form-control"
-                 placeholder="Confirm new password">
+        
+        <!-- PASSWORD STRENGTH INDICATOR -->
+        <div class="mt-3" id="passwordStrength" style="display:none;">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <small class="text-muted">Password Strength:</small>
+            <small id="strengthText" class="fw-bold">Weak</small>
+          </div>
+          <div class="progress" style="height: 4px;">
+            <div id="strengthBar" class="progress-bar" style="width: 0%;"></div>
+          </div>
         </div>
-
       </div>
 
-      <!-- SAVE -->
-      <div class="d-grid mt-4">
+      <!-- SAVE BUTTON -->
+      <div class="d-grid mt-5">
         <button type="submit"
-                class="btn rdfs-save-btn btn-lg">
-          <i class="bi bi-check-circle-fill me-1"></i>
+                class="rdfs-save-btn">
+          <i class="fas fa-save"></i>
           Save Changes
         </button>
       </div>
 
     </form>
-
   </div>
 </div>
 
-<!-- PASSWORD TOGGLE SCRIPT -->
+<!-- ENHANCED JAVASCRIPT -->
 <script>
-(function(){
-  const toggle = document.getElementById("rdfsPasswordToggle");
-  const section = document.getElementById("rdfsPasswordSection");
-
-  if(!toggle || !section) return;
-
-  toggle.addEventListener("click", function(){
-    const open = section.style.display === "block";
-
-    section.style.display = open ? "none" : "block";
-    toggle.innerHTML = open
-      ? '<i class="bi bi-key-fill me-1"></i> Edit Password'
-      : '<i class="bi bi-key-fill me-1"></i> Hide Password Fields';
+document.addEventListener('DOMContentLoaded', function() {
+  // Password toggle functionality
+  const toggle = document.getElementById('rdfsPasswordToggle');
+  const section = document.getElementById('rdfsPasswordSection');
+  const toggleText = document.getElementById('toggleText');
+  
+  if (toggle && section) {
+    toggle.addEventListener('click', function() {
+      const isOpen = section.style.display === 'block';
+      
+      // Toggle visibility with animation
+      if (isOpen) {
+        section.style.display = 'none';
+        toggleText.textContent = 'Edit Password';
+        toggle.innerHTML = '<i class="fas fa-key"></i> Edit Password';
+      } else {
+        section.style.display = 'block';
+        toggleText.textContent = 'Hide Password';
+        toggle.innerHTML = '<i class="fas fa-eye-slash"></i> Hide Password';
+        // Focus first password field
+        document.getElementById('newPassword1')?.focus();
+      }
+      
+      // Update aria attributes
+      toggle.setAttribute('aria-expanded', !isOpen);
+    });
+    
+    // Initialize aria
+    toggle.setAttribute('aria-expanded', 'false');
+    toggle.setAttribute('aria-controls', 'rdfsPasswordSection');
+  }
+  
+  // Password strength indicator
+  const password1 = document.getElementById('newPassword1');
+  const password2 = document.getElementById('newPassword2');
+  const strengthBar = document.getElementById('strengthBar');
+  const strengthText = document.getElementById('strengthText');
+  const strengthContainer = document.getElementById('passwordStrength');
+  
+  function checkPasswordStrength(password) {
+    if (!password) return 0;
+    
+    let strength = 0;
+    if (password.length >= 8) strength += 1;
+    if (/[A-Z]/.test(password)) strength += 1;
+    if (/[0-9]/.test(password)) strength += 1;
+    if (/[^A-Za-z0-9]/.test(password)) strength += 1;
+    
+    return strength;
+  }
+  
+  function updateStrengthIndicator() {
+    if (!password1 || !strengthBar || !strengthText) return;
+    
+    const password = password1.value;
+    const strength = checkPasswordStrength(password);
+    
+    if (password.length > 0) {
+      strengthContainer.style.display = 'block';
+      
+      let width = 0;
+      let text = '';
+      let color = '';
+      
+      switch(strength) {
+        case 0:
+        case 1:
+          width = 25;
+          text = 'Weak';
+          color = '#dc2626';
+          break;
+        case 2:
+          width = 50;
+          text = 'Fair';
+          color = '#f59e0b';
+          break;
+        case 3:
+          width = 75;
+          text = 'Good';
+          color = '#10b981';
+          break;
+        case 4:
+          width = 100;
+          text = 'Strong';
+          color = '#059669';
+          break;
+      }
+      
+      strengthBar.style.width = width + '%';
+      strengthBar.style.backgroundColor = color;
+      strengthText.textContent = text;
+      strengthText.style.color = color;
+    } else {
+      strengthContainer.style.display = 'none';
+    }
+  }
+  
+  if (password1) {
+    password1.addEventListener('input', updateStrengthIndicator);
+  }
+  
+  // Form submission loading state
+  const form = document.getElementById('rdfsEditForm');
+  const saveBtn = form?.querySelector('.rdfs-save-btn');
+  
+  if (form && saveBtn) {
+    form.addEventListener('submit', function() {
+      saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+      saveBtn.disabled = true;
+    });
+  }
+  
+  // Add visual feedback on form controls
+  const formControls = document.querySelectorAll('.rdfs-form-control');
+  formControls.forEach(control => {
+    control.addEventListener('focus', function() {
+      this.parentElement.classList.add('focused');
+    });
+    
+    control.addEventListener('blur', function() {
+      this.parentElement.classList.remove('focused');
+    });
   });
-})();
+});
 </script>
 {% endblock %}

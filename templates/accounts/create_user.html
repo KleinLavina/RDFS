@@ -6,11 +6,13 @@
 {% block content %}
 <style>
 /* ===============================
-   RDFS CREATE ACCOUNT (SCOPED)
+   RDFS CREATE ACCOUNT (LANDSCAPE)
 ================================ */
 :root{
   --rdfs-blue:#112666;
-  --rdfs-blue-dark:#180f92;
+  --rdfs-blue-dark:#0c1c4a;
+  --rdfs-blue-darker:#081836;
+  --rdfs-accent:#2563eb;
   --rdfs-blue-soft:#e8f4fd;
 
   --rdfs-text:#1c1b1b;
@@ -20,7 +22,8 @@
   --rdfs-card:#ffffff;
 
   --rdfs-radius:14px;
-  --rdfs-shadow:0 12px 28px rgba(0,0,0,.12);
+  --rdfs-shadow:0 12px 28px rgba(17,38,102,.12);
+  --rdfs-shadow-hover:0 16px 32px rgba(17,38,102,.18);
   --rdfs-transition:.25s ease;
 }
 
@@ -31,77 +34,286 @@
   align-items:center;
   justify-content:center;
   background:var(--rdfs-bg);
+  padding:2rem 1rem;
 }
 
-/* CARD */
+/* LANDSCAPE CARD */
 .rdfs-acct-create__card{
-  position:relative; /* for top-right cancel */
-  max-width:520px;
+  max-width:800px;
   width:100%;
   background:var(--rdfs-card);
-  padding:2.25rem 2rem;
+  padding:2rem;
   border-radius:var(--rdfs-radius);
   box-shadow:var(--rdfs-shadow);
   border:1px solid #e2e8f0;
 }
 
-/* TOP RIGHT CANCEL */
-.rdfs-acct-create__cancel{
-  position:absolute;
-  top:1rem;
-  right:1rem;
-  border-radius:999px;
-  font-weight:600;
+/* HEADER SECTION */
+.rdfs-acct-create__header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  margin-bottom:2rem;
+  padding-bottom:1.5rem;
+  border-bottom:2px solid var(--rdfs-blue-soft);
 }
 
-/* TITLE */
 .rdfs-acct-create__title{
   font-weight:800;
-  color:var(--rdfs-blue-dark);
-  margin-bottom:.35rem;
+  color:var(--rdfs-blue-darker);
+  font-size:1.5rem;
+  display:flex;
+  align-items:center;
+  gap:0.75rem;
 }
 
-/* NOTE */
+.rdfs-acct-create__cancel{
+  border-radius:999px;
+  font-weight:600;
+  padding:0.5rem 1rem;
+  background:#fff;
+  color:var(--rdfs-blue-dark);
+  border:1.5px solid var(--rdfs-blue);
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  transition:var(--rdfs-transition);
+}
+
+.rdfs-acct-create__cancel:hover{
+  background:var(--rdfs-blue-soft);
+  color:var(--rdfs-blue-darker);
+  transform:translateY(-1px);
+}
+
 .rdfs-acct-create__note{
   font-size:.9rem;
   color:var(--rdfs-muted);
-  margin-bottom:1.6rem;
+  margin-top:0.5rem;
+  display:flex;
+  align-items:center;
+  gap:0.5rem;
+}
+
+/* LANDSCAPE FORM LAYOUT */
+.rdfs-landscape-form{
+  display:grid;
+  grid-template-columns:repeat(2, 1fr);
+  gap:1.5rem;
 }
 
 /* FORM FIELD */
+.rdfs-acct-create__field {
+  margin-bottom: 1.25rem;
+}
+
 .rdfs-acct-create__field label{
   font-weight:600;
-  color:var(--rdfs-text);
+  color:var(--rdfs-blue-darker);
+  margin-bottom:.5rem;
+  display:flex;
+  align-items:center;
+  gap:0.5rem;
+  font-size:0.9rem;
+}
+
+.rdfs-acct-create__field label i{
+  font-size:0.85rem;
+  color:var(--rdfs-accent);
+  width:16px;
+  text-align:center;
 }
 
 .rdfs-acct-create__field input,
 .rdfs-acct-create__field select{
   border-radius:10px;
+  padding:0.75rem 1rem;
+  border:1.5px solid #e2e8f0;
+  font-size:0.95rem;
+  transition:var(--rdfs-transition);
+  background:#fff;
+  width:100%;
+}
+
+.rdfs-acct-create__field input:focus,
+.rdfs-acct-create__field select:focus{
+  border-color:var(--rdfs-accent);
+  box-shadow:0 0 0 4px rgba(37,99,235,.15);
+  outline:none;
+}
+
+/* PASSWORD FIELD WITH TOGGLE */
+.rdfs-password-wrapper{
+  position:relative;
+}
+
+.rdfs-password-toggle{
+  position:absolute;
+  right:12px;
+  top:50%;
+  transform:translateY(-50%);
+  background:none;
+  border:none;
+  color:var(--rdfs-muted);
+  cursor:pointer;
+  padding:0.25rem;
+  transition:var(--rdfs-transition);
+  font-size:1rem;
+}
+
+.rdfs-password-toggle:hover{
+  color:var(--rdfs-accent);
+}
+
+/* FULL WIDTH FIELDS */
+.rdfs-full-width{
+  grid-column:1/-1;
 }
 
 /* ERROR */
 .rdfs-acct-create__error{
-  font-size:.8rem;
+  font-size:.75rem;
   color:#dc3545;
   margin-top:.25rem;
+  display:flex;
+  align-items:center;
+  gap:0.4rem;
+  font-weight:500;
+}
+
+.rdfs-acct-create__error i{
+  font-size:0.7rem;
 }
 
 /* SUBMIT BUTTON */
 .rdfs-acct-create__submit{
   background:linear-gradient(
     135deg,
-    var(--rdfs-blue),
-    var(--rdfs-blue-dark)
+    var(--rdfs-blue-dark),
+    var(--rdfs-blue-darker)
   );
   border:none;
   color:#fff;
   font-weight:700;
   transition:var(--rdfs-transition);
+  padding:0.9rem 2rem;
+  border-radius:12px;
+  font-size:1rem;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:0.75rem;
+  width:100%;
+  cursor:pointer;
 }
 
 .rdfs-acct-create__submit:hover{
   transform:translateY(-2px);
-  box-shadow:0 8px 18px rgba(17,38,102,.35);
+  box-shadow:var(--rdfs-shadow-hover);
+  background:linear-gradient(
+    135deg,
+    var(--rdfs-blue-darker),
+    var(--rdfs-blue-dark)
+  );
+}
+
+/* FORM TEXT */
+.form-text {
+  font-size:0.8rem;
+  color:var(--rdfs-muted);
+  margin-top:0.35rem;
+  display:flex;
+  align-items:center;
+  gap:0.4rem;
+}
+
+.form-text i{
+  font-size:0.75rem;
+}
+
+/* CHECKBOX FOR ROLE SELECTION */
+.rdfs-role-options{
+  display:flex;
+  gap:1rem;
+  margin-top:0.5rem;
+}
+
+.rdfs-role-option{
+  flex:1;
+  border:1.5px solid #e2e8f0;
+  border-radius:10px;
+  padding:0.75rem 1rem;
+  cursor:pointer;
+  transition:var(--rdfs-transition);
+  display:flex;
+  align-items:center;
+  gap:0.75rem;
+}
+
+.rdfs-role-option:hover{
+  border-color:var(--rdfs-accent);
+  background:var(--rdfs-blue-soft);
+}
+
+.rdfs-role-option.selected{
+  border-color:var(--rdfs-accent);
+  background:var(--rdfs-blue-soft);
+  box-shadow:0 0 0 2px rgba(37,99,235,.1);
+}
+
+.rdfs-role-option input[type="radio"]{
+  display:none;
+}
+
+.rdfs-role-icon{
+  width:20px;
+  height:20px;
+  border-radius:50%;
+  border:2px solid #e2e8f0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:0.7rem;
+  color:var(--rdfs-muted);
+  transition:var(--rdfs-transition);
+}
+
+.rdfs-role-option.selected .rdfs-role-icon{
+  background:var(--rdfs-accent);
+  border-color:var(--rdfs-accent);
+  color:#fff;
+}
+
+.rdfs-role-label{
+  font-size:0.9rem;
+  font-weight:600;
+  color:var(--rdfs-text);
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .rdfs-landscape-form {
+    grid-template-columns:1fr;
+    gap:1rem;
+  }
+  
+  .rdfs-acct-create__card {
+    padding:1.5rem;
+    max-width:100%;
+  }
+  
+  .rdfs-acct-create__header {
+    flex-direction:column;
+    gap:1rem;
+  }
+  
+  .rdfs-acct-create__cancel {
+    align-self:flex-start;
+  }
+  
+  .rdfs-role-options {
+    flex-direction:column;
+  }
 }
 </style>
 
@@ -109,112 +321,156 @@
 
   <div class="rdfs-acct-create__card">
 
-    <!-- TOP RIGHT CANCEL -->
-    <a href="{% url 'accounts:manage_users' %}"
-       class="btn btn-outline-secondary btn-sm rdfs-acct-create__cancel">
-      <i class="bi bi-x-circle-fill me-1"></i>
-      Cancel
-    </a>
+    <!-- HEADER -->
+    <div class="rdfs-acct-create__header">
+      <div>
+        <h3 class="rdfs-acct-create__title">
+          <i class="fas fa-user-plus"></i>Create New Account
+        </h3>
+        {% if user.role == 'admin' %}
+          <p class="rdfs-acct-create__note">
+            <i class="fas fa-info-circle"></i>As an Admin, you can create both Admin and Staff Admin accounts.
+          </p>
+        {% else %}
+          <p class="rdfs-acct-create__note">
+            <i class="fas fa-info-circle"></i>As a Staff Admin, you can only create Staff Admin accounts.
+          </p>
+        {% endif %}
+      </div>
+      
+      <a href="{% url 'accounts:manage_users' %}"
+         class="rdfs-acct-create__cancel">
+        <i class="fas fa-times-circle me-1"></i>
+        Cancel
+      </a>
+    </div>
 
-    <!-- TITLE -->
-    <h3 class="rdfs-acct-create__title text-center">
-      Create New Account
-    </h3>
-
-    {% if user.role == 'admin' %}
-      <p class="rdfs-acct-create__note text-center">
-        As an Admin, you can create both Admin and Staff Admin accounts.
-      </p>
-    {% else %}
-      <p class="rdfs-acct-create__note text-center">
-        As a Staff Admin, you can only create Staff Admin accounts.
-      </p>
-    {% endif %}
-
-    <!-- ALERTS -->
-    {% if messages %}
-      {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-          {{ message }}
-          <button class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-      {% endfor %}
-    {% endif %}
-
-    <form method="POST" novalidate>
+    <!-- LANDSCAPE FORM -->
+    <form method="POST" novalidate class="rdfs-landscape-form">
       {% csrf_token %}
 
       <!-- USERNAME -->
-      <div class="mb-3 rdfs-acct-create__field">
-        <label class="form-label">Username</label>
+      <div class="rdfs-acct-create__field">
+        <label class="form-label">
+          <i class="fas fa-user"></i>Username
+        </label>
         {{ form.username }}
         {% if form.username.errors %}
           <div class="rdfs-acct-create__error">
+            <i class="fas fa-exclamation-circle"></i>
             {{ form.username.errors.0 }}
           </div>
         {% endif %}
       </div>
 
       <!-- EMAIL -->
-      <div class="mb-3 rdfs-acct-create__field">
-        <label class="form-label">Email Address</label>
+      <div class="rdfs-acct-create__field">
+        <label class="form-label">
+          <i class="fas fa-envelope"></i>Email Address
+        </label>
         {{ form.email }}
         {% if form.email.errors %}
           <div class="rdfs-acct-create__error">
+            <i class="fas fa-exclamation-circle"></i>
             {{ form.email.errors.0 }}
           </div>
         {% endif %}
       </div>
 
-      <!-- ROLE -->
-      <div class="mb-3 rdfs-acct-create__field">
-        <label class="form-label">Account Role</label>
-        {{ form.role }}
-
-        {% if user.role == 'admin' %}
-          <small class="text-muted d-block mt-1">
-            • Choose <strong>Admin</strong> or <strong>Staff Admin</strong>.
-          </small>
-        {% else %}
-          <small class="text-muted d-block mt-1">
-            • Only Staff Admin accounts can be created.
-          </small>
-        {% endif %}
+      <!-- ROLE (FULL WIDTH) -->
+      <div class="rdfs-acct-create__field rdfs-full-width">
+        <label class="form-label">
+          <i class="fas fa-user-tag"></i>Account Role
+        </label>
+        
+        <!-- Custom Role Selector -->
+        <div class="rdfs-role-options" id="roleSelector">
+          {% if user.role == 'admin' %}
+            <label class="rdfs-role-option {% if form.role.value == 'admin' %}selected{% endif %}">
+              <input type="radio" name="role" value="admin" 
+                     {% if form.role.value == 'admin' %}checked{% endif %}>
+              <div class="rdfs-role-icon">
+                <i class="fas fa-crown"></i>
+              </div>
+              <div>
+                <div class="rdfs-role-label">Admin</div>
+                <small class="form-text">Full system access</small>
+              </div>
+            </label>
+          {% endif %}
+          
+          <label class="rdfs-role-option {% if form.role.value == 'staff_admin' or user.role != 'admin' %}selected{% endif %}">
+            <input type="radio" name="role" value="staff_admin" 
+                   {% if form.role.value == 'staff_admin' or user.role != 'admin' %}checked{% endif %}>
+            <div class="rdfs-role-icon">
+              <i class="fas fa-user-shield"></i>
+            </div>
+            <div>
+              <div class="rdfs-role-label">Staff Admin</div>
+              <small class="form-text">Limited administrative access</small>
+            </div>
+          </label>
+        </div>
+        
+        <!-- Hidden original select for form submission -->
+        <select name="role" id="id_role" style="display:none;">
+          {% if user.role == 'admin' %}
+            <option value="admin" {% if form.role.value == 'admin' %}selected{% endif %}>Admin</option>
+          {% endif %}
+          <option value="staff_admin" {% if form.role.value == 'staff_admin' or user.role != 'admin' %}selected{% endif %}>Staff Admin</option>
+        </select>
 
         {% if form.role.errors %}
           <div class="rdfs-acct-create__error">
+            <i class="fas fa-exclamation-circle"></i>
             {{ form.role.errors.0 }}
           </div>
         {% endif %}
       </div>
 
       <!-- PASSWORD -->
-      <div class="mb-3 rdfs-acct-create__field">
-        <label class="form-label">Password</label>
-        {{ form.password1 }}
+      <div class="rdfs-acct-create__field">
+        <label class="form-label">
+          <i class="fas fa-lock"></i>Password
+        </label>
+        <div class="rdfs-password-wrapper">
+          {{ form.password1 }}
+          <button type="button" class="rdfs-password-toggle" data-target="id_password1">
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
         {% if form.password1.errors %}
           <div class="rdfs-acct-create__error">
+            <i class="fas fa-exclamation-circle"></i>
             {{ form.password1.errors.0 }}
           </div>
         {% endif %}
       </div>
 
       <!-- CONFIRM PASSWORD -->
-      <div class="mb-3 rdfs-acct-create__field">
-        <label class="form-label">Confirm Password</label>
-        {{ form.password2 }}
+      <div class="rdfs-acct-create__field">
+        <label class="form-label">
+          <i class="fas fa-lock"></i>Confirm Password
+        </label>
+        <div class="rdfs-password-wrapper">
+          {{ form.password2 }}
+          <button type="button" class="rdfs-password-toggle" data-target="id_password2">
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
         {% if form.password2.errors %}
           <div class="rdfs-acct-create__error">
+            <i class="fas fa-exclamation-circle"></i>
             {{ form.password2.errors.0 }}
           </div>
         {% endif %}
       </div>
 
-      <!-- SUBMIT -->
-      <div class="d-grid mt-4">
+      <!-- SUBMIT (FULL WIDTH) -->
+      <div class="rdfs-full-width">
         <button type="submit"
-                class="btn btn-lg rounded-pill rdfs-acct-create__submit">
-          <i class="bi bi-person-plus-fill me-2"></i>
+                class="btn btn-lg rdfs-acct-create__submit">
+          <i class="fas fa-user-plus"></i>
           Create Account
         </button>
       </div>
@@ -224,4 +480,75 @@
   </div>
 
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Password visibility toggle
+  document.querySelectorAll('.rdfs-password-toggle').forEach(toggle => {
+    toggle.addEventListener('click', function() {
+      const targetId = this.getAttribute('data-target');
+      const passwordField = document.getElementById(targetId);
+      
+      if (passwordField.type === 'password') {
+        passwordField.type = 'text';
+        this.innerHTML = '<i class="fas fa-eye-slash"></i>';
+      } else {
+        passwordField.type = 'password';
+        this.innerHTML = '<i class="fas fa-eye"></i>';
+      }
+    });
+  });
+
+  // Custom role selector
+  const roleOptions = document.querySelectorAll('.rdfs-role-option input[type="radio"]');
+  const hiddenRoleSelect = document.getElementById('id_role');
+  
+  roleOptions.forEach(option => {
+    option.addEventListener('change', function() {
+      // Update visual selection
+      document.querySelectorAll('.rdfs-role-option').forEach(opt => {
+        opt.classList.remove('selected');
+      });
+      this.closest('.rdfs-role-option').classList.add('selected');
+      
+      // Update hidden select
+      hiddenRoleSelect.value = this.value;
+    });
+  });
+
+  // Initialize role selection
+  const selectedRole = hiddenRoleSelect.value;
+  if (selectedRole) {
+    document.querySelectorAll('.rdfs-role-option input[type="radio"]').forEach(radio => {
+      if (radio.value === selectedRole) {
+        radio.checked = true;
+        radio.closest('.rdfs-role-option').classList.add('selected');
+      }
+    });
+  }
+
+  // Form validation enhancement
+  const form = document.querySelector('form');
+  form.addEventListener('submit', function(e) {
+    // Check if role is selected
+    if (!hiddenRoleSelect.value) {
+      e.preventDefault();
+      alert('Please select an account role.');
+      return false;
+    }
+    
+    // Check password match
+    const password1 = document.getElementById('id_password1').value;
+    const password2 = document.getElementById('id_password2').value;
+    
+    if (password1 !== password2) {
+      e.preventDefault();
+      alert('Passwords do not match. Please try again.');
+      return false;
+    }
+    
+    return true;
+  });
+});
+</script>
 {% endblock %}
