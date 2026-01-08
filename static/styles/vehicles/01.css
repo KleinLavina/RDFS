@@ -1,0 +1,247 @@
+
+ :root{
+  --rdfs-blue:#112666;
+  --rdfs-blue-dark:#0c1c4a;
+  --rdfs-accent:#2563eb;
+  --rdfs-soft:#e8f4fd;
+
+  --text:#0f172a;
+  --muted:#64748b;
+
+  --gray-200:#edf2f7;
+  --gray-300:#e2e8f0;
+
+  --shadow-sm:0 1px 3px rgba(0,0,0,.08);
+  --shadow-md:0 8px 18px rgba(0,0,0,.12);
+}
+
+body{
+  background:linear-gradient(180deg,#ffffff 0%,#f2f6ff 100%);
+  font-family:"Segoe UI",system-ui,-apple-system,sans-serif;
+}
+
+/* PAGE HEADER */
+.rdfs-page-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  margin-bottom:1.5rem;
+}
+
+.rdfs-page-title{
+  font-weight:800;
+  font-size:1.6rem;
+  color:var(--rdfs-blue-dark);
+}
+
+.rdfs-page-sub{
+  font-size:.9rem;
+  color:var(--muted);
+}
+
+/* RETURN BUTTON */
+.rdfs-return-btn{
+  position:sticky;
+  top:1rem;
+  z-index:10;
+  border-radius:999px;
+  font-weight:700;
+  padding:.55rem 1.2rem;
+  background:#fff;
+  color:var(--rdfs-blue-dark);
+  border:2px solid var(--rdfs-blue);
+  box-shadow:var(--shadow-sm);
+  text-decoration:none;
+}
+.rdfs-return-btn:hover{
+  background:var(--rdfs-soft);
+}
+
+/* CONTAINER */
+.form-container{
+  max-width:1200px;
+  margin:auto;
+}
+
+/* SECTIONS */
+.section-box{
+  background:#fff;
+  border-radius:18px;
+  padding:1.8rem;
+  box-shadow:var(--shadow-md);
+  margin-bottom:2rem;
+  border:1px solid var(--gray-200);
+}
+
+.section-title{
+  font-weight:800;
+  font-size:1.2rem;
+  color:var(--rdfs-blue-dark);
+  margin-bottom:1rem;
+}
+
+/* CAMERA SECTION SPECIFIC */
+.camera-section{
+  background:linear-gradient(135deg, #f8fafc 0%, #e8f4fd 100%);
+  border:2px solid var(--rdfs-blue);
+}
+
+.camera-card{
+  background:#fff;
+  border-radius:14px;
+  padding:1.5rem;
+  box-shadow:var(--shadow-sm);
+  border:1px solid var(--gray-300);
+  text-align:center;
+}
+
+.camera-preview{
+  width:100%;
+  max-width:400px;
+  height:300px;
+  object-fit:cover;
+  border-radius:12px;
+  border:2px solid var(--gray-300);
+  margin:0 auto 1rem;
+  display:block;
+}
+
+.capture-btn{
+  background:linear-gradient(135deg,var(--rdfs-accent),var(--rdfs-blue));
+  color:#fff;
+  border:none;
+  border-radius:999px;
+  padding:.7rem 2rem;
+  font-weight:700;
+  font-size:.95rem;
+  box-shadow:var(--shadow-md);
+  transition:.2s;
+}
+
+.capture-btn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 12px 24px rgba(17,38,102,.25);
+}
+
+.camera-hint{
+  color:var(--muted);
+  font-size:.85rem;
+  margin-top:.5rem;
+  font-style:italic;
+}
+
+/* LABELS */
+.form-label{
+  font-weight:600;
+  color:var(--text);
+}
+
+.required::after{
+  content:" *";
+  color:#dc3545;
+}
+
+/* INPUTS */
+input, select{
+  height:48px !important;
+  border-radius:10px !important;
+  border:1.5px solid var(--gray-300) !important;
+  padding:10px 14px !important;
+  transition:.2s;
+}
+
+input:focus, select:focus{
+  border-color:var(--rdfs-accent) !important;
+  box-shadow:0 0 0 3px rgba(37,99,235,.18) !important;
+}
+
+/* DATE PICKER */
+.date-wrapper{ position:relative; }
+
+.custom-calendar{
+  position:absolute;
+  top:60px;
+  left:0;
+  width:330px;
+  background:#fff;
+  border-radius:14px;
+  box-shadow:var(--shadow-md);
+  border:1px solid var(--gray-300);
+  padding:12px;
+  z-index:9999;
+  display:none;
+  animation:fadeIn .15s ease-out;
+}
+
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(-6px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+.cal-header{
+  display:flex;
+  justify-content:space-between;
+  background:linear-gradient(135deg,#112666,#2563eb);
+  padding:10px;
+  border-radius:10px;
+}
+
+.cal-header select{
+  border:none;
+  background:#fff;
+  padding:5px 8px;
+  border-radius:8px;
+  color:#112666;
+  font-weight:700;
+  font-size:14px;
+  box-shadow:0 1px 3px rgba(0,0,0,.12);
+}
+
+.cal-days{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  column-gap:4px;
+  margin-top:10px;
+  font-weight:700;
+  text-align:center;
+  color:#0c1c4a;
+  font-size:13px;
+}
+
+.cal-grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  column-gap:4px;
+  row-gap:4px;
+  margin-top:6px;
+}
+
+.cal-day{
+  height:40px;
+  line-height:40px;
+  cursor:pointer;
+  border-radius:8px;
+  text-align:center;
+  font-size:14px;
+  font-weight:600;
+  color:#0f172a;
+  transition:all .15s ease;
+}
+
+.cal-day:hover{
+  background:#e8f4fd;
+  color:#112666;
+}
+
+.cal-day.selected{
+  background:#112666;
+  color:#fff !important;
+  font-weight:800;
+  box-shadow:0 4px 10px rgba(17,38,102,.35);
+}
+
+.cal-day.today{
+  border:2px solid #2563eb;
+  color:#112666;
+  font-weight:700;
+}

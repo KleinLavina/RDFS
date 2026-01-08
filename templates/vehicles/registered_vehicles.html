@@ -4,195 +4,55 @@
 {% block title %}Registered Vehicles | RDFS{% endblock %}
 
 {% block content %}
-
-<style>
-/* =====================================================
-   RDFS – REGISTERED VEHICLES (CARD VIEW)
-===================================================== */
-.rdfs-vehicles-scope{
-  --rdfs-blue:#112666;
-  --rdfs-blue-dark:#0c1c4a;
-  --rdfs-accent:#2563eb;
-  --rdfs-soft:#e8f4fd;
-
-  --rdfs-text:#0f172a;
-  --rdfs-muted:#64748b;
-
-  --gray-100:#f7fafc;
-  --gray-200:#edf2f7;
-  --gray-300:#e2e8f0;
-
-  --shadow-sm:0 2px 6px rgba(0,0,0,.08);
-  --shadow-md:0 10px 24px rgba(0,0,0,.14);
-
-  font-family:"Segoe UI",system-ui,-apple-system,sans-serif;
-  color:var(--rdfs-text);
-}
-
-/* HEADER */
-.rdfs-vehicles-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:1rem;
-  margin-bottom:1.5rem;
-}
-
-.rdfs-vehicles-title{
-  font-weight:800;
-  color:var(--rdfs-blue-dark);
-}
-
-.rdfs-vehicles-subtitle{
-  font-size:.9rem;
-  color:var(--rdfs-muted);
-}
-
-/* SEARCH */
-.rdfs-vehicles-search{
-  position:relative;
-  max-width:420px;
-}
-
-.rdfs-vehicles-search input{
-  width:100%;
-  height:46px;
-  padding:0 90px 0 44px;
-  border-radius:999px;
-  border:1.5px solid var(--gray-300);
-  background:var(--gray-100);
-}
-
-.rdfs-vehicles-search-icon{
-  position:absolute;
-  left:16px;
-  top:50%;
-  transform:translateY(-50%);
-  color:var(--rdfs-muted);
-}
-
-.rdfs-vehicles-search button{
-  position:absolute;
-  right:6px;
-  top:50%;
-  transform:translateY(-50%);
-  height:34px;
-  padding:0 18px;
-  border-radius:999px;
-  border:none;
-  background:linear-gradient(135deg,var(--rdfs-accent),var(--rdfs-blue));
-  color:#fff;
-  font-weight:700;
-  font-size:.8rem;
-}
-
-/* GRID */
-.rdfs-vehicle-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
-  gap:1.25rem;
-}
-
-/* CARD */
-.rdfs-vehicle-card{
-  background:#fff;
-  border-radius:18px;
-  box-shadow:var(--shadow-md);
-  border:1px solid var(--gray-200);
-  display:flex;
-  flex-direction:column;
-  height:100%;
-}
-
-.rdfs-vehicle-card-header{
-  padding:1rem 1.25rem;
-  border-bottom:1px solid var(--gray-200);
-}
-
-.rdfs-vehicle-name{
-  font-weight:800;
-  margin-bottom:.25rem;
-}
-
-.rdfs-vehicle-meta{
-  font-size:.85rem;
-  color:var(--rdfs-muted);
-}
-
-/* BODY */
-.rdfs-vehicle-card-body{
-  padding:1rem 1.25rem;
-  display:grid;
-  grid-template-columns:1fr 120px;
-  gap:1rem;
-}
-
-.rdfs-vehicle-info p{
-  margin-bottom:.35rem;
-  font-size:.9rem;
-}
-
-.rdfs-vehicle-info span{
-  color:var(--rdfs-muted);
-}
-
-/* QR */
-.rdfs-vehicle-qr{
-  text-align:center;
-}
-
-.rdfs-vehicle-qr img{
-  max-width:100%;
-  border-radius:10px;
-  border:1px solid var(--gray-300);
-}
-
-/* FOOTER */
-.rdfs-vehicle-card-footer{
-  padding:.75rem 1.25rem;
-  border-top:1px solid var(--gray-200);
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:.5rem;
-}
-</style>
+<link rel="stylesheet" href="{% static 'styles/vehicles/02.css' %}">
 
 <div class="rdfs-vehicles-scope p-4">
 
   <!-- HEADER -->
   <div class="rdfs-vehicles-header">
     <div>
-      <h3 class="rdfs-vehicles-title">
-        <i class="bi bi-truck-front-fill me-2"></i>
+      <h3 class="rdfs-vehicles-title mb-1">
+        <i class="fas fa-truck me-2"></i>
         Registered Vehicles
       </h3>
-      <p class="rdfs-vehicles-subtitle">
-        Browse registered vehicles and scan-ready QR codes.
+      <p class="rdfs-vehicles-subtitle mb-0">
+        Browse registered vehicles and scan-ready QR codes. 16 vehicles per page.
       </p>
     </div>
 
-    <a href="{% url 'accounts:staff_dashboard' %}"
-       class="btn btn-outline-primary rounded-pill">
-      <i class="bi bi-arrow-left-circle me-1"></i> Dashboard
+    <a href="{% url 'accounts:staff_dashboard' %}" class="rdfs-vehicles-back">
+      <i class="fas fa-arrow-left-circle me-1"></i>
+      Return to Dashboard
     </a>
   </div>
+
 
   <!-- SEARCH -->
   <div class="mb-4">
     <div class="rdfs-vehicles-search">
-      <i class="bi bi-search rdfs-vehicles-search-icon"></i>
-      <input type="text" id="rdfsVehicleSearch" placeholder="Search vehicle, driver, plate…">
+      <i class="fas fa-search rdfs-vehicles-search-icon"></i>
+      <input type="text"
+             id="rdfsVehicleSearch"
+             placeholder="Search vehicle, driver, plate, VIN…">
       <button type="button">Search</button>
     </div>
   </div>
 
-  <!-- CARDS -->
-  {% if vehicles %}
+  <!-- RESULTS COUNTER -->
+  {% if page_obj %}
+  <div class="rdfs-results-counter">
+    <i class="fas fa-filter"></i>
+    Showing <strong>{{ page_obj.start_index }} - {{ page_obj.end_index }}</strong> 
+    of <strong>{{ page_obj.paginator.count }}</strong> vehicle{{ page_obj.paginator.count|pluralize }}
+  </div>
+  {% endif %}
+
+  <!-- VEHICLE CARDS -->
   <div class="rdfs-vehicle-grid" id="rdfsVehicleGrid">
 
-    {% for vehicle in vehicles %}
-    <div class="rdfs-vehicle-card" data-search="{{ vehicle.vehicle_name }} {{ vehicle.license_plate }} {{ vehicle.assigned_driver.first_name }} {{ vehicle.assigned_driver.last_name }}">
+    {% for vehicle in page_obj %}
+    <div class="rdfs-vehicle-card"
+         data-search="{{ vehicle.vehicle_name }} {{ vehicle.license_plate }} {{ vehicle.vin_number }} {{ vehicle.assigned_driver.first_name|default:'' }} {{ vehicle.assigned_driver.last_name|default:'' }}">
 
       <!-- HEADER -->
       <div class="rdfs-vehicle-card-header">
@@ -200,100 +60,324 @@
           {{ vehicle.vehicle_name }}
         </div>
         <div class="rdfs-vehicle-meta">
-          {{ vehicle.get_vehicle_type_display }} • {{ vehicle.license_plate }}
+          <i class="fas fa-car me-1"></i> {{ vehicle.get_vehicle_type_display }} • 
+          <i class="fas fa-plate me-1"></i> {{ vehicle.license_plate }}
         </div>
       </div>
 
       <!-- BODY -->
       <div class="rdfs-vehicle-card-body">
-
-        <div class="rdfs-vehicle-info">
-          <p><strong>Driver:</strong>
-            {% if vehicle.assigned_driver %}
-              {{ vehicle.assigned_driver.first_name }} {{ vehicle.assigned_driver.last_name }}
+        
+        <!-- DRIVER SECTION WITH PFP -->
+        <div class="rdfs-driver-section">
+          <div class="rdfs-driver-pfp">
+            {% if vehicle.assigned_driver and vehicle.assigned_driver.driver_photo %}
+              <img src="{{ vehicle.assigned_driver.driver_photo.url }}" 
+                   alt="{{ vehicle.assigned_driver.first_name }}"
+                   class="rdfs-driver-pfp">
             {% else %}
-              <span>Unassigned</span>
+              <i class="fas fa-user"></i>
             {% endif %}
-          </p>
-          <p><strong>VIN:</strong> {{ vehicle.vin_number }}</p>
-          <p><strong>Year:</strong> {{ vehicle.year_model }}</p>
-          <p><strong>CR / OR:</strong><br>
-            <span>{{ vehicle.cr_number }}</span><br>
-            <span>{{ vehicle.or_number }}</span>
-          </p>
+          </div>
+          
+          <div class="rdfs-driver-info">
+            <div class="rdfs-driver-name">
+              {% if vehicle.assigned_driver %}
+                <i class="fas fa-id-card me-1"></i>
+                {{ vehicle.assigned_driver.first_name }} {{ vehicle.assigned_driver.last_name }}
+              {% else %}
+                <span class="text-muted">No driver assigned</span>
+              {% endif %}
+            </div>
+            {% if vehicle.assigned_driver %}
+            <div class="rdfs-driver-id">
+              ID: {{ vehicle.assigned_driver.driver_id|default:"N/A" }}
+            </div>
+            {% endif %}
+          </div>
         </div>
 
-        <div class="rdfs-vehicle-qr">
-          {% if vehicle.qr_code %}
-            <img src="{{ vehicle.qr_code.url }}" alt="QR Code">
-            <div class="mt-2">
-              <a href="{% url 'vehicles:vehicle_qr' vehicle.id %}"
-                 target="_blank"
-                 class="btn btn-sm btn-outline-secondary rounded-pill">
-                <i class="bi bi-printer-fill me-1"></i> Print
-              </a>
+        <!-- VEHICLE DETAILS & QR -->
+        <div class="rdfs-vehicle-info-grid">
+          <div class="rdfs-vehicle-details">
+            <div class="rdfs-detail-item">
+              <span class="rdfs-detail-label">VIN Number</span>
+              <span class="rdfs-detail-value">{{ vehicle.vin_number }}</span>
             </div>
-          {% else %}
-            <span class="text-muted">No QR</span>
-          {% endif %}
+            
+            <div class="rdfs-detail-item">
+              <span class="rdfs-detail-label">Year Model</span>
+              <span class="rdfs-detail-value">{{ vehicle.year_model }}</span>
+            </div>
+            
+            <div class="rdfs-detail-item">
+              <span class="rdfs-detail-label">CR Number</span>
+              <span class="rdfs-detail-value">{{ vehicle.cr_number|default:"N/A" }}</span>
+            </div>
+            
+            <div class="rdfs-detail-item">
+              <span class="rdfs-detail-label">OR Number</span>
+              <span class="rdfs-detail-value">{{ vehicle.or_number|default:"N/A" }}</span>
+            </div>
+          </div>
+
+          <div class="rdfs-vehicle-qr">
+            {% if vehicle.qr_code %}
+              <img src="{{ vehicle.qr_code.url }}" alt="QR Code">
+              <div class="mt-2">
+                <a href="{% url 'vehicles:vehicle_qr' vehicle.id %}"
+                   target="_blank"
+                   class="btn btn-sm btn-outline-primary rounded-pill">
+                  <i class="fas fa-print me-1"></i> Print
+                </a>
+              </div>
+            {% else %}
+              <div class="text-muted">
+                <i class="fas fa-qrcode fa-2x mb-2"></i>
+                <div class="small">No QR Generated</div>
+              </div>
+            {% endif %}
+          </div>
         </div>
 
       </div>
 
       <!-- FOOTER -->
       <div class="rdfs-vehicle-card-footer">
-        <small class="text-muted">
+        <div class="text-muted small">
+          <i class="fas fa-calendar-alt me-1"></i>
           Registered {{ vehicle.date_registered|date:"M d, Y" }}
-        </small>
+        </div>
 
         {% if user.is_superuser or user.role == 'admin' %}
-        <button class="btn btn-sm btn-danger btn-delete-item"
-                data-url="{% url 'vehicles:delete_vehicle' vehicle.id %}"
-                data-type="Vehicle">
-          <i class="bi bi-trash-fill me-1"></i> Delete
-        </button>
+  <button class="btn-delete-vehicle btn-delete-item"
+        data-url="{% url 'vehicles:delete_vehicle' vehicle.id %}"
+        data-type="Vehicle"
+        data-name="{{ vehicle.vehicle_name }}">
+  <i class="fas fa-trash"></i> Delete
+</button>
+
         {% endif %}
       </div>
 
     </div>
+    {% empty %}
+    <div class="rdfs-empty-state">
+      <i class="fas fa-truck-loading"></i>
+      <p class="mb-0">No vehicles registered yet.</p>
+      <p class="mt-2 small">Register your first vehicle to get started.</p>
+    </div>
     {% endfor %}
 
   </div>
-  {% else %}
-    <p class="text-center text-muted">No vehicles registered yet.</p>
+
+  <!-- PAGINATION -->
+  {% if page_obj.has_other_pages %}
+  <div class="rdfs-pagination-container">
+    <ul class="rdfs-pagination">
+      {% if page_obj.has_previous %}
+        <li class="rdfs-pagination-item">
+          <a class="rdfs-pagination-link rdfs-pagination-arrow" 
+             href="?page={{ page_obj.previous_page_number }}">
+            <i class="fas fa-chevron-left"></i> Previous
+          </a>
+        </li>
+      {% else %}
+        <li class="rdfs-pagination-item">
+          <span class="rdfs-pagination-link rdfs-pagination-arrow disabled">
+            <i class="fas fa-chevron-left"></i> Previous
+          </span>
+        </li>
+      {% endif %}
+
+      {% for num in page_obj.paginator.page_range %}
+        {% if num == page_obj.number %}
+          <li class="rdfs-pagination-item">
+            <span class="rdfs-pagination-link active">{{ num }}</span>
+          </li>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+          <li class="rdfs-pagination-item">
+            <a class="rdfs-pagination-link" 
+               href="?page={{ num }}">
+              {{ num }}
+            </a>
+          </li>
+        {% endif %}
+      {% endfor %}
+
+      {% if page_obj.has_next %}
+        <li class="rdfs-pagination-item">
+          <a class="rdfs-pagination-link rdfs-pagination-arrow" 
+             href="?page={{ page_obj.next_page_number }}">
+            Next <i class="fas fa-chevron-right"></i>
+          </a>
+        </li>
+      {% else %}
+        <li class="rdfs-pagination-item">
+          <span class="rdfs-pagination-link rdfs-pagination-arrow disabled">
+            Next <i class="fas fa-chevron-right"></i>
+          </span>
+        </li>
+      {% endif %}
+    </ul>
+    
+    <div class="rdfs-pagination-info">
+      Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+    </div>
+  </div>
   {% endif %}
 
 </div>
+<!-- DELETE CONFIRMATION MODAL -->
+<div id="deleteModal" class="rdfs-modal-overlay hidden">
+  <div class="rdfs-modal">
+    
+    <div class="rdfs-modal-header">
+      <i class="fas fa-exclamation-triangle text-danger"></i>
+      <h5>Confirm Deletion</h5>
+    </div>
+
+    <div class="rdfs-modal-body">
+      <p id="deleteModalText">
+        Are you sure you want to delete this item?
+      </p>
+      <p class="rdfs-modal-warning">
+        This action cannot be undone.
+      </p>
+    </div>
+
+    <div class="rdfs-modal-footer">
+      <button type="button" class="btn-cancel" id="cancelDelete">
+        Cancel
+      </button>
+      <button type="button" class="btn-confirm-delete" id="confirmDelete">
+        <i class="fas fa-trash"></i> Delete
+      </button>
+    </div>
+
+  </div>
+</div>
+
 
 <script>
-document.addEventListener("DOMContentLoaded",function(){
+document.addEventListener("DOMContentLoaded", function () {
 
-  /* SEARCH FILTER */
-  const searchInput=document.getElementById("rdfsVehicleSearch");
-  searchInput.addEventListener("keyup",function(){
-    const value=this.value.toLowerCase();
-    document.querySelectorAll(".rdfs-vehicle-card").forEach(card=>{
-      card.style.display = card.dataset.search.toLowerCase().includes(value)
-        ? "flex"
-        : "none";
+  /* =====================================================
+     SEARCH FILTER
+  ===================================================== */
+  const searchInput = document.getElementById("rdfsVehicleSearch");
+
+  if (searchInput) {
+    searchInput.addEventListener("keyup", function () {
+      const value = this.value.toLowerCase().trim();
+      let visibleCount = 0;
+
+      document.querySelectorAll(".rdfs-vehicle-card").forEach(card => {
+        const searchText = card.dataset.search.toLowerCase();
+        const isVisible = searchText.includes(value);
+
+        card.style.display = isVisible ? "flex" : "none";
+        if (isVisible) visibleCount++;
+      });
+
+      // Toggle empty state
+      const emptyState = document.querySelector(".rdfs-empty-state");
+      if (emptyState) {
+        emptyState.style.display = visibleCount === 0 ? "block" : "none";
+      }
+    });
+  }
+
+  /* =====================================================
+     DELETE MODAL LOGIC
+  ===================================================== */
+  const modal = document.getElementById("deleteModal");
+  const modalText = document.getElementById("deleteModalText");
+  const confirmBtn = document.getElementById("confirmDelete");
+  const cancelBtn = document.getElementById("cancelDelete");
+
+  let deleteUrl = null;
+
+  /* OPEN MODAL */
+  document.querySelectorAll(".btn-delete-item").forEach(btn => {
+    btn.addEventListener("click", function () {
+      deleteUrl = this.dataset.url;
+      const name = this.dataset.name || "this item";
+
+      modalText.innerHTML = `
+        Are you sure you want to delete <strong>${name}</strong>?
+      `;
+
+      modal.classList.remove("hidden");
     });
   });
 
-  /* DELETE */
-  document.querySelectorAll('.btn-delete-item').forEach(btn=>{
-    btn.addEventListener('click',function(){
-      const url=this.dataset.url;
-      const type=this.dataset.type;
-      if(confirm(`Delete this ${type}?`)){
-        fetch(url,{
-          method:'POST',
-          headers:{'X-CSRFToken':'{{ csrf_token }}'}
-        }).then(()=>location.reload());
+  /* CANCEL DELETE */
+  cancelBtn.addEventListener("click", () => {
+    modal.classList.add("hidden");
+    deleteUrl = null;
+  });
+
+  /* CONFIRM DELETE */
+  confirmBtn.addEventListener("click", () => {
+    if (!deleteUrl) return;
+
+    confirmBtn.disabled = true;
+
+    fetch(deleteUrl, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": "{{ csrf_token }}"
       }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        modal.classList.add("hidden");
+
+        // ✅ REFRESH PAGE AFTER DELETE
+        setTimeout(() => {
+          window.location.reload();
+        }, 500); // delay so toast can appear
+      } else {
+        alert(data.message || "❌ Delete failed.");
+      }
+    })
+    .catch(err => {
+      console.error("Delete error:", err);
+      alert("❌ Error deleting item.");
+    })
+    .finally(() => {
+      confirmBtn.disabled = false;
     });
+  });
+
+  /* CLOSE MODAL ON BACKDROP CLICK */
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      modal.classList.add("hidden");
+    }
   });
 
 });
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".rdfs-toast").forEach(toast => {
+
+    // Auto-hide after 5 seconds
+    const timer = setTimeout(() => {
+      toast.classList.add("hide");
+      setTimeout(() => toast.remove(), 350);
+    }, 5000);
+
+    // Manual close
+    toast.querySelector(".rdfs-toast-close")?.addEventListener("click", () => {
+      clearTimeout(timer);
+      toast.remove();
+    });
+
+  });
+});
 </script>
+
 
 {% endblock %}

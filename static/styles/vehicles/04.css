@@ -1,0 +1,634 @@
+/* =====================================================
+   RDFS – REGISTERED DRIVERS (COMPACT LAYOUT)
+===================================================== */
+.rdfs-drivers-scope{
+  --rdfs-blue:#112666;
+  --rdfs-blue-dark:#0c1c4a;
+  --rdfs-accent:#2563eb;
+  --rdfs-soft:#e8f4fd;
+
+  --rdfs-text:#0f172a;
+  --rdfs-muted:#64748b;
+
+  --gray-100:#f7fafc;
+  --gray-200:#edf2f7;
+  --gray-300:#e2e8f0;
+
+  --shadow-sm:0 1px 3px rgba(0,0,0,.08);
+  --shadow-md:0 8px 18px rgba(0,0,0,.12);
+
+  font-family:"Segoe UI",system-ui,-apple-system,sans-serif;
+  color:var(--rdfs-text);
+}
+
+/* HEADER */
+.rdfs-drivers-header{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:1rem;
+  margin-bottom:1.25rem;
+}
+
+.rdfs-drivers-title{
+  font-weight:800;
+  color:var(--rdfs-blue-dark);
+}
+
+.rdfs-drivers-subtitle{
+  font-size:.9rem;
+  color:var(--rdfs-muted);
+}
+
+/* RETURN BUTTON */
+.rdfs-drivers-back{
+  border-radius:999px;
+  font-weight:600;
+  background:#fff;
+  color:var(--rdfs-blue-dark);
+  border:1.5px solid var(--rdfs-blue);
+  white-space:nowrap;
+  padding:.55rem 1.2rem;
+  text-decoration:none;
+  transition:.2s;
+}
+
+.rdfs-drivers-back:hover{
+  background:var(--rdfs-soft);
+  color:var(--rdfs-blue-dark);
+}
+
+/* SEARCH BAR */
+.rdfs-drivers-search-wrap{
+  display:flex;
+  justify-content:flex-end;
+  margin-bottom:1.5rem;
+}
+
+.rdfs-drivers-search{
+  position:relative;
+  width:380px;
+}
+
+.rdfs-drivers-search-icon{
+  position:absolute;
+  left:16px;
+  top:50%;
+  transform:translateY(-50%);
+  color:var(--rdfs-muted);
+  font-size:.95rem;
+}
+
+.rdfs-drivers-search input{
+  height:46px;
+  width:100%;
+  padding-left:44px;
+  padding-right:86px;
+  border-radius:999px;
+  border:1.5px solid var(--gray-300);
+  background:var(--gray-100);
+  font-size:.9rem;
+  transition:.2s ease;
+}
+
+.rdfs-drivers-search input::placeholder{
+  color:var(--rdfs-muted);
+}
+
+.rdfs-drivers-search input:focus{
+  outline:none;
+  background:#fff;
+  border-color:var(--rdfs-accent);
+  box-shadow:0 0 0 4px rgba(37,99,235,.15);
+}
+
+.rdfs-drivers-search button{
+  position:absolute;
+  right:6px;
+  top:50%;
+  transform:translateY(-50%);
+  height:34px;
+  padding:0 16px;
+  border-radius:999px;
+  font-weight:700;
+  font-size:.8rem;
+  background:linear-gradient(135deg,var(--rdfs-accent),var(--rdfs-blue));
+  border:none;
+  color:#fff;
+}
+
+/* CARDS GRID - MORE COMPACT */
+.rdfs-drivers-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(350px, 1fr));
+  gap:1rem;
+  margin-bottom:2rem;
+}
+
+@media (min-width: 980px){
+  .rdfs-drivers-grid{
+    grid-template-columns:repeat(auto-fill, minmax(350px, 1fr));
+  }
+}
+
+@media (min-width: 1200px){
+  .rdfs-drivers-grid{
+    grid-template-columns:repeat(auto-fill, minmax(380px, 1fr));
+  }
+}
+
+/* DRIVER CARD - COMPACT LAYOUT */
+.driver-card-compact{
+  background:#fff;
+  border-radius:12px;
+  box-shadow:var(--shadow-md);
+  border:1px solid var(--gray-200);
+  overflow:hidden;
+  transition:.3s;
+  min-height:auto;
+}
+
+.driver-card-compact:hover{
+  transform:translateY(-3px);
+  box-shadow:0 10px 25px rgba(17,38,102,.15);
+}
+
+/* CARD HEADER (Driver Name) */
+.driver-card-header{
+  background:linear-gradient(135deg, #f0f4ff 0%, #e8f4fd 100%);
+  padding:.75rem 1.25rem;
+  border-bottom:2px solid var(--rdfs-blue);
+}
+/* =====================================================
+   RDFS – DELETE CONFIRMATION MODAL
+===================================================== */
+
+.rdfs-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55); /* dark backdrop */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.rdfs-modal-overlay.hidden {
+  display: none;
+}
+
+/* MODAL BOX */
+.rdfs-modal {
+  background: #ffffff;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
+  animation: rdfsModalIn 0.2s ease-out;
+}
+
+/* OPEN ANIMATION */
+@keyframes rdfsModalIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* HEADER */
+.rdfs-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #e5e7eb;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.rdfs-modal-header i {
+  color: #dc2626;
+  font-size: 1.1rem;
+}
+
+/* BODY */
+.rdfs-modal-body {
+  padding: 1.25rem;
+  font-size: 0.95rem;
+  color: #334155;
+}
+
+.rdfs-modal-body p {
+  margin: 0;
+}
+
+.rdfs-modal-warning {
+  margin-top: 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #dc2626;
+}
+
+/* FOOTER */
+.rdfs-modal-footer {
+  padding: 1rem 1.25rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  border-top: 1px solid #e5e7eb;
+  background: #fafbfd;
+  border-radius: 0 0 14px 14px;
+}
+
+/* BUTTONS */
+.btn-cancel {
+  background: #f1f5f9;
+  color: #0f172a;
+  border: none;
+  padding: 0.45rem 0.9rem;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.btn-cancel:hover {
+  background: #e2e8f0;
+}
+
+.btn-confirm-delete {
+  background: #dc2626;
+  color: #ffffff;
+  border: none;
+  padding: 0.45rem 0.9rem;
+  border-radius: 8px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.btn-confirm-delete:hover {
+  background: #b91c1c;
+}
+
+.btn-confirm-delete:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.driver-name-title{
+  font-size:1.1rem;
+  font-weight:800;
+  color:var(--rdfs-blue-dark);
+  margin:0;
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+}
+
+.driver-name-title i{
+  color:var(--rdfs-accent);
+  font-size:1rem;
+}
+
+/* CARD BODY - TWO COLUMN LAYOUT */
+.driver-card-body{
+  display:flex;
+  padding:1rem;
+  gap:1rem;
+  min-height:140px;
+}
+
+/* LEFT SIDE - PHOTO & ID */
+.driver-left-side{
+  width:120px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:.75rem;
+}
+
+.driver-photo-compact{
+  width:100px;
+  height:100px;
+  border-radius:10px;
+  object-fit:cover;
+  border:3px solid #fff;
+  box-shadow:var(--shadow-sm);
+  background:#f8fafc;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.driver-photo-compact i{
+  font-size:2.5rem;
+  color:var(--rdfs-blue);
+}
+
+.driver-id-compact{
+  background:var(--rdfs-blue);
+  color:#fff;
+  font-size:.75rem;
+  font-weight:700;
+  padding:.3rem .8rem;
+  border-radius:999px;
+  width:fit-content;
+  text-align:center;
+}
+
+/* RIGHT SIDE - DETAILS */
+.driver-right-side{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
+
+/* DETAILS GRID */
+.driver-details-grid{
+  display:grid;
+  grid-template-columns:repeat(2, 1fr);
+  gap:.5rem .75rem;
+  flex:1;
+}
+
+.driver-detail-item{
+  display:flex;
+  flex-direction:column;
+  gap:.15rem;
+}
+
+.driver-detail-label{
+  font-size:.7rem;
+  font-weight:600;
+  color:var(--rdfs-muted);
+  text-transform:uppercase;
+  letter-spacing:.3px;
+}
+
+.driver-detail-value{
+  font-size:.85rem;
+  font-weight:500;
+  color:var(--rdfs-text);
+  line-height:1.3;
+}
+
+.driver-detail-value.small{
+  font-size:.75rem;
+}
+
+/* BADGES */
+.license-badge-compact{
+  display:inline-block;
+  background:var(--rdfs-soft);
+  color:var(--rdfs-blue);
+  font-weight:700;
+  padding:.2rem .5rem;
+  border-radius:6px;
+  font-size:.7rem;
+}
+
+.blood-badge-compact{
+  display:inline-block;
+  background:#fee;
+  color:#c00;
+  font-weight:700;
+  padding:.2rem .5rem;
+  border-radius:6px;
+  font-size:.7rem;
+}
+
+/* CARD FOOTER */
+.driver-card-footer-compact{
+  border-top:1px solid var(--gray-200);
+  padding:.75rem 1rem;
+  background:#fafbfd;
+  display:flex;
+  justify-content:flex-end;
+}
+
+.btn-delete-driver{
+  background:#dc3545;
+  color:#fff;
+  border:none;
+  border-radius:6px;
+  padding:.35rem .7rem;
+  font-size:.75rem;
+  font-weight:600;
+  transition:.2s;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:.3rem;
+}
+
+.btn-delete-driver:hover{
+  background:#c82333;
+}
+
+/* EMPTY STATE */
+.empty-state{
+  text-align:center;
+  padding:3rem 1rem;
+  color:var(--rdfs-muted);
+}
+
+.empty-state i{
+  font-size:3rem;
+  color:var(--gray-300);
+  margin-bottom:1rem;
+}
+
+/* PAGINATION STYLES */
+.rdfs-pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2rem;
+  padding: 1rem 0;
+}
+
+.rdfs-pagination {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  gap: 0.5rem;
+}
+
+.rdfs-pagination-item {
+  display: inline-block;
+}
+
+.rdfs-pagination-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 0.75rem;
+  border-radius: 8px;
+  background: #fff;
+  border: 1.5px solid var(--gray-300);
+  color: var(--rdfs-text);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.rdfs-pagination-link:hover {
+  background: var(--rdfs-soft);
+  border-color: var(--rdfs-accent);
+  color: var(--rdfs-blue-dark);
+  transform: translateY(-1px);
+}
+
+.rdfs-pagination-link.active {
+  background: linear-gradient(135deg, var(--rdfs-accent), var(--rdfs-blue));
+  border-color: var(--rdfs-blue);
+  color: #fff;
+}
+
+.rdfs-pagination-link.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.rdfs-pagination-info {
+  font-size: 0.9rem;
+  color: var(--rdfs-muted);
+  margin-left: 1.5rem;
+  font-weight: 500;
+}
+
+.rdfs-pagination-arrow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0 1rem;
+}
+
+.rdfs-pagination-arrow i {
+  font-size: 0.9rem;
+}
+
+/* RESULTS COUNTER */
+.rdfs-results-counter {
+  font-size: 0.9rem;
+  color: var(--rdfs-muted);
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.rdfs-results-counter strong {
+  color: var(--rdfs-blue-dark);
+  font-weight: 700;
+}
+/* =====================================================
+   RDFS – FLOATING TOAST MESSAGES
+===================================================== */
+
+.rdfs-toast-container {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  z-index: 20000; /* 🔥 HIGHER THAN MODAL (modal = ~10000) */
+  pointer-events: none;
+}
+
+/* BASE TOAST */
+.rdfs-toast {
+  min-width: 280px;
+  max-width: 360px;
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 12px 30px rgba(0,0,0,.25);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 0.9rem;
+  animation: rdfsToastIn 0.35s ease;
+  pointer-events: auto;
+}
+
+/* ENTRY ANIMATION */
+@keyframes rdfsToastIn {
+  from {
+    transform: translateX(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* CLOSE BUTTON */
+.rdfs-toast-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.6;
+}
+
+.rdfs-toast-close:hover {
+  opacity: 1;
+}
+
+/* COLORS BY MESSAGE TAG */
+.rdfs-toast-success {
+  border-left: 5px solid #22c55e;
+  color: #166534;
+  background: #f0fdf4;
+}
+
+.rdfs-toast-error {
+  border-left: 5px solid #dc2626;
+  color: #7f1d1d;
+  background: #fef2f2;
+}
+
+.rdfs-toast-warning {
+  border-left: 5px solid #f59e0b;
+  color: #78350f;
+  background: #fffbeb;
+}
+
+.rdfs-toast-info {
+  border-left: 5px solid #2563eb;
+  color: #1e3a8a;
+  background: #eff6ff;
+}
+
+/* EXIT ANIMATION */
+@keyframes rdfsToastOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+}
+
+.rdfs-toast.hide {
+  animation: rdfsToastOut 0.35s ease forwards;
+}

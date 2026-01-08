@@ -25,7 +25,38 @@ from .forms import DriverRegistrationForm, VehicleRegistrationForm
 # ✅ Path for your installed Tesseract OCR (adjust if needed)
 pytesseract.pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
 
-
+def format_form_errors(form, form_type="Form"):
+    """
+    Extracts all form errors and formats them into user-friendly messages.
+    Returns a list of error messages with field labels.
+    """
+    error_list = []
+    
+    # Non-field errors (general form errors)
+    if form.non_field_errors():
+        for error in form.non_field_errors():
+            error_list.append(str(error))
+    
+    # Field-specific errors
+    for field_name, errors in form.errors.items():
+        if field_name == '__all__':
+            continue  # Already handled above
+        
+        # Get the field label for better readability
+        if field_name in form.fields:
+            field_label = form.fields[field_name].label or field_name.replace('_', ' ').title()
+        else:
+            field_label = field_name.replace('_', ' ').title()
+        
+        # Add each error for this field
+        for error in errors:
+            # If error already has emoji/formatting, use as-is
+            if error.startswith('❌') or error.startswith('⚠️'):
+                error_list.append(f"{field_label}: {error}")
+            else:
+                error_list.append(f"❌ {field_label}: {error}")
+    
+    return error_list
 # -------------------------
 # OCR ENDPOINT
 # -------------------------
@@ -222,49 +253,187 @@ def ajax_register_vehicle(request):
 @login_required
 @user_passes_test(is_staff_admin_or_admin)
 def register_driver(request):
-    form = DriverRegistrationForm(request.POST or None, request.FILES or None)
+    """
+    Register a new driver with comprehensive error handling.
+    Shows specific errors for each field validation failure.
+    """
     if request.method == 'POST':
+        form = DriverRegistrationForm(request.POST, request.FILES)
+        
         if form.is_valid():
-            form.save()
-            messages.success(request, "✅ Driver registered successfully!")
-            return redirect('vehicles:register_driver')
+            try:
+                # Save the driver
+                driver = form.save()
+                
+                # Success message with driver details
+                messages.success(
+                    request,
+                    f"✅ Driver registered successfully! "
+                    f"Name: {driver.first_name} {driver.last_name} | "
+                    f"ID: {driver.driver_id} | "
+                    f"License: {driver.license_number}"
+                )
+                return redirect('vehicles:registered_drivers')
+                
+            except ValidationError as ve:
+                # Model-level validation errors
+                if hasattr(ve, 'message_dict'):
+                    for field, errors in ve.message_dict.items():
+                        field_label = field.replace('_', ' ').title()
+                        for error in errors:
+                            messages.error(request, f"❌ {field_label}: {error}")
+                else:
+                    messages.error(request, f"❌ Validation Error: {str(ve)}")
+                    
+            except Exception as e:
+                # Unexpected errors
+                messages.error(
+                    request,
+                    f"❌ Unexpected error while saving driver: {str(e)}"
+                )
         else:
-            messages.error(request, "❌ Driver form contains errors.")
+            # Form validation errors - Show each error specifically
+            error_list = format_form_errors(form, "Driver Registration")
+            
+            if error_list:
+                # Show a summary message
+                messages.error(
+                    request,
+                    f"❌ Driver registration failed. Please correct {len(error_list)} error(s) below:"
+                )
+                
+                # Show each specific error
+                for error_msg in error_list:
+                    messages.error(request, error_msg)
+            else:
+                # Fallback if no specific errors found
+                messages.error(
+                    request,
+                    "❌ Driver registration failed. Please check all required fields and try again."
+                )
+    else:
+        form = DriverRegistrationForm()
+    
+    # Get total drivers for display
     total_drivers = Driver.objects.count()
-    return render(request, 'vehicles/register_driver.html', {'form': form, 'total_drivers': total_drivers})
+    
+    context = {
+        'form': form,
+        'total_drivers': total_drivers,
+    }
+    
+    return render(request, 'vehicles/register_driver.html', context)
 
 
 @login_required
 @user_passes_test(is_staff_admin_or_admin)
 def register_vehicle(request):
-    form = VehicleRegistrationForm(request.POST or None)
+    """
+    Register a new vehicle with comprehensive error handling.
+    Shows specific errors for each field validation failure.
+    """
     if request.method == 'POST':
+        form = VehicleRegistrationForm(request.POST)
+        
         if form.is_valid():
             try:
+                # Save vehicle with commit=False to add extra validations
                 vehicle = form.save(commit=False)
+                
+                # Get cleaned data
                 cd = form.cleaned_data
-                if 'cr_number' in cd:
-                    vehicle.cr_number = cd.get('cr_number') or vehicle.cr_number
-                if 'or_number' in cd:
-                    vehicle.or_number = cd.get('or_number') or vehicle.or_number
-                if 'vin_number' in cd:
-                    vehicle.vin_number = cd.get('vin_number') or vehicle.vin_number
-                if 'year_model' in cd:
-                    vehicle.year_model = cd.get('year_model') or vehicle.year_model
+                
+                # Assign route if provided
+                if cd.get('route'):
+                    vehicle.route = cd['route']
+                
+                # Ensure all required fields are set
+                required_fields = {
+                    'cr_number': 'CR Number',
+                    'or_number': 'OR Number',
+                    'vin_number': 'VIN Number',
+                    'year_model': 'Year Model',
+                    'registration_number': 'Registration Number',
+                    'license_plate': 'License Plate'
+                }
+                
+                for field, label in required_fields.items():
+                    if field in cd:
+                        value = cd.get(field)
+                        if value:
+                            setattr(vehicle, field, value)
+                
+                # Run model validation
                 vehicle.full_clean()
+                
+                # Save the vehicle
                 vehicle.save()
-                messages.success(request, f"✅ Vehicle '{vehicle.vehicle_name}' registered successfully!")
-                return redirect('vehicles:register_vehicle')
+                
+                # Success message with vehicle details
+                messages.success(
+                    request,
+                    f"✅ Vehicle registered successfully! "
+                    f"Name: {vehicle.vehicle_name} | "
+                    f"Plate: {vehicle.license_plate} | "
+                    f"Type: {vehicle.get_vehicle_type_display()} | "
+                    f"Driver: {vehicle.assigned_driver.first_name} {vehicle.assigned_driver.last_name}"
+                )
+                return redirect('vehicles:registered_vehicles')
+                
             except ValidationError as ve:
-                form.add_error(None, ve)
-                messages.error(request, "❌ Vehicle data invalid.")
+                # Model-level validation errors
+                if hasattr(ve, 'message_dict'):
+                    for field, errors in ve.message_dict.items():
+                        field_label = field.replace('_', ' ').title()
+                        for error in errors:
+                            form.add_error(field if field in form.fields else None, error)
+                            messages.error(request, f"❌ {field_label}: {error}")
+                elif hasattr(ve, 'messages'):
+                    for error in ve.messages:
+                        messages.error(request, f"❌ {error}")
+                else:
+                    messages.error(request, f"❌ Validation Error: {str(ve)}")
+                    
             except Exception as e:
-                messages.error(request, f"❌ Unexpected error: {e}")
+                # Unexpected errors
+                messages.error(
+                    request,
+                    f"❌ Unexpected error while saving vehicle: {str(e)}"
+                )
         else:
-            messages.error(request, "❌ Please correct the errors.")
-    vehicles = Vehicle.objects.select_related('assigned_driver').all().order_by('-date_registered')
-    total_vehicles = Vehicle.objects.count()
-    return render(request, 'vehicles/register_vehicle.html', {'form': form, 'vehicles': vehicles, 'total_vehicles': total_vehicles})
+            # Form validation errors - Show each error specifically
+            error_list = format_form_errors(form, "Vehicle Registration")
+            
+            if error_list:
+                # Show a summary message
+                messages.error(
+                    request,
+                    f"❌ Vehicle registration failed. Please correct {len(error_list)} error(s) below:"
+                )
+                
+                # Show each specific error
+                for error_msg in error_list:
+                    messages.error(request, error_msg)
+            else:
+                # Fallback if no specific errors found
+                messages.error(
+                    request,
+                    "❌ Vehicle registration failed. Please check all required fields and try again."
+                )
+    else:
+        form = VehicleRegistrationForm()
+    
+    # Get vehicles for display
+    vehicles = Vehicle.objects.select_related('assigned_driver', 'route').order_by('-date_registered')
+    total_vehicles = vehicles.count()
+    
+    context = {
+        'form': form,
+        'vehicles': vehicles,
+        'total_vehicles': total_vehicles,
+    }
+    
+    return render(request, 'vehicles/register_vehicle.html', context)
 
 
 # -------------------------
@@ -325,28 +494,55 @@ def ajax_deposit(request):
 @login_required
 @user_passes_test(is_staff_admin_or_admin)
 def registered_vehicles(request):
-    vehicle_list = Vehicle.objects.select_related('assigned_driver').order_by('-date_registered')
-    paginator = Paginator(vehicle_list, 10)
-    vehicles = paginator.get_page(request.GET.get('page'))
-    return render(request, 'vehicles/registered_vehicles.html', {'vehicles': vehicles})
+    vehicle_qs = (
+        Vehicle.objects
+        .select_related('assigned_driver')
+        .order_by('-date_registered')
+    )
+
+    paginator = Paginator(vehicle_qs, 16)  # ✅ 16 per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(
+        request,
+        'vehicles/registered_vehicles.html',
+        {
+            'page_obj': page_obj
+        }
+    )
+
 
 
 @login_required
 @user_passes_test(is_staff_admin_or_admin)
 def registered_drivers(request):
     query = request.GET.get('q', '').strip()
-    driver_list = Driver.objects.all().order_by('-id')
+
+    driver_qs = Driver.objects.all().order_by('-id')
+
     if query:
-        driver_list = driver_list.filter(
+        driver_qs = driver_qs.filter(
             Q(first_name__icontains=query) |
             Q(last_name__icontains=query) |
             Q(middle_name__icontains=query) |
             Q(license_number__icontains=query) |
             Q(mobile_number__icontains=query)
         )
-    paginator = Paginator(driver_list, 10)
-    page_obj = paginator.get_page(request.GET.get('page'))
-    return render(request, 'vehicles/registered_drivers.html', {'page_obj': page_obj})
+
+    paginator = Paginator(driver_qs, 16)  # ✅ 16 per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(
+        request,
+        'vehicles/registered_drivers.html',
+        {
+            'page_obj': page_obj,
+            'query': query  # ✅ keep search text
+        }
+    )
+
 
 
 @login_required
@@ -355,36 +551,63 @@ def get_vehicles_by_driver(request, driver_id):
     data = {"vehicles": [{"id": v.id, "license_plate": v.license_plate, "vehicle_name": v.vehicle_name} for v in vehicles]}
     return JsonResponse(data)
 
-
-# -------------------------
-# DELETE DRIVER / VEHICLE
-# -------------------------
 @login_required
 @user_passes_test(is_admin)
+@require_POST
 @never_cache
 def delete_driver(request, driver_id):
-    driver = get_object_or_404(Driver, id=driver_id)
-    if request.method == 'POST':
+    try:
+        driver = get_object_or_404(Driver, id=driver_id)
         driver_name = f"{driver.first_name} {driver.last_name}"
         driver.delete()
-        messages.success(request, f"✅ Driver '{driver_name}' deleted successfully.")
-        return redirect('vehicles:registered_drivers')
-    return redirect('vehicles:registered_drivers')
+
+        # ✅ Django toast message (stored in session)
+        messages.success(request, f"Driver '{driver_name}' deleted successfully.")
+
+        # ✅ AJAX response (used by JS toast)
+        return JsonResponse({
+            "success": True,
+            "message": f"Driver '{driver_name}' deleted successfully."
+        })
+
+    except Exception as e:
+        messages.error(request, str(e))
+        return JsonResponse(
+            {
+                "success": False,
+                "message": str(e)
+            },
+            status=500
+        )
 
 
 @login_required
 @user_passes_test(is_admin)
+@require_POST
 @never_cache
 def delete_vehicle(request, vehicle_id):
-    vehicle = get_object_or_404(Vehicle, id=vehicle_id)
-    if request.method == 'POST':
+    try:
+        vehicle = get_object_or_404(Vehicle, id=vehicle_id)
         vehicle_name = vehicle.vehicle_name
         vehicle.delete()
-        messages.success(request, f"✅ Vehicle '{vehicle_name}' deleted successfully.")
-        return redirect('vehicles:registered_vehicles')
-    return redirect('vehicles:registered_vehicles')
 
+        # ✅ Django toast message
+        messages.success(request, f"Vehicle '{vehicle_name}' deleted successfully.")
 
+        return JsonResponse({
+            "success": True,
+            "message": f"Vehicle '{vehicle_name}' deleted successfully."
+        })
+
+    except Exception as e:
+        messages.error(request, str(e))
+        return JsonResponse(
+            {
+                "success": False,
+                "message": str(e)
+            },
+            status=500
+        )
 # -------------------------
 # QR ENTRY & EXIT HANDLERS
 # -------------------------

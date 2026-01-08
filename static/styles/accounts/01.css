@@ -1,0 +1,224 @@
+/* ===============================
+   FONT: BEBAS NEUE (TTF)
+================================ */
+@font-face{
+  font-family:'Bebas Neue';
+  src:url("/static/fonts/BebasNeue-Regular.ttf") format("truetype");
+  font-display:swap;
+  font-weight:normal;
+  font-style:normal;
+}
+
+/* ===============================
+   RDFS LOGIN – MODERN GOV UI
+================================ */
+:root{
+  --rdfs-blue:#112666;
+  --rdfs-blue-dark:#0c1c4a;
+  --rdfs-accent:#2563eb;
+  --rdfs-soft:#e8f4fd;
+  --rdfs-text:#0f172a;
+  --rdfs-muted:#64748b;
+}
+
+/* ===============================
+   BODY OVERRIDE
+================================ */
+.rdfs-login-body{
+  margin:0;
+  min-height:100vh;
+  font-family:'Segoe UI', system-ui, sans-serif;
+  color:var(--rdfs-text);
+}
+
+/* ===============================
+   BACKGROUND
+================================ */
+.login-wrapper{
+  min-height:100vh;
+  width:100vw;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 15% 15%, #60a5fa 0%, transparent 45%),
+    radial-gradient(circle at 85% 85%, #bfdbfe 0%, transparent 45%),
+    linear-gradient(180deg,#ffffff 0%,#356cb4 100%);
+}
+
+/* Decorative blobs */
+.login-wrapper::before,
+.login-wrapper::after{
+  content:"";
+  position:absolute;
+  width:420px;
+  height:420px;
+  border-radius:50%;
+  filter:blur(80px);
+  opacity:.35;
+}
+.login-wrapper::before{
+  background:#3b82f6;
+  top:-120px;
+  left:-120px;
+}
+.login-wrapper::after{
+  background:#93c5fd;
+  bottom:-140px;
+  right:-140px;
+}
+
+/* ===============================
+   CARD
+================================ */
+.login-container{
+  position:relative;
+  z-index:2;
+  width:100%;
+  max-width:430px;
+  background:rgba(255,255,255,.96);
+  backdrop-filter:blur(10px);
+  padding:2.4rem 2.2rem;
+  border-radius:18px;
+  box-shadow:
+    0 25px 55px rgba(17,38,102,.25),
+    inset 0 0 0 1px rgba(255,255,255,.6);
+  animation:fadeUp .6s ease;
+}
+
+/* Headings + accents use Bebas Neue */
+.login-container h1,
+.login-container h2,
+.login-container label,
+.login-container button{
+  font-family:'Bebas Neue', Impact, sans-serif;
+  letter-spacing:.5px;
+}
+
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(20px)}
+  to{opacity:1;transform:none}
+}
+
+/* ===============================
+   BRAND
+================================ */
+.login-brand{
+  text-align:center;
+  margin-bottom:1.6rem;
+}
+.login-brand img{
+  width:200px;
+}
+
+/* ===============================
+   FLOATING LABEL SYSTEM
+================================ */
+.float-field{
+  position:relative;
+  margin-bottom:1.35rem;
+}
+
+/* INPUT */
+.float-field .form-control{
+  padding:1.15rem .75rem .55rem;
+  border-radius:12px;
+  position:relative;
+  z-index:1;
+  background:#fff;
+  font-family:'Segoe UI', system-ui, sans-serif;
+}
+
+.float-field .form-control:focus{
+  border-color:var(--rdfs-accent);
+  box-shadow:0 0 0 .15rem rgba(37,99,235,.18);
+}
+
+/* ICON */
+.input-group-text{
+  background:#f8fafc;
+  color:var(--rdfs-blue);
+  border-right:none;
+}
+
+/* LABEL */
+.float-field label{
+  position:absolute;
+  top:50%;
+  left:48px;
+  transform:translateY(-50%);
+  font-size:.88rem;
+  color:var(--rdfs-muted);
+  background:#ffffff;
+  padding:0 .45rem;
+  border-radius:6px;
+  z-index:5;
+  pointer-events:none;
+  transition:.25s ease;
+}
+
+/* FLOAT STATE */
+.float-field:focus-within label,
+.float-field .form-control:not(:placeholder-shown) + label{
+  top:-7px;
+  font-size:.72rem;
+  font-weight:600;
+  color:var(--rdfs-blue-dark);
+}
+
+/* ===============================
+   PASSWORD EYE
+================================ */
+.btn-eye{
+  border-left:none;
+  background:transparent;
+}
+.btn-eye:hover{
+  background:#f1f5f9;
+}
+
+/* ===============================
+   LOGIN BUTTON
+================================ */
+.btn-login{
+  background:linear-gradient(135deg,var(--rdfs-blue),var(--rdfs-accent));
+  border:none;
+  color:#fff;
+  font-weight:700;
+  border-radius:999px;
+  padding:.65rem;
+  letter-spacing:.4px;
+  transition:.25s ease;
+}
+.btn-login:hover{
+  transform:translateY(-2px);
+  box-shadow:0 12px 30px rgba(37,99,235,.35);
+}
+
+/* ===============================
+   TRUST
+================================ */
+.login-trust{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  font-size:.75rem;
+  color:var(--rdfs-muted);
+  margin-top:1rem;
+}
+.login-trust i{
+  color:#16a34a;
+}
+
+/* ===============================
+   FOOTER
+================================ */
+.login-footer{
+  text-align:center;
+  font-size:.75rem;
+  color:var(--rdfs-muted);
+  margin-top:1.4rem;
+}

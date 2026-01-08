@@ -42,10 +42,9 @@ class Driver(models.Model):
     # -----------------------------
     LICENSE_PROFESSIONAL = "professional"
 
-    LICENSE_TYPE_CHOICES = [
-        (LICENSE_PROFESSIONAL, "Professional Driver’s License"),
-    ]
-
+    # -----------------------------
+    # DRIVER INFO
+    # -----------------------------
     driver_id = models.CharField(max_length=100, unique=True, blank=True)
     first_name = models.CharField(max_length=100)
     middle_name = models.CharField(max_length=100, blank=True, null=True)
@@ -59,6 +58,9 @@ class Driver(models.Model):
     mobile_number = models.CharField(max_length=20, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
 
+    # -----------------------------
+    # ADDRESS
+    # -----------------------------
     house_number = models.CharField(max_length=50, blank=True, null=True)
     street = models.CharField(max_length=100, blank=True, null=True)
     barangay = models.CharField(max_length=100, blank=True, null=True)
@@ -66,17 +68,21 @@ class Driver(models.Model):
     city_municipality = models.CharField(max_length=100, blank=True, null=True)
     province = models.CharField(max_length=100, blank=True, null=True)
 
+    # -----------------------------
+    # LICENSE (LOCKED)
+    # -----------------------------
     license_number = models.CharField(max_length=50, blank=True, null=True)
     license_expiry = models.DateField(blank=True, null=True)
 
-    # 🔒 LOCKED LICENSE TYPE
     license_type = models.CharField(
         max_length=50,
-        choices=LICENSE_TYPE_CHOICES,
+        editable=False,                 # 🔒 NOT SHOWN IN FORMS/ADMIN
         default=LICENSE_PROFESSIONAL
     )
 
-    # 📸 DRIVER PHOTO (REQUIRED)
+    # -----------------------------
+    # DRIVER PHOTO (REQUIRED)
+    # -----------------------------
     driver_photo = models.ImageField(
         upload_to="driver_img/",
         blank=False,
@@ -87,6 +93,9 @@ class Driver(models.Model):
     emergency_contact_number = models.CharField(max_length=20, blank=True, null=True)
     emergency_contact_relationship = models.CharField(max_length=50, blank=True, null=True)
 
+    # -----------------------------
+    # VALIDATION
+    # -----------------------------
     def clean(self):
         errors = {}
 
@@ -94,18 +103,26 @@ class Driver(models.Model):
             errors["license_type"] = "Only Professional Driver’s Licenses are allowed."
 
         if not self.driver_photo:
-            errors["driver_photo"] = "Driver photo is required for identity verification."
+            errors["driver_photo"] = "Driver photo is required."
 
         if errors:
             raise ValidationError(errors)
 
+    # -----------------------------
+    # SAVE
+    # -----------------------------
     def save(self, *args, **kwargs):
         if not self.driver_id:
             self.driver_id = f"DRV-{uuid.uuid4().hex[:8].upper()}"
+
+        # 🔐 FORCE VALUE EVEN IF TAMPERED
+        self.license_type = self.LICENSE_PROFESSIONAL
+
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} ({self.driver_id})"
+
 
 
 # ======================================================

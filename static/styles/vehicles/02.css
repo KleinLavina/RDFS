@@ -1,0 +1,574 @@
+/* =====================================================
+   RDFS – REGISTERED VEHICLES (CARD VIEW)
+===================================================== */
+.rdfs-vehicles-scope{
+  --rdfs-blue:#112666;
+  --rdfs-blue-dark:#0c1c4a;
+  --rdfs-accent:#2563eb;
+  --rdfs-soft:#e8f4fd;
+
+  --rdfs-text:#0f172a;
+  --rdfs-muted:#64748b;
+
+  --gray-100:#f7fafc;
+  --gray-200:#edf2f7;
+  --gray-300:#e2e8f0;
+
+  --shadow-sm:0 2px 6px rgba(0,0,0,.08);
+  --shadow-md:0 10px 24px rgba(0,0,0,.14);
+
+  font-family:"Segoe UI",system-ui,-apple-system,sans-serif;
+  color:var(--rdfs-text);
+}
+
+/* HEADER */
+.rdfs-vehicles-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:1rem;
+  margin-bottom:1.5rem;
+}
+
+.rdfs-vehicles-title{
+  font-weight:800;
+  color:var(--rdfs-blue-dark);
+}
+
+.rdfs-vehicles-subtitle{
+  font-size:.9rem;
+  color:var(--rdfs-muted);
+}
+
+/* SEARCH */
+.rdfs-vehicles-search{
+  position:relative;
+  max-width:420px;
+}
+
+.rdfs-vehicles-search input{
+  width:100%;
+  height:46px;
+  padding:0 90px 0 44px;
+  border-radius:999px;
+  border:1.5px solid var(--gray-300);
+  background:var(--gray-100);
+  transition:.2s;
+}
+
+.rdfs-vehicles-search input:focus{
+  outline:none;
+  background:#fff;
+  border-color:var(--rdfs-accent);
+  box-shadow:0 0 0 4px rgba(37,99,235,.15);
+}
+
+.rdfs-vehicles-search-icon{
+  position:absolute;
+  left:16px;
+  top:50%;
+  transform:translateY(-50%);
+  color:var(--rdfs-muted);
+}
+
+.rdfs-vehicles-search button{
+  position:absolute;
+  right:6px;
+  top:50%;
+  transform:translateY(-50%);
+  height:34px;
+  padding:0 18px;
+  border-radius:999px;
+  border:none;
+  background:linear-gradient(135deg,var(--rdfs-accent),var(--rdfs-blue));
+  color:#fff;
+  font-weight:700;
+  font-size:.8rem;
+  transition:.2s;
+}
+
+.rdfs-vehicles-search button:hover{
+  opacity:.9;
+}
+
+/* RETURN BUTTON */
+.rdfs-vehicles-back{
+  border-radius:999px;
+  font-weight:600;
+  background:#fff;
+  color:var(--rdfs-blue-dark);
+  border:1.5px solid var(--rdfs-blue);
+  white-space:nowrap;
+  padding:.55rem 1.2rem;
+  text-decoration:none;
+  transition:.2s;
+}
+
+.rdfs-vehicles-back:hover{
+  background:var(--rdfs-soft);
+  color:var(--rdfs-blue-dark);
+}
+
+/* GRID */
+.rdfs-vehicle-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(360px,1fr));
+  gap:1.25rem;
+}
+
+/* CARD */
+.rdfs-vehicle-card{
+  background:#fff;
+  border-radius:16px;
+  box-shadow:var(--shadow-md);
+  border:1px solid var(--gray-200);
+  display:flex;
+  flex-direction:column;
+  height:100%;
+  transition:.3s;
+}
+
+.rdfs-vehicle-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 14px 30px rgba(17,38,102,.18);
+}
+
+.rdfs-vehicle-card-header{
+  padding:1rem 1.25rem;
+  background:linear-gradient(135deg, #f0f4ff 0%, #e8f4fd 100%);
+  border-bottom:2px solid var(--rdfs-blue);
+  border-radius:16px 16px 0 0;
+}
+
+.rdfs-vehicle-name{
+  font-weight:800;
+  margin-bottom:.25rem;
+  color:var(--rdfs-blue-dark);
+  font-size:1.1rem;
+}
+
+.rdfs-vehicle-meta{
+  font-size:.85rem;
+  color:var(--rdfs-muted);
+}
+
+/* BODY */
+.rdfs-vehicle-card-body{
+  padding:1.25rem;
+  flex:1;
+}
+
+.rdfs-vehicle-info-grid{
+  display:grid;
+  grid-template-columns:1fr 120px;
+  gap:1.5rem;
+  margin-bottom:1.5rem;
+}
+
+/* DRIVER SECTION WITH PFP */
+.rdfs-driver-section{
+  display:flex;
+  align-items:center;
+  gap:.75rem;
+  margin-bottom:1rem;
+  padding:.75rem;
+  background:var(--gray-100);
+  border-radius:10px;
+}
+
+.rdfs-driver-pfp{
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  object-fit:cover;
+  border:3px solid #fff;
+  box-shadow:var(--shadow-sm);
+  background:#e8f4fd;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+}
+
+.rdfs-driver-pfp i{
+  font-size:1.5rem;
+  color:var(--rdfs-blue);
+}
+
+.rdfs-driver-info{
+  flex:1;
+}
+
+.rdfs-driver-name{
+  font-weight:600;
+  font-size:.95rem;
+  color:var(--rdfs-text);
+  margin-bottom:.15rem;
+}
+
+.rdfs-driver-id{
+  font-size:.75rem;
+  color:var(--rdfs-muted);
+  font-weight:500;
+}
+
+/* VEHICLE DETAILS */
+.rdfs-vehicle-details{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:.75rem;
+}
+
+.rdfs-detail-item{
+  display:flex;
+  flex-direction:column;
+  gap:.2rem;
+}
+
+.rdfs-detail-label{
+  font-size:.7rem;
+  font-weight:600;
+  color:var(--rdfs-muted);
+  text-transform:uppercase;
+  letter-spacing:.3px;
+}
+
+.rdfs-detail-value{
+  font-size:.85rem;
+  font-weight:500;
+  color:var(--rdfs-text);
+  line-height:1.3;
+}
+
+/* QR */
+.rdfs-vehicle-qr{
+  text-align:center;
+}
+
+.rdfs-vehicle-qr img{
+  width:100%;
+  max-width:120px;
+  height:auto;
+  border-radius:10px;
+  border:1px solid var(--gray-300);
+}
+
+/* FOOTER */
+.rdfs-vehicle-card-footer{
+  padding:.75rem 1.25rem;
+  border-top:1px solid var(--gray-200);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:.5rem;
+  background:#fafbfd;
+  border-radius:0 0 16px 16px;
+}
+
+/* DELETE BUTTON */
+.btn-delete-vehicle{
+  background:#dc3545;
+  color:#fff;
+  border:none;
+  border-radius:6px;
+  padding:.35rem .7rem;
+  font-size:.75rem;
+  font-weight:600;
+  transition:.2s;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:.3rem;
+}
+
+.btn-delete-vehicle:hover{
+  background:#c82333;
+}
+
+/* EMPTY STATE */
+.rdfs-empty-state{
+  text-align:center;
+  padding:3rem 1rem;
+  color:var(--rdfs-muted);
+  grid-column:1/-1;
+}
+
+.rdfs-empty-state i{
+  font-size:3rem;
+  color:var(--gray-300);
+  margin-bottom:1rem;
+}
+
+/* PAGINATION STYLES */
+.rdfs-pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2rem;
+  padding: 1rem 0;
+}
+
+.rdfs-pagination {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  gap: 0.5rem;
+}
+
+.rdfs-pagination-item {
+  display: inline-block;
+}
+
+.rdfs-pagination-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 0.75rem;
+  border-radius: 8px;
+  background: #fff;
+  border: 1.5px solid var(--gray-300);
+  color: var(--rdfs-text);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.rdfs-pagination-link:hover {
+  background: var(--rdfs-soft);
+  border-color: var(--rdfs-accent);
+  color: var(--rdfs-blue-dark);
+  transform: translateY(-1px);
+}
+
+.rdfs-pagination-link.active {
+  background: linear-gradient(135deg, var(--rdfs-accent), var(--rdfs-blue));
+  border-color: var(--rdfs-blue);
+  color: #fff;
+}
+
+.rdfs-pagination-link.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.rdfs-pagination-info {
+  font-size: 0.9rem;
+  color: var(--rdfs-muted);
+  margin-left: 1.5rem;
+  font-weight: 500;
+}
+
+.rdfs-pagination-arrow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0 1rem;
+}
+
+.rdfs-pagination-arrow i {
+  font-size: 0.9rem;
+}
+
+/* RESULTS COUNTER */
+.rdfs-results-counter {
+  font-size: 0.9rem;
+  color: var(--rdfs-muted);
+  margin-bottom: 1rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rdfs-results-counter strong {
+  color: var(--rdfs-blue-dark);
+  font-weight: 700;
+  background: var(--rdfs-soft);
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+}
+
+/* =========================
+   DELETE MODAL
+========================= */
+.rdfs-modal-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(15,23,42,.55);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+}
+
+.rdfs-modal-overlay.hidden{
+  display:none;
+}
+
+.rdfs-modal{
+  background:#fff;
+  border-radius:14px;
+  width:100%;
+  max-width:420px;
+  box-shadow:0 20px 40px rgba(0,0,0,.25);
+  animation:scaleIn .2s ease;
+}
+
+@keyframes scaleIn{
+  from{transform:scale(.95); opacity:0;}
+  to{transform:scale(1); opacity:1;}
+}
+
+.rdfs-modal-header{
+  padding:1rem 1.25rem;
+  border-bottom:1px solid #e5e7eb;
+  display:flex;
+  align-items:center;
+  gap:.6rem;
+  font-weight:700;
+}
+
+.rdfs-modal-body{
+  padding:1.25rem;
+  font-size:.95rem;
+}
+
+.rdfs-modal-warning{
+  color:#dc2626;
+  font-size:.8rem;
+  margin-top:.5rem;
+  font-weight:600;
+}
+
+.rdfs-modal-footer{
+  padding:1rem 1.25rem;
+  display:flex;
+  justify-content:flex-end;
+  gap:.5rem;
+  border-top:1px solid #e5e7eb;
+}
+
+.btn-cancel{
+  background:#f1f5f9;
+  border:none;
+  padding:.45rem .9rem;
+  border-radius:6px;
+  font-weight:600;
+}
+
+.btn-confirm-delete{
+  background:#dc3545;
+  color:#fff;
+  border:none;
+  padding:.45rem .9rem;
+  border-radius:6px;
+  font-weight:700;
+}
+
+.btn-confirm-delete:hover{
+  background:#c82333;
+}
+
+/* =====================================================
+   RDFS – FLOATING TOAST MESSAGES
+===================================================== */
+
+.rdfs-toast-container {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  z-index: 20000; /* 🔥 HIGHER THAN MODAL (modal = ~10000) */
+  pointer-events: none;
+}
+
+/* BASE TOAST */
+.rdfs-toast {
+  min-width: 280px;
+  max-width: 360px;
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 12px 30px rgba(0,0,0,.25);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 0.9rem;
+  animation: rdfsToastIn 0.35s ease;
+  pointer-events: auto;
+}
+
+/* ENTRY ANIMATION */
+@keyframes rdfsToastIn {
+  from {
+    transform: translateX(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* CLOSE BUTTON */
+.rdfs-toast-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.6;
+}
+
+.rdfs-toast-close:hover {
+  opacity: 1;
+}
+
+/* COLORS BY MESSAGE TAG */
+.rdfs-toast-success {
+  border-left: 5px solid #22c55e;
+  color: #166534;
+  background: #f0fdf4;
+}
+
+.rdfs-toast-error {
+  border-left: 5px solid #dc2626;
+  color: #7f1d1d;
+  background: #fef2f2;
+}
+
+.rdfs-toast-warning {
+  border-left: 5px solid #f59e0b;
+  color: #78350f;
+  background: #fffbeb;
+}
+
+.rdfs-toast-info {
+  border-left: 5px solid #2563eb;
+  color: #1e3a8a;
+  background: #eff6ff;
+}
+/* EXIT ANIMATION */
+@keyframes rdfsToastOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+}
+
+.rdfs-toast.hide {
+  animation: rdfsToastOut 0.35s ease forwards;
+}

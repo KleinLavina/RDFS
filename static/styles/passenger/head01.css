@@ -1,3 +1,14 @@
+/* ===============================
+   FONT: BEBAS NEUE (TTF)
+================================ */
+@font-face{
+  font-family:'Bebas Neue';
+  src:url("/static/fonts/BebasNeue-Regular.ttf") format("truetype");
+  font-display:swap;
+  font-weight:normal;
+  font-style:normal;
+}
+
 /* ==================================================
    RDFS HEADER – MOBILE FRIENDLY & SAFE
 ================================================== */
@@ -12,7 +23,9 @@
   --rdfs-transition:all .3s ease;
 }
 
-/* WRAPPER */
+/* ===============================
+   WRAPPER
+================================ */
 .rdfs-header{
   position:sticky;
   top:0;
@@ -21,7 +34,9 @@
   box-shadow:0 2px 6px rgba(0,0,0,.1);
 }
 
-/* CONTAINER */
+/* ===============================
+   CONTAINER
+================================ */
 .rdfs-header__container{
   max-width:1200px;
   margin:auto;
@@ -32,7 +47,9 @@
   justify-content:space-between;
 }
 
-/* BRAND */
+/* ===============================
+   BRAND
+================================ */
 .rdfs-header__brand{
   display:flex;
   align-items:center;
@@ -47,7 +64,9 @@
   transform:scale(1.05);
 }
 
-/* TOGGLE */
+/* ===============================
+   TOGGLE
+================================ */
 .rdfs-header__toggle{
   display:none;
   background:none;
@@ -57,21 +76,27 @@
   cursor:pointer;
 }
 
-/* NAV (DESKTOP) */
+/* ===============================
+   NAV (DESKTOP)
+================================ */
 .rdfs-header__nav{
   display:flex;
   align-items:center;
   gap:28px;
 }
 
-/* LINKS */
+/* ===============================
+   LINKS (BEBAS NEUE APPLIED)
+================================ */
 .rdfs-header__link{
   display:flex;
   align-items:center;
   gap:8px;
   text-decoration:none;
-  font-size:14px;
-  font-weight:600;
+  font-family:'Bebas Neue', Impact, sans-serif;
+  font-size:15px;
+  letter-spacing:.6px;
+  font-weight:400;
   color:var(--rdfs-text);
   position:relative;
   transition:var(--rdfs-transition);
@@ -107,7 +132,6 @@
 ================================ */
 .rdfs-header__link.is-active{
   color:var(--rdfs-blue-dark);
-  font-weight:700;
 }
 
 .rdfs-header__link.is-active i{
@@ -119,7 +143,9 @@
   background:var(--rdfs-blue-dark);
 }
 
-/* Mobile active state */
+/* ===============================
+   MOBILE ACTIVE STATE
+================================ */
 @media(max-width:768px){
   .rdfs-header__link.is-active{
     background:rgba(17,38,102,.06);
@@ -164,7 +190,8 @@
 
   .rdfs-header__link{
     padding:14px 12px;
-    font-size:16px;
+    font-size:17px;
+    letter-spacing:.8px;
     border-radius:10px;
   }
 

@@ -4,322 +4,16 @@
 {% block title %}Register Driver | RDFS{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{% static 'styles/vehicles/01.css' %}">
+<!-- Font Awesome Icons -->
 
-<style>
-
- :root{
-  --rdfs-blue:#112666;
-  --rdfs-blue-dark:#0c1c4a;
-  --rdfs-accent:#2563eb;
-  --rdfs-soft:#e8f4fd;
-
-  --text:#0f172a;
-  --muted:#64748b;
-
-  --gray-200:#edf2f7;
-  --gray-300:#e2e8f0;
-
-  --shadow-sm:0 1px 3px rgba(0,0,0,.08);
-  --shadow-md:0 8px 18px rgba(0,0,0,.12);
-}
-
-body{
-  background:linear-gradient(180deg,#ffffff 0%,#f2f6ff 100%);
-  font-family:"Segoe UI",system-ui,-apple-system,sans-serif;
-}
-
-/* PAGE HEADER */
-.rdfs-page-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  margin-bottom:1.5rem;
-}
-
-.rdfs-page-title{
-  font-weight:800;
-  font-size:1.6rem;
-  color:var(--rdfs-blue-dark);
-}
-
-.rdfs-page-sub{
-  font-size:.9rem;
-  color:var(--muted);
-}
-
-/* RETURN BUTTON */
-.rdfs-return-btn{
-  position:sticky;
-  top:1rem;
-  z-index:10;
-  border-radius:999px;
-  font-weight:700;
-  padding:.55rem 1.2rem;
-  background:#fff;
-  color:var(--rdfs-blue-dark);
-  border:2px solid var(--rdfs-blue);
-  box-shadow:var(--shadow-sm);
-  text-decoration:none;
-}
-.rdfs-return-btn:hover{
-  background:var(--rdfs-soft);
-}
-
-/* CONTAINER */
-.form-container{
-  max-width:1200px;
-  margin:auto;
-}
-
-/* SECTIONS */
-.section-box{
-  background:#fff;
-  border-radius:18px;
-  padding:1.8rem;
-  box-shadow:var(--shadow-md);
-  margin-bottom:2rem;
-  border:1px solid var(--gray-200);
-}
-
-.section-title{
-  font-weight:800;
-  font-size:1.2rem;
-  color:var(--rdfs-blue-dark);
-  margin-bottom:1rem;
-}
-
-/* LABELS */
-.form-label{
-  font-weight:600;
-  color:var(--text);
-}
-
-.required::after{
-  content:" *";
-  color:#dc3545;
-}
-
-/* INPUTS */
-input, select{
-  height:48px !important;
-  border-radius:10px !important;
-  border:1.5px solid var(--gray-300) !important;
-  padding:10px 14px !important;
-  transition:.2s;
-}
-
-input:focus, select:focus{
-  border-color:var(--rdfs-accent) !important;
-  box-shadow:0 0 0 3px rgba(37,99,235,.18) !important;
-}
-
-/* DATE PICKER */
-.date-wrapper{ position:relative; }
-
-.custom-calendar{
-  position:absolute;
-  top:60px;
-  width:330px;
-  background:#fff;
-  border-radius:14px;
-  box-shadow:var(--shadow-md);
-  border:1px solid var(--gray-300);
-  padding:12px;
-  display:none;
-  z-index:999;
-}
-
-.cal-header{
-  display:flex;
-  justify-content:space-between;
-  background:var(--rdfs-blue);
-  padding:10px;
-  border-radius:10px;
-}
-
-.cal-header select{
-  border:none;
-  border-radius:8px;
-  padding:4px 8px;
-  font-weight:600;
-  color:var(--rdfs-blue-dark);
-}
-
-.cal-days,
-.cal-grid{
-  display:grid;
-  grid-template-columns:repeat(7,1fr);
-  gap:4px;
-  margin-top:10px;
-  text-align:center;
-}
-
-.cal-days{ font-weight:700; color:var(--rdfs-blue-dark); }
-
-.cal-day{
-  height:40px;
-  line-height:40px;
-  border-radius:8px;
-  cursor:pointer;
-}
-
-.cal-day:hover{ background:var(--rdfs-soft); }
-
-.cal-day.selected{
-  background:var(--rdfs-blue);
-  color:#fff;
-  font-weight:700;
-}
-
-.cal-day.today{
-  border:2px solid var(--rdfs-blue);
-}
-
-/* FOOTER BUTTONS */
-.rdfs-submit{
-  border-radius:999px;
-  font-weight:700;
-  padding:.6rem 1.8rem;
-  background:linear-gradient(135deg,var(--rdfs-accent),var(--rdfs-blue));
-  border:none;
-  color:#fff;
-}
-  /* ✨ Modern Inputs */
-  input, select {
-    height: 50px !important;
-    border-radius: 10px !important;
-    border: 1.5px solid #cfd8e2 !important;
-    padding: 12px 14px !important;
-    transition: .2s;
-  }
-
-  input:focus, select:focus {
-    border-color: #006a36 !important;
-    box-shadow: 0 0 0 3px rgba(0,106,54,0.15) !important;
-  }
-
-  /* ----------- CUSTOM DATE PICKER ----------- */
-
-  .date-wrapper {
-    position: relative;
-  }
-
-  .date-wrapper input {
-    background-image: url("https://cdn-icons-png.flaticon.com/512/747/747310.png");
-    background-repeat: no-repeat;
-    background-size: 21px;
-    background-position: right 12px center;
-    cursor: pointer;
-  }
-/* ==========================================
-   RDFS – CUSTOM CALENDAR
-========================================== */
-
-.custom-calendar {
-  position: absolute;
-  top: 60px;
-  left: 0;
-  width: 330px;
-  background: #ffffff;
-  border-radius: 14px;
-  box-shadow: 0 8px 20px rgba(17,38,102,0.18); /* RDFS shadow */
-  border: 1px solid #e2e8f0;
-  padding: 12px;
-  z-index: 9999;
-  display: none;
-  animation: fadeIn .15s ease-out;
-}
-
-/* Fade animation */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* HEADER */
-.cal-header {
-  display: flex;
-  justify-content: space-between;
-  background: linear-gradient(135deg, #112666, #2563eb);
-  padding: 10px;
-  border-radius: 10px;
-}
-
-.cal-header select {
-  border: none;
-  background: #ffffff;
-  padding: 5px 8px;
-  border-radius: 8px;
-  color: #112666;
-  font-weight: 700;
-  font-size: 14px;
-  box-shadow: 0 1px 3px rgba(0,0,0,.12);
-}
-
-/* WEEKDAY LABELS */
-.cal-days {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  column-gap: 4px;
-  margin-top: 10px;
-  font-weight: 700;
-  text-align: center;
-  color: #0c1c4a;
-  font-size: 13px;
-}
-
-/* DAYS GRID */
-.cal-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  column-gap: 4px;
-  row-gap: 4px;
-  margin-top: 6px;
-}
-
-/* DAY CELL */
-.cal-day {
-  height: 40px;
-  line-height: 40px;
-  cursor: pointer;
-  border-radius: 8px;
-  text-align: center;
-  font-size: 14px;
-  font-weight: 600;
-  color: #0f172a;
-  transition: all .15s ease;
-}
-
-/* HOVER */
-.cal-day:hover {
-  background: #e8f4fd;
-  color: #112666;
-}
-
-/* SELECTED DAY */
-.cal-day.selected {
-  background: #112666;
-  color: #ffffff !important;
-  font-weight: 800;
-  box-shadow: 0 4px 10px rgba(17,38,102,.35);
-}
-
-/* TODAY */
-.cal-day.today {
-  border: 2px solid #2563eb;
-  color: #112666;
-  font-weight: 700;
-}
-
-
-</style>
 
 <div class="container py-4 form-container">
 
  <div class="rdfs-page-header">
     <div>
       <div class="rdfs-page-title">
-        <i class="bi bi-person-plus-fill me-2"></i> Register Driver
+        <i class="fas fa-user-plus me-2"></i> Register Driver
       </div>
       <div class="rdfs-page-sub">
         Add a new driver to the RDFS system
@@ -327,7 +21,7 @@ input:focus, select:focus{
     </div>
 
     <a href="{% url 'accounts:staff_dashboard' %}" class="rdfs-return-btn">
-      <i class="bi bi-arrow-left-circle me-1"></i> Dashboard
+      <i class="fas fa-arrow-left-circle me-1"></i> Dashboard
     </a>
   </div>
 
@@ -360,56 +54,61 @@ input:focus, select:focus{
     {% csrf_token %}
 
 
-    <!-- PERSONAL INFORMATION -->
-    <div class="section-box">
-      <div class="section-title">Personal Information</div>
+    <!-- 📸 DRIVER PHOTO CAPTURE SECTION -->
+    <div class="section-box camera-section">
+      <div class="section-title">
+        <i class="fas fa-camera me-2"></i> Driver Photo Capture
+      </div>
 
-      <div class="row g-3">
-        <!-- DRIVER PHOTO (CAMERA ONLY) -->
-        <div class="col-md-3">
-          <label class="form-label required">Driver Photo</label>
+      <div class="camera-card">
+        <!-- Live camera stream -->
+        <video id="cameraStream"
+              autoplay
+              playsinline
+              class="camera-preview">
+        </video>
 
-          <div class="card p-2 text-center" style="border-radius:14px;">
-            <!-- Live camera -->
-            <video id="cameraStream"
-                  autoplay
-                  playsinline
-                  style="width:100%; height:180px; object-fit:cover; border-radius:10px; border:1px solid #e2e8f0;">
-            </video>
+        <!-- Captured image preview (hidden initially) -->
+        <canvas id="photoCanvas" style="display:none;"></canvas>
+        <img id="photoPreview"
+            class="camera-preview"
+            style="display:none;">
 
-            <!-- Captured image preview -->
-            <canvas id="photoCanvas" style="display:none;"></canvas>
+        <!-- Hidden file input (Django needs this) -->
+        <input type="file"
+              name="driver_photo"
+              id="id_driver_photo"
+              style="display:none;"
+              required>
 
-            <img id="photoPreview"
-                style="display:none; width:100%; height:180px; object-fit:cover; border-radius:10px; border:1px solid #e2e8f0;">
+        <button type="button" class="capture-btn" id="captureBtn">
+          <i class="fas fa-camera me-1"></i> Capture Photo
+        </button>
 
-            <!-- Hidden file input (Django needs this) -->
-            <input type="file"
-                  name="driver_photo"
-                  id="id_driver_photo"
-                  style="display:none;"
-                  required>
-
-            <button type="button"
-                    class="btn btn-primary btn-sm mt-2"
-                    id="captureBtn">
-              📸 Capture Photo
-            </button>
-
-            <small class="text-muted d-block mt-1">
-              Camera capture only (no uploads)
-            </small>
-
-            {% if form.driver_photo.errors %}
-              <div class="invalid-feedback d-block">
-                {{ form.driver_photo.errors.0 }}
-              </div>
-            {% endif %}
-          </div>
+        <div class="camera-hint">
+          <i class="fas fa-info-circle me-1"></i> Camera capture only • No file uploads allowed
         </div>
 
+        {% if form.driver_photo.errors %}
+          <div class="invalid-feedback d-block mt-2">
+            {{ form.driver_photo.errors.0 }}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+
+    <!-- PERSONAL INFORMATION -->
+    <div class="section-box">
+      <div class="section-title">
+        <i class="fas fa-id-card me-2"></i> Personal Information
+      </div>
+
+      <div class="row g-3">
         <div class="col-md-3">
-          <label for="id_first_name" class="form-label required">First Name <span class="text-danger">*</span></label>
+          <label for="id_first_name" class="form-label required">
+            <i class="fas fa-signature me-1"></i> First Name
+          </label>
           <input type="text" class="form-control {% if form.first_name.errors %}is-invalid{% endif %}" 
                  id="id_first_name" name="first_name" 
                  value="{{ form.first_name.value|default:'' }}" 
@@ -423,7 +122,9 @@ input:focus, select:focus{
         </div>
 
         <div class="col-md-3">
-          <label for="id_middle_name" class="form-label">Middle Name</label>
+          <label for="id_middle_name" class="form-label">
+            <i class="fas fa-signature me-1"></i> Middle Name
+          </label>
           <input type="text" class="form-control {% if form.middle_name.errors %}is-invalid{% endif %}" 
                  id="id_middle_name" name="middle_name" 
                  value="{{ form.middle_name.value|default:'' }}"
@@ -436,7 +137,9 @@ input:focus, select:focus{
         </div>
 
         <div class="col-md-3">
-          <label for="id_last_name" class="form-label required">Last Name <span class="text-danger">*</span></label>
+          <label for="id_last_name" class="form-label required">
+            <i class="fas fa-signature me-1"></i> Last Name
+          </label>
           <input type="text" class="form-control {% if form.last_name.errors %}is-invalid{% endif %}" 
                  id="id_last_name" name="last_name" 
                  value="{{ form.last_name.value|default:'' }}" 
@@ -450,7 +153,9 @@ input:focus, select:focus{
         </div>
 
         <div class="col-md-3">
-          <label for="id_suffix" class="form-label">Suffix</label>
+          <label for="id_suffix" class="form-label">
+            <i class="fas fa-text-height me-1"></i> Suffix
+          </label>
           <input type="text" class="form-control {% if form.suffix.errors %}is-invalid{% endif %}" 
                  id="id_suffix" name="suffix" 
                  value="{{ form.suffix.value|default:'' }}"
@@ -461,13 +166,13 @@ input:focus, select:focus{
             </div>
           {% endif %}
         </div>
-
       </div>
 
       <div class="row g-3 mt-1">
-
         <div class="col-md-4">
-          <label class="form-label required">Birth Date</label>
+          <label class="form-label required">
+            <i class="fas fa-birthday-cake me-1"></i> Birth Date
+          </label>
           <div class="date-wrapper">
             {{ form.birth_date }}
             <div class="custom-calendar" id="calendar_birth"></div>
@@ -475,7 +180,9 @@ input:focus, select:focus{
         </div>
 
         <div class="col-md-4">
-          <label for="id_birth_place" class="form-label required">Birth Place</label>
+          <label for="id_birth_place" class="form-label required">
+            <i class="fas fa-map-marker-alt me-1"></i> Birth Place
+          </label>
           <input type="text" class="form-control {% if form.birth_place.errors %}is-invalid{% endif %}" 
                  id="id_birth_place" name="birth_place" 
                  value="{{ form.birth_place.value|default:'' }}" 
@@ -489,7 +196,9 @@ input:focus, select:focus{
         </div>
 
         <div class="col-md-4">
-          <label for="id_blood_type" class="form-label required">Blood Type</label>
+          <label for="id_blood_type" class="form-label required">
+            <i class="fas fa-tint me-1"></i> Blood Type
+          </label>
           <select class="form-select {% if form.blood_type.errors %}is-invalid{% endif %}" 
                  id="id_blood_type" name="blood_type" required>
             <option value="" disabled {% if not form.blood_type.value %}selected{% endif %}>Select blood type</option>
@@ -509,24 +218,29 @@ input:focus, select:focus{
             </div>
           {% endif %}
         </div>
-
       </div>
     </div>
 
 
     <!-- CONTACT INFORMATION -->
     <div class="section-box">
-      <div class="section-title">Contact Information</div>
+      <div class="section-title">
+        <i class="fas fa-address-book me-2"></i> Contact Information
+      </div>
 
       <div class="row g-3">
         <div class="col-md-6">
-          <label for="id_mobile_number" class="form-label required">Mobile Number <span class="text-danger">*</span></label>
+          <label for="id_mobile_number" class="form-label required">
+            <i class="fas fa-mobile-alt me-1"></i> Mobile Number
+          </label>
           <input type="tel" class="form-control {% if form.mobile_number.errors %}is-invalid{% endif %}" 
                  id="id_mobile_number" name="mobile_number" 
                  value="{{ form.mobile_number.value|default:'' }}" 
                  placeholder="e.g., 09123456789 or +639123456789"
                  required>
-          <small class="form-text text-muted">Format: 09123456789 or +639123456789</small>
+          <small class="form-text text-muted">
+            <i class="fas fa-info-circle me-1"></i> Format: 09123456789 or +639123456789
+          </small>
           {% if form.mobile_number.errors %}
             <div class="invalid-feedback">
               {{ form.mobile_number.errors.0 }}
@@ -535,7 +249,9 @@ input:focus, select:focus{
         </div>
 
         <div class="col-md-6">
-          <label for="id_email" class="form-label required">Email Address <span class="text-danger">*</span></label>
+          <label for="id_email" class="form-label required">
+            <i class="fas fa-envelope me-1"></i> Email Address
+          </label>
           <input type="email" class="form-control {% if form.email.errors %}is-invalid{% endif %}" 
                  id="id_email" name="email" 
                  value="{{ form.email.value|default:'' }}" 
@@ -553,12 +269,15 @@ input:focus, select:focus{
 
     <!-- ADDRESS INFORMATION -->
     <div class="section-box">
-      <div class="section-title">Address Information</div>
+      <div class="section-title">
+        <i class="fas fa-home me-2"></i> Address Information
+      </div>
 
       <div class="row g-3">
-
         <div class="col-md-4">
-          <label for="id_street" class="form-label required">Street</label>
+          <label for="id_street" class="form-label required">
+            <i class="fas fa-road me-1"></i> Street
+          </label>
           <input type="text" class="form-control {% if form.street.errors %}is-invalid{% endif %}" 
                  id="id_street" name="street" 
                  value="{{ form.street.value|default:'' }}" 
@@ -572,7 +291,9 @@ input:focus, select:focus{
         </div>
 
         <div class="col-md-4">
-          <label for="id_barangay" class="form-label required">Barangay</label>
+          <label for="id_barangay" class="form-label required">
+            <i class="fas fa-map-pin me-1"></i> Barangay
+          </label>
           <input type="text" class="form-control {% if form.barangay.errors %}is-invalid{% endif %}" 
                  id="id_barangay" name="barangay" 
                  value="{{ form.barangay.value|default:'' }}" 
@@ -586,7 +307,9 @@ input:focus, select:focus{
         </div>
 
         <div class="col-md-4">
-          <label for="id_zip_code" class="form-label required">ZIP Code</label>
+          <label for="id_zip_code" class="form-label required">
+            <i class="fas fa-mail-bulk me-1"></i> ZIP Code
+          </label>
           <input type="text" class="form-control {% if form.zip_code.errors %}is-invalid{% endif %}" 
                  id="id_zip_code" name="zip_code" 
                  value="{{ form.zip_code.value|default:'' }}" 
@@ -594,20 +317,22 @@ input:focus, select:focus{
                  pattern="[0-9]{4}"
                  title="Please enter a valid 4-digit ZIP code"
                  required>
-          <small class="form-text text-muted">4-digit ZIP code</small>
+          <small class="form-text text-muted">
+            <i class="fas fa-info-circle me-1"></i> 4-digit ZIP code
+          </small>
           {% if form.zip_code.errors %}
             <div class="invalid-feedback">
               {{ form.zip_code.errors.0 }}
             </div>
           {% endif %}
         </div>
-
       </div>
 
       <div class="row g-3 mt-1">
-
         <div class="col-md-6">
-          <label for="id_city_municipality" class="form-label required">City / Municipality</label>
+          <label for="id_city_municipality" class="form-label required">
+            <i class="fas fa-city me-1"></i> City / Municipality
+          </label>
           <input type="text" class="form-control {% if form.city_municipality.errors %}is-invalid{% endif %}" 
                  id="id_city_municipality" name="city_municipality" 
                  value="{{ form.city_municipality.value|default:'' }}" 
@@ -621,7 +346,9 @@ input:focus, select:focus{
         </div>
 
         <div class="col-md-6">
-          <label for="id_province" class="form-label required">Province</label>
+          <label for="id_province" class="form-label required">
+            <i class="fas fa-map me-1"></i> Province
+          </label>
           <input type="text" class="form-control {% if form.province.errors %}is-invalid{% endif %}" 
                  id="id_province" name="province" 
                  value="{{ form.province.value|default:'' }}" 
@@ -633,25 +360,29 @@ input:focus, select:focus{
             </div>
           {% endif %}
         </div>
-
       </div>
     </div>
 
 
     <!-- LICENSE INFORMATION -->
     <div class="section-box">
-      <div class="section-title">Driver's License Information</div>
+      <div class="section-title">
+        <i class="fas fa-id-card me-2"></i> Driver's License Information
+      </div>
 
       <div class="row g-3">
-
         <div class="col-md-4">
-          <label for="id_license_number" class="form-label required">License Number <span class="text-danger">*</span></label>
+          <label for="id_license_number" class="form-label required">
+            <i class="fas fa-file-alt me-1"></i> License Number
+          </label>
           <input type="text" class="form-control {% if form.license_number.errors %}is-invalid{% endif %}" 
                  id="id_license_number" name="license_number" 
                  value="{{ form.license_number.value|default:'' }}" 
                  placeholder="Enter license number"
                  required>
-          <small class="form-text text-muted">Enter your driver's license number (minimum 4 characters)</small>
+          <small class="form-text text-muted">
+            <i class="fas fa-info-circle me-1"></i> Enter your driver's license number (minimum 4 characters)
+          </small>
           {% if form.license_number.errors %}
             <div class="invalid-feedback">
               {{ form.license_number.errors.0 }}
@@ -660,7 +391,9 @@ input:focus, select:focus{
         </div>
 
         <div class="col-md-4">
-          <label class="form-label required">License Expiry</label>
+          <label class="form-label required">
+            <i class="fas fa-calendar-times me-1"></i> License Expiry
+          </label>
           <div class="date-wrapper">
             {{ form.license_expiry }}
             <div class="custom-calendar" id="calendar_expiry"></div>
@@ -668,32 +401,35 @@ input:focus, select:focus{
         </div>
 
         <div class="col-md-4">
-          <label for="id_license_type" class="form-label required">License Type <span class="text-danger">*</span></label>
-          <select class="form-select {% if form.license_type.errors %}is-invalid{% endif %}" 
-                 id="id_license_type" name="license_type" required>
-            {% for value, label in form.fields.license_type.choices %}
-              <option value="{{ value }}" {% if form.license_type.value == value %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-          </select>
-          {% if form.license_type.errors %}
-            <div class="invalid-feedback">
-              {{ form.license_type.errors.0 }}
-            </div>
-          {% endif %}
+          <label for="id_license_type" class="form-label required">
+            <i class="fas fa-car me-1"></i> License Type
+          </label>
+          <input type="text" 
+                 class="form-control" 
+                 id="id_license_type" 
+                 name="license_type" 
+                 value="Professional Driver's License" 
+                 readonly
+                 required>
+          <small class="form-text text-muted">
+            <i class="fas fa-info-circle me-1"></i> Only professional licenses accepted
+          </small>
         </div>
-
       </div>
     </div>
 
 
     <!-- EMERGENCY CONTACT -->
     <div class="section-box">
-      <div class="section-title">Emergency Contact</div>
+      <div class="section-title">
+        <i class="fas fa-phone-alt me-2"></i> Emergency Contact
+      </div>
 
       <div class="row g-3">
-
         <div class="col-md-4">
-          <label for="id_emergency_contact_name" class="form-label required">Contact Name <span class="text-danger">*</span></label>
+          <label for="id_emergency_contact_name" class="form-label required">
+            <i class="fas fa-user-friends me-1"></i> Contact Name
+          </label>
           <input type="text" class="form-control {% if form.emergency_contact_name.errors %}is-invalid{% endif %}" 
                  id="id_emergency_contact_name" name="emergency_contact_name" 
                  value="{{ form.emergency_contact_name.value|default:'' }}" 
@@ -707,13 +443,17 @@ input:focus, select:focus{
         </div>
 
         <div class="col-md-4">
-          <label for="id_emergency_contact_number" class="form-label required">Contact Number <span class="text-danger">*</span></label>
+          <label for="id_emergency_contact_number" class="form-label required">
+            <i class="fas fa-phone me-1"></i> Contact Number
+          </label>
           <input type="tel" class="form-control {% if form.emergency_contact_number.errors %}is-invalid{% endif %}" 
                  id="id_emergency_contact_number" name="emergency_contact_number" 
                  value="{{ form.emergency_contact_number.value|default:'' }}" 
                  placeholder="e.g., 09123456789 or +639123456789"
                  required>
-          <small class="form-text text-muted">Format: 09123456789 or +639123456789</small>
+          <small class="form-text text-muted">
+            <i class="fas fa-info-circle me-1"></i> Format: 09123456789 or +639123456789
+          </small>
           {% if form.emergency_contact_number.errors %}
             <div class="invalid-feedback">
               {{ form.emergency_contact_number.errors.0 }}
@@ -722,7 +462,9 @@ input:focus, select:focus{
         </div>
 
         <div class="col-md-4">
-          <label for="id_emergency_contact_relationship" class="form-label required">Relationship</label>
+          <label for="id_emergency_contact_relationship" class="form-label required">
+            <i class="fas fa-heart me-1"></i> Relationship
+          </label>
           <input type="text" class="form-control {% if form.emergency_contact_relationship.errors %}is-invalid{% endif %}" 
                  id="id_emergency_contact_relationship" name="emergency_contact_relationship" 
                  value="{{ form.emergency_contact_relationship.value|default:'' }}" 
@@ -734,30 +476,40 @@ input:focus, select:focus{
             </div>
           {% endif %}
         </div>
-
       </div>
     </div>
 
 
     <!-- FOOTER BUTTONS -->
-    <div class="d-flex">
-      
-
-      <button type="submit" class="btn btn-success px-4 ms-auto">
-        <i class="bi bi-check-circle-fill me-1"></i> Register Driver
+    <div class="d-flex justify-content-end gap-2">
+      <a href="{% url 'accounts:staff_dashboard' %}" class="btn btn-outline-secondary px-4">
+        <i class="fas fa-times-circle me-1"></i> Cancel
+      </a>
+      <button type="submit" class="btn btn-success px-4">
+        <i class="fas fa-check-circle me-1"></i> Register Driver
       </button>
     </div>
 
   </form>
 
-
-<!-- 📌 CUSTOM DATE PICKER JAVASCRIPT -->
+</div>
 <script>
+  /* =====================================================
+   CUSTOM DATE PICKER (SAFE VERSION)
+===================================================== */
 function createCustomCalendar(inputFieldId, calendarBoxId, minYear, maxYear) {
     const input = document.getElementById(inputFieldId);
     const box = document.getElementById(calendarBoxId);
 
-    input.type = "text"; // prevent native date UI
+    // 🔒 SAFETY GUARD (CRITICAL)
+    if (!input || !box) {
+        console.warn(
+            `Calendar skipped: ${!input ? inputFieldId : ""} ${!box ? calendarBoxId : ""}`
+        );
+        return;
+    }
+
+    input.type = "text";
 
     const today = new Date();
     let selected = null;
@@ -767,78 +519,96 @@ function createCustomCalendar(inputFieldId, calendarBoxId, minYear, maxYear) {
     function render() {
         box.innerHTML = "";
 
-        let header = document.createElement("div");
+        /* HEADER */
+        const header = document.createElement("div");
         header.className = "cal-header";
 
-        let monthSelect = document.createElement("select");
-        let months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+        const monthSelect = document.createElement("select");
+        const months = [
+            "January","February","March","April","May","June",
+            "July","August","September","October","November","December"
+        ];
 
-        months.forEach((m,i)=>{
-            let opt = document.createElement("option");
+        months.forEach((m, i) => {
+            const opt = document.createElement("option");
             opt.value = i;
             opt.textContent = m;
-            if (i===month) opt.selected = true;
+            if (i === month) opt.selected = true;
             monthSelect.appendChild(opt);
         });
 
-        let yearSelect = document.createElement("select");
-        for (let y=minYear; y<=maxYear; y++){
-            let opt = document.createElement("option");
+        const yearSelect = document.createElement("select");
+        for (let y = minYear; y <= maxYear; y++) {
+            const opt = document.createElement("option");
             opt.value = y;
             opt.textContent = y;
-            if (y===year) opt.selected = true;
+            if (y === year) opt.selected = true;
             yearSelect.appendChild(opt);
         }
 
-        monthSelect.onchange = ()=>{ month=parseInt(monthSelect.value); render(); };
-        yearSelect.onchange = ()=>{ year=parseInt(yearSelect.value); render(); };
+        monthSelect.onchange = () => {
+            month = parseInt(monthSelect.value);
+            render();
+        };
+
+        yearSelect.onchange = () => {
+            year = parseInt(yearSelect.value);
+            render();
+        };
 
         header.appendChild(monthSelect);
         header.appendChild(yearSelect);
         box.appendChild(header);
 
-        /* Week Days */
-        let daysRow = document.createElement("div");
+        /* DAYS HEADER */
+        const daysRow = document.createElement("div");
         daysRow.className = "cal-days";
-        ["Su","Mo","Tu","We","Th","Fr","Sa"].forEach(d=>{
-            let el=document.createElement("div");
-            el.textContent=d;
+        ["Su","Mo","Tu","We","Th","Fr","Sa"].forEach(d => {
+            const el = document.createElement("div");
+            el.textContent = d;
             daysRow.appendChild(el);
         });
         box.appendChild(daysRow);
 
-        /* Days Grid */
-        let grid = document.createElement("div");
+        /* GRID */
+        const grid = document.createElement("div");
         grid.className = "cal-grid";
         box.appendChild(grid);
 
         const firstDay = new Date(year, month, 1).getDay();
-        const totalDays = new Date(year, month+1, 0).getDate();
+        const totalDays = new Date(year, month + 1, 0).getDate();
 
-        for (let i=0;i<firstDay;i++){
+        for (let i = 0; i < firstDay; i++) {
             grid.appendChild(document.createElement("div"));
         }
 
-        for (let d=1; d<=totalDays; d++){
-            let dayBtn = document.createElement("div");
+        for (let d = 1; d <= totalDays; d++) {
+            const dayBtn = document.createElement("div");
             dayBtn.className = "cal-day";
             dayBtn.textContent = d;
 
-            let todayObj = new Date();
-            if (year === todayObj.getFullYear() && month === todayObj.getMonth() && d === todayObj.getDate()) {
+            const todayObj = new Date();
+            if (
+                year === todayObj.getFullYear() &&
+                month === todayObj.getMonth() &&
+                d === todayObj.getDate()
+            ) {
                 dayBtn.classList.add("today");
             }
 
-            if (selected &&
-                selected.year===year &&
-                selected.month===month &&
-                selected.day===d) {
+            if (
+                selected &&
+                selected.year === year &&
+                selected.month === month &&
+                selected.day === d
+            ) {
                 dayBtn.classList.add("selected");
             }
 
             dayBtn.onclick = () => {
-                selected = {year, month, day:d};
-                input.value = `${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+                selected = { year, month, day: d };
+                input.value =
+                    `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
                 box.style.display = "none";
             };
 
@@ -851,66 +621,92 @@ function createCustomCalendar(inputFieldId, calendarBoxId, minYear, maxYear) {
         render();
     });
 
-    document.addEventListener("click", (e)=>{
+    document.addEventListener("click", (e) => {
         if (!box.contains(e.target) && e.target !== input) {
             box.style.display = "none";
         }
     });
 }
 
+/* =====================================================
+   INITIALIZE CALENDARS (AFTER DOM READY)
+===================================================== */
+document.addEventListener("DOMContentLoaded", () => {
+    createCustomCalendar(
+        "id_birth_date",
+        "calendar_birth",
+        1950,
+        new Date().getFullYear()
+    );
 
-// Initialize both date pickers
-createCustomCalendar("id_birth_date", "calendar_birth", 1950, new Date().getFullYear());
-createCustomCalendar("id_license_expiry", "calendar_expiry", 2024, 2045);
+    createCustomCalendar(
+        "id_license_expiry",
+        "calendar_expiry",
+        2024,
+        2045
+    );
+});
 
+
+/* =====================================================
+   CAMERA CAPTURE (SAFE + ASYNC)
+===================================================== */
 (async function () {
-  const video = document.getElementById("cameraStream");
-  const canvas = document.getElementById("photoCanvas");
-  const preview = document.getElementById("photoPreview");
-  const captureBtn = document.getElementById("captureBtn");
-  const fileInput = document.getElementById("id_driver_photo");
+    const video = document.getElementById("cameraStream");
+    const canvas = document.getElementById("photoCanvas");
+    const preview = document.getElementById("photoPreview");
+    const captureBtn = document.getElementById("captureBtn");
+    const fileInput = document.getElementById("id_driver_photo");
 
-  if (!video || !captureBtn) return;
+    // 🔒 SAFETY GUARD
+    if (!video || !canvas || !preview || !captureBtn || !fileInput) {
+        console.warn("Camera capture skipped: required elements not found");
+        return;
+    }
 
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "environment" },
-      audio: false
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "environment" },
+            audio: false
+        });
+        video.srcObject = stream;
+    } catch (err) {
+        alert("Camera access denied or not available.");
+        return;
+    }
+
+    captureBtn.addEventListener("click", () => {
+        const width = video.videoWidth;
+        const height = video.videoHeight;
+
+        if (!width || !height) return;
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(video, 0, 0, width, height);
+
+        canvas.toBlob(blob => {
+            if (!blob) return;
+
+            const file = new File([blob], "driver_photo.jpg", {
+                type: "image/jpeg"
+            });
+
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInput.files = dataTransfer.files;
+
+            preview.src = URL.createObjectURL(blob);
+            preview.style.display = "block";
+            video.style.display = "none";
+            captureBtn.textContent = "🔄 Retake Photo";
+        }, "image/jpeg", 0.92);
     });
-    video.srcObject = stream;
-  } catch (err) {
-    alert("Camera access denied or not available.");
-    return;
-  }
-
-  captureBtn.addEventListener("click", () => {
-    const width = video.videoWidth;
-    const height = video.videoHeight;
-
-    canvas.width = width;
-    canvas.height = height;
-
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(video, 0, 0, width, height);
-
-    canvas.toBlob(blob => {
-      if (!blob) return;
-
-      const file = new File([blob], "driver_photo.jpg", {
-        type: "image/jpeg"
-      });
-
-      const dataTransfer = new DataTransfer();
-      dataTransfer.items.add(file);
-      fileInput.files = dataTransfer.files;
-
-      preview.src = URL.createObjectURL(blob);
-      preview.style.display = "block";
-      video.style.display = "none";
-      captureBtn.textContent = "🔄 Retake Photo";
-    }, "image/jpeg", 0.92);
-  });
 })();
+
 </script>
+
 
 {% endblock %}
