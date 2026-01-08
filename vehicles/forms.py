@@ -159,18 +159,33 @@ class DriverRegistrationForm(forms.ModelForm):
         ('N/A', 'N/A'),
     ]
 
-    LICENSE_TYPE_CHOICES = [
-        ('', 'Select License Type'),
-        ('Student Permit', 'Student Permit'),
-        ('Non-Professional', 'Non-Professional'),
-        ('Professional', 'Professional'),
-        ('Conductor\'s License', 'Conductor\'s License'),
-        ('Other', 'Other')
-    ]
+    # Hard-locked value
+    PROFESSIONAL_VALUE = "professional"
+    PROFESSIONAL_LABEL = "Professional Driver’s License"
+
+    driver_photo = forms.ImageField(
+        required=True,
+        label="Driver Photo",
+        error_messages={
+            "required": "Driver photo is required for identity verification."
+        }
+    )
+
+    license_type = forms.CharField(
+        required=True,
+        initial=PROFESSIONAL_VALUE,
+        label="License Type",
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "readonly": "readonly",
+            }
+        )
+    )
 
     class Meta:
         model = Driver
-        exclude = ['driver_id']
+        exclude = ['driver_id', 'license_image']  # license_image unchanged, not used here
         widgets = {
             'first_name': forms.TextInput(attrs={'class': 'form-control', 'required': 'required'}),
             'middle_name': forms.TextInput(attrs={'class': 'form-control'}),
@@ -178,104 +193,71 @@ class DriverRegistrationForm(forms.ModelForm):
             'suffix': forms.TextInput(attrs={'class': 'form-control'}),
             'birth_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', 'required': 'required'}),
             'birth_place': forms.TextInput(attrs={'class': 'form-control'}),
-            'mobile_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+63 or 09...', 'required': 'required'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'example@email.com', 'required': 'required'}),
+            'mobile_number': forms.TextInput(attrs={'class': 'form-control', 'required': 'required'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'required': 'required'}),
             'street': forms.TextInput(attrs={'class': 'form-control', 'required': 'required'}),
             'barangay': forms.TextInput(attrs={'class': 'form-control', 'required': 'required'}),
-            'zip_code': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. 6600', 'required': 'required'}),
+            'zip_code': forms.TextInput(attrs={'class': 'form-control', 'required': 'required'}),
             'city_municipality': forms.TextInput(attrs={'class': 'form-control', 'required': 'required'}),
             'province': forms.TextInput(attrs={'class': 'form-control', 'required': 'required'}),
-            'license_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter license number', 'required': 'required'}),
+            'license_number': forms.TextInput(attrs={'class': 'form-control', 'required': 'required'}),
             'license_expiry': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', 'required': 'required'}),
             'emergency_contact_name': forms.TextInput(attrs={'class': 'form-control', 'required': 'required'}),
-            'emergency_contact_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+63 or 09...', 'required': 'required'}),
-            'emergency_contact_relationship': forms.TextInput(attrs={'class': 'form-control'}),
+            'emergency_contact_number': forms.TextInput(attrs={'class': 'form-control', 'required': 'required'}),
+            'emergency_contact_relationship': forms.TextInput(attrs={'class': 'form-control', 'required': 'required'}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # Blood type select
         self.fields['blood_type'] = forms.ChoiceField(
             choices=self.BLOOD_TYPE_CHOICES,
             widget=forms.Select(attrs={'class': 'form-select', 'required': 'required'}),
             label="Blood Type"
         )
-        self.fields['license_type'] = forms.ChoiceField(
-            choices=self.LICENSE_TYPE_CHOICES,
-            widget=forms.Select(attrs={'class': 'form-select', 'required': 'required'}),
-            label="License Type"
-        )
 
+        # Force professional license value at runtime (defense in depth)
+        self.initial['license_type'] = self.PROFESSIONAL_VALUE
+        self.fields['license_type'].help_text = self.PROFESSIONAL_LABEL
+
+    # ------------------------------
+    # FIELD VALIDATION
+    # ------------------------------
+    def clean_license_type(self):
+        value = self.cleaned_data.get('license_type')
+        if value != self.PROFESSIONAL_VALUE:
+            raise ValidationError(
+                "Only Professional Driver’s Licenses are allowed."
+            )
+        return self.PROFESSIONAL_VALUE
+
+    def clean_driver_photo(self):
+        photo = self.cleaned_data.get('driver_photo')
+        if not photo:
+            raise ValidationError("Driver photo is required.")
+
+        if not photo.content_type.startswith("image/"):
+            raise ValidationError("Uploaded file must be an image.")
+        return photo
+
+    # Keep your existing validators intact
     def clean_first_name(self):
-        first_name = self.cleaned_data.get('first_name')
-        if not first_name or not first_name.strip():
-            raise ValidationError("First name is required.")
-        first_name = first_name.strip()
-        if len(first_name) < 2:
+        value = self.cleaned_data.get('first_name', '').strip()
+        if len(value) < 2:
             raise ValidationError("First name must be at least 2 characters long.")
-        return first_name
+        return value
 
     def clean_last_name(self):
-        last_name = self.cleaned_data.get('last_name')
-        if not last_name or not last_name.strip():
-            raise ValidationError("Last name is required.")
-        last_name = last_name.strip()
-        if len(last_name) < 2:
+        value = self.cleaned_data.get('last_name', '').strip()
+        if len(value) < 2:
             raise ValidationError("Last name must be at least 2 characters long.")
-        return last_name
+        return value
 
-    def clean_mobile_number(self):
-        mobile_number = self.cleaned_data.get('mobile_number')
-        if not mobile_number or not mobile_number.strip():
-            raise ValidationError("Mobile number is required.")
-            
-        # Just strip whitespace, no format validation
-        return mobile_number.strip()
+    def clean(self):
+        cleaned_data = super().clean()
+        return cleaned_data
 
-    def clean_email(self):
-        email = self.cleaned_data.get('email')
-        if not email or not email.strip():
-            raise ValidationError("Email address is required.")
-            
-        # Just strip whitespace, no format validation
-        return email.strip()
-
-    def clean_license_number(self):
-        license_number = self.cleaned_data.get('license_number')
-        if not license_number or not license_number.strip():
-            raise ValidationError("License number is required.")
-            
-        # Just strip whitespace, no format validation
-        return license_number.strip()
-
-    def clean_license_expiry(self):
-        expiry = self.cleaned_data.get('license_expiry')
-        if not expiry:
-            raise ValidationError("License expiry date is required.")
-        return expiry
-
-    def clean_emergency_contact_number(self):
-        contact_number = self.cleaned_data.get('emergency_contact_number')
-        if not contact_number or not contact_number.strip():
-            raise ValidationError("Emergency contact number is required.")
-        contact_number = contact_number.strip()
-        if not re.match(r'^(09|\+639)\d{9}$', contact_number):
-            raise ValidationError("Please en    ter a valid Philippine mobile number (e.g., 09123456789 or +639123456789).")
-        return contact_number
-
-    def clean_birth_date(self):
-        birth_date = self.cleaned_data.get('birth_date')
-        if not birth_date:
-            raise ValidationError("Birth date is required.")
-        return birth_date
-        
-    def clean_emergency_contact_name(self):
-        contact_name = self.cleaned_data.get('emergency_contact_name')
-        if not contact_name or not contact_name.strip():
-            raise ValidationError("Emergency contact name is required.")
-        contact_name = contact_name.strip()
-        if len(contact_name) < 2:
-            raise ValidationError("Emergency contact name must be at least 2 characters long.")
-        return contact_name
 
 
 # ======================================================

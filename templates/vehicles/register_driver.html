@@ -365,6 +365,48 @@ input:focus, select:focus{
       <div class="section-title">Personal Information</div>
 
       <div class="row g-3">
+        <!-- DRIVER PHOTO (CAMERA ONLY) -->
+        <div class="col-md-3">
+          <label class="form-label required">Driver Photo</label>
+
+          <div class="card p-2 text-center" style="border-radius:14px;">
+            <!-- Live camera -->
+            <video id="cameraStream"
+                  autoplay
+                  playsinline
+                  style="width:100%; height:180px; object-fit:cover; border-radius:10px; border:1px solid #e2e8f0;">
+            </video>
+
+            <!-- Captured image preview -->
+            <canvas id="photoCanvas" style="display:none;"></canvas>
+
+            <img id="photoPreview"
+                style="display:none; width:100%; height:180px; object-fit:cover; border-radius:10px; border:1px solid #e2e8f0;">
+
+            <!-- Hidden file input (Django needs this) -->
+            <input type="file"
+                  name="driver_photo"
+                  id="id_driver_photo"
+                  style="display:none;"
+                  required>
+
+            <button type="button"
+                    class="btn btn-primary btn-sm mt-2"
+                    id="captureBtn">
+              📸 Capture Photo
+            </button>
+
+            <small class="text-muted d-block mt-1">
+              Camera capture only (no uploads)
+            </small>
+
+            {% if form.driver_photo.errors %}
+              <div class="invalid-feedback d-block">
+                {{ form.driver_photo.errors.0 }}
+              </div>
+            {% endif %}
+          </div>
+        </div>
 
         <div class="col-md-3">
           <label for="id_first_name" class="form-label required">First Name <span class="text-danger">*</span></label>
@@ -821,7 +863,54 @@ function createCustomCalendar(inputFieldId, calendarBoxId, minYear, maxYear) {
 createCustomCalendar("id_birth_date", "calendar_birth", 1950, new Date().getFullYear());
 createCustomCalendar("id_license_expiry", "calendar_expiry", 2024, 2045);
 
+(async function () {
+  const video = document.getElementById("cameraStream");
+  const canvas = document.getElementById("photoCanvas");
+  const preview = document.getElementById("photoPreview");
+  const captureBtn = document.getElementById("captureBtn");
+  const fileInput = document.getElementById("id_driver_photo");
 
+  if (!video || !captureBtn) return;
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment" },
+      audio: false
+    });
+    video.srcObject = stream;
+  } catch (err) {
+    alert("Camera access denied or not available.");
+    return;
+  }
+
+  captureBtn.addEventListener("click", () => {
+    const width = video.videoWidth;
+    const height = video.videoHeight;
+
+    canvas.width = width;
+    canvas.height = height;
+
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(video, 0, 0, width, height);
+
+    canvas.toBlob(blob => {
+      if (!blob) return;
+
+      const file = new File([blob], "driver_photo.jpg", {
+        type: "image/jpeg"
+      });
+
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(file);
+      fileInput.files = dataTransfer.files;
+
+      preview.src = URL.createObjectURL(blob);
+      preview.style.display = "block";
+      video.style.display = "none";
+      captureBtn.textContent = "🔄 Retake Photo";
+    }, "image/jpeg", 0.92);
+  });
+})();
 </script>
 
 {% endblock %}

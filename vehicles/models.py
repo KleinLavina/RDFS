@@ -37,6 +37,15 @@ class Route(models.Model):
 # DRIVER MODEL
 # ======================================================
 class Driver(models.Model):
+    # -----------------------------
+    # CONSTANTS
+    # -----------------------------
+    LICENSE_PROFESSIONAL = "professional"
+
+    LICENSE_TYPE_CHOICES = [
+        (LICENSE_PROFESSIONAL, "Professional Driver’s License"),
+    ]
+
     driver_id = models.CharField(max_length=100, unique=True, blank=True)
     first_name = models.CharField(max_length=100)
     middle_name = models.CharField(max_length=100, blank=True, null=True)
@@ -59,12 +68,36 @@ class Driver(models.Model):
 
     license_number = models.CharField(max_length=50, blank=True, null=True)
     license_expiry = models.DateField(blank=True, null=True)
-    license_type = models.CharField(max_length=50, blank=True, null=True)
-    license_image = models.ImageField(upload_to='licenses/', blank=True, null=True)
+
+    # 🔒 LOCKED LICENSE TYPE
+    license_type = models.CharField(
+        max_length=50,
+        choices=LICENSE_TYPE_CHOICES,
+        default=LICENSE_PROFESSIONAL
+    )
+
+    # 📸 DRIVER PHOTO (REQUIRED)
+    driver_photo = models.ImageField(
+        upload_to="driver_img/",
+        blank=False,
+        null=False
+    )
 
     emergency_contact_name = models.CharField(max_length=100, blank=True, null=True)
     emergency_contact_number = models.CharField(max_length=20, blank=True, null=True)
     emergency_contact_relationship = models.CharField(max_length=50, blank=True, null=True)
+
+    def clean(self):
+        errors = {}
+
+        if self.license_type != self.LICENSE_PROFESSIONAL:
+            errors["license_type"] = "Only Professional Driver’s Licenses are allowed."
+
+        if not self.driver_photo:
+            errors["driver_photo"] = "Driver photo is required for identity verification."
+
+        if errors:
+            raise ValidationError(errors)
 
     def save(self, *args, **kwargs):
         if not self.driver_id:
