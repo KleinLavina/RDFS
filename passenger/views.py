@@ -53,10 +53,11 @@ def contact(request):
 def public_queue_view(request):
     """
     Public Passenger View:
-    - Shows active vehicles created today.
-    - Shows recently departed entries.
-    - Applies live maintenance and strict route filtering.
+    - Shows active vehicles created today
+    - Shows recently departed vehicles
+    - Supports real-time countdown (HH:MM)
     """
+
     now = timezone.now()
     _maintenance_task(now=now)
 
@@ -67,9 +68,9 @@ def public_queue_view(request):
     keep_departed_for = timedelta(minutes=DEPARTED_VISIBLE_MINUTES)
     departed_cutoff = now - keep_departed_for
 
-    # Base queryset (active today OR recently departed)
     queue_entries = (
-        EntryLog.objects.select_related('vehicle', 'vehicle__assigned_driver', 'vehicle__route')
+        EntryLog.objects
+        .select_related('vehicle', 'vehicle__assigned_driver', 'vehicle__route')
         .filter(
             Q(is_active=True, created_at__date=timezone.localtime(now).date()) |
             Q(departed_at__gte=departed_cutoff)
@@ -77,42 +78,36 @@ def public_queue_view(request):
         .order_by('created_at')
     )
 
-    # ORM route filter (Fix #2)
     if route_filter and route_filter != 'all':
         queue_entries = queue_entries.filter(vehicle__route_id=route_filter)
 
-    # Build entries
     entries = []
+
     for log in queue_entries:
         v = log.vehicle
         d = v.assigned_driver if v else None
 
-        departure_time = log.created_at + timedelta(minutes=departure_duration)
-        departure_time_local = timezone.localtime(departure_time)
+        # ⏱ Base time for countdown
+        base_time = log.departed_at if not log.is_active and log.departed_at else log.created_at
+        expiry_time = base_time + timedelta(minutes=departure_duration)
 
-        recently_departed = (
-            not log.is_active and log.departed_at and log.departed_at >= departed_cutoff
-        )
+        remaining_seconds = int((expiry_time - now).total_seconds())
 
         entries.append({
             "id": log.id,
             "vehicle": v,
             "driver": d,
-            "departure_time": departure_time_local,
-            "entry_time": timezone.localtime(log.created_at),
-            "is_active": log.is_active,
-            "recently_departed": recently_departed,
             "route": getattr(v.route, "name", None) if v and v.route else None,
+
+            "entry_time": timezone.localtime(log.created_at),
+            "departed_at": timezone.localtime(log.departed_at) if log.departed_at else None,
+            "expiry_time": timezone.localtime(expiry_time),
+
+            "remaining_seconds": max(remaining_seconds, 0),
+            "is_expired": remaining_seconds <= 0,
+            "is_active": log.is_active,
         })
 
-    # Strict final filtering (Fix #3)
-    if route_filter and route_filter != "all":
-        entries = [
-            e for e in entries
-            if e["vehicle"] and e["vehicle"].route_id == int(route_filter)
-        ]
-
-    # Fix #1 — always show all active routes
     routes = Route.objects.filter(active=True).order_by("origin", "destination")
 
     context = {

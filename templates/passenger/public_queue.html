@@ -13,7 +13,7 @@
   <link rel="apple-touch-icon" href="{% static 'img/RDFS-Logo.png' %}">
 
   <!-- ===============================
-       THIRD-PARTY CSS (FIRST)
+       THIRD-PARTY CSS
   ================================ -->
   <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
   <link
@@ -22,39 +22,11 @@
   >
 
   <!-- ===============================
-       YOUR CSS (AFTER LIBRARIES)
+       YOUR CSS
   ================================ -->
   <link rel="stylesheet" href="{% static 'styles/passenger/03.css' %}">
 
-  <!-- ===============================
-       LEAFLET (ONLY IF YOU USE MAPS)
-  ================================ -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  >
-
-  <!-- ===============================
-       JS (DEFERRED)
-  ================================ -->
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    defer
-  ></script>
-
-  <script
-    src="{% static 'scripts/passenger/03.js' %}"
-    defer
-  ></script>
-
 </head>
-<script>
-    AOS.init({
-    duration: 600,  // Animation duration in ms
-    once: true,     // Animate only once
-    offset: 100     // Trigger animation when element is 100px from viewport
-  });
-</script>
 <body>
 
 <!-- SHARED HEADER -->
@@ -62,25 +34,20 @@
 
 <!-- HERO -->
 <section class="queue-hero">
-  <div class="container fade-enter fade-enter--up">
-    <i class="bi bi-truck fs-1 fade-enter fade-delay-1"></i>
-    <h1 class="fade-enter fade-delay-2">Terminal Vehicle Schedule</h1>
-    <p class="fade-enter fade-delay-3">
-      Live departures with real-time visibility
-    </p>
+  <div class="container">
+    <i class="bi bi-truck fs-1"></i>
+    <h1>Terminal Vehicle Schedule</h1>
+    <p>Live departures with real-time visibility</p>
   </div>
 </section>
-
 
 <!-- TABLE -->
 <section class="table-section">
   <div class="container">
-    <div class="table-card fade-enter fade-enter--up">
+    <div class="table-card">
 
-
-      <!-- TABLE TOOLBAR -->
-      <div class="table-toolbar fade-enter fade-delay-1">
-
+      <!-- TOOLBAR -->
+      <div class="table-toolbar">
         <div class="table-toolbar__title">
           <i class="bi bi-list-ul"></i>
           <span>Vehicle Queue</span>
@@ -128,7 +95,20 @@
               {% endif %}
             </td>
             <td>{{ q.departure_time|date:"M d, Y h:i A" }}</td>
-            <td>—</td>
+
+            <!-- ✅ REAL-TIME COUNTDOWN CELL -->
+            <td>
+              {% if q.is_expired %}
+                <span class="badge bg-danger">Time Expired</span>
+              {% else %}
+                <span
+                  class="countdown"
+                  data-remaining="{{ q.remaining_seconds }}">
+                  --
+                </span>
+              {% endif %}
+            </td>
+
           </tr>
           {% endfor %}
         </tbody>
@@ -141,8 +121,7 @@
       {% endif %}
     </div>
 
-    <div class="queue-footnote fade-enter fade-delay-2">
-
+    <div class="queue-footnote">
       <i class="bi bi-arrow-repeat"></i>
       Auto-refreshing every 15 seconds
     </div>
@@ -150,6 +129,43 @@
 </section>
 
 <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+
+<!-- ===============================
+     REAL-TIME COUNTDOWN SCRIPT
+     (NO REFRESH, NO FREEZE)
+================================ -->
+<script>
+(function () {
+  function formatTime(seconds) {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
+  }
+
+  function startCountdown(el) {
+    let remaining = parseInt(el.dataset.remaining, 10);
+
+    function tick() {
+      if (remaining <= 0) {
+        el.innerHTML = '<span class="badge bg-danger">Time Expired</span>';
+        return;
+      }
+
+      el.textContent = formatTime(remaining);
+      remaining--;
+      setTimeout(tick, 1000);
+    }
+
+    tick();
+  }
+
+  document.querySelectorAll('.countdown').forEach(startCountdown);
+})();
+</script>
+
 </body>
 </html>
-
