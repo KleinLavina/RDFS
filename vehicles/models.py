@@ -10,6 +10,8 @@ from django.db.models import F
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
+import cloudinary.uploader
+from django.core.files.base import ContentFile
 
 
 # ======================================================
@@ -127,9 +129,6 @@ class Driver(models.Model):
 
 
 
-# ======================================================
-# VEHICLE MODEL
-# ======================================================
 class Vehicle(models.Model):
     VEHICLE_TYPES = [
         ('jeepney', 'Jeepney'),
@@ -153,29 +152,44 @@ class Vehicle(models.Model):
     vehicle_name = models.CharField(max_length=100, default="Unnamed Vehicle")
     vehicle_type = models.CharField(max_length=50, choices=VEHICLE_TYPES)
     ownership_type = models.CharField(max_length=20, choices=OWNERSHIP_TYPES, default='owned')
-    assigned_driver = models.ForeignKey(Driver, on_delete=models.CASCADE, related_name='vehicles')
+    assigned_driver = models.ForeignKey(
+        'Driver',
+        on_delete=models.CASCADE,
+        related_name='vehicles'
+    )
 
-    cr_number = models.CharField(max_length=50, unique=True, verbose_name="Registration Certificate Number")
-    or_number = models.CharField(max_length=50, unique=True, verbose_name="Official Receipt Number")
-    vin_number = models.CharField(max_length=17, unique=True, verbose_name="Vehicle Identification Number (VIN)")
+    cr_number = models.CharField(max_length=50, unique=True)
+    or_number = models.CharField(max_length=50, unique=True)
+    vin_number = models.CharField(max_length=17, unique=True)
     year_model = models.PositiveIntegerField()
 
     registration_number = models.CharField(max_length=50, unique=True)
     registration_expiry = models.DateField(blank=True, null=True)
     license_plate = models.CharField(max_length=50, unique=True)
 
-    route = models.ForeignKey(Route, on_delete=models.SET_NULL, null=True, blank=True, related_name='vehicles')
+    route = models.ForeignKey(
+        'Route',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='vehicles'
+    )
 
     seat_capacity = models.PositiveIntegerField(blank=True, null=True)
 
+    # ✅ Cloudinary QR field
     qr_code = CloudinaryField(
-    'qr_code',
-    blank=True,
-    null=True,
-)
+        'qr_code',
+        blank=True,
+        null=True
+    )
 
-
-    qr_value = models.CharField(max_length=255, unique=True, blank=True, null=True)
+    qr_value = models.CharField(
+        max_length=255,
+        unique=True,
+        blank=True,
+        null=True
+    )
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='idle')
     last_enter_time = models.DateTimeField(blank=True, null=True)
@@ -186,44 +200,26 @@ class Vehicle(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
 
     # --------------------------------------------------
-    # INTERNATIONAL VALIDATION
+    # VALIDATION
     # --------------------------------------------------
     def clean(self):
         errors = {}
 
-        # Normalize values
-        self.vin_number = self.vin_number.upper().strip() if self.vin_number else None
-        self.license_plate = self.license_plate.upper().strip() if self.license_plate else None
+        if self.vin_number:
+            self.vin_number = self.vin_number.upper().strip()
+            if not re.match(r'^[A-HJ-NPR-Z0-9]{17}$', self.vin_number):
+                errors['vin_number'] = "VIN must be 17 characters (excluding I, O, Q)."
 
-        # VIN Number (global)
-        if not self.vin_number or not str(self.vin_number).strip():
-            errors['vin_number'] = "VIN number is required."
-        elif not re.match(r'^[A-HJ-NPR-Z0-9]{17}$', str(self.vin_number).strip()):
-            errors['vin_number'] = "VIN number must be 17 alphanumeric characters (excluding I, O, Q)."
+        if self.license_plate:
+            self.license_plate = self.license_plate.upper().strip()
+            if not re.match(r'^[A-Z0-9][A-Z0-9\s\-]{1,11}$', self.license_plate):
+                errors['license_plate'] = "Invalid license plate format."
 
-        # Registration Number (global) - Flexible format for both local and international
-        if not self.registration_number or not str(self.registration_number).strip():
-            errors['registration_number'] = "Registration number is required."
+        if self.year_model:
+            current_year = timezone.now().year
+            if self.year_model < 1886 or self.year_model > current_year + 1:
+                errors['year_model'] = f"Year must be between 1886 and {current_year + 1}."
 
-        # License plate (global)
-        if not self.license_plate or not str(self.license_plate).strip():
-            errors['license_plate'] = "License plate is required."
-        elif not re.match(r'^[A-Z0-9][A-Z0-9\s\-]{1,11}$', str(self.license_plate).strip()):
-            errors['license_plate'] = "License plate must be 2-12 characters and may include letters, numbers, spaces, or hyphens."
-
-        # Year model (global)
-        if self.year_model is None:
-            errors['year_model'] = "Year model is required."
-        else:
-            try:
-                year = int(self.year_model)
-                current_year = timezone.now().year
-                if year < 1886 or year > current_year + 1:
-                    errors['year_model'] = f"Year must be between 1886 and {current_year + 1}."
-            except (ValueError, TypeError):
-                errors['year_model'] = "Please enter a valid year."
-
-        # Seat capacity sanity
         if self.seat_capacity is not None and self.seat_capacity <= 0:
             errors['seat_capacity'] = "Seat capacity must be greater than zero."
 
@@ -231,31 +227,39 @@ class Vehicle(models.Model):
             raise ValidationError(errors)
 
     # --------------------------------------------------
-    # SAVE & QR GENERATION
+    # SAVE & CLOUDINARY QR GENERATION
     # --------------------------------------------------
     def save(self, *args, **kwargs):
         creating = self.pk is None
         super().save(*args, **kwargs)
 
         expected_qr_value = f"VEH-{self.id}-{self.license_plate}".replace(" ", "-").upper()
+
         if creating or self.qr_value != expected_qr_value:
             self.qr_value = expected_qr_value
-            qr_image = qrcode.make(self.qr_value)
 
+            # Generate QR image
+            qr_img = qrcode.make(self.qr_value)
             buffer = BytesIO()
-            qr_image.save(buffer, format='PNG')
+            qr_img.save(buffer, format="PNG")
+            buffer.seek(0)
 
-            self.qr_code.save(
-                f"vehicle_{self.id}_qr.png",
-                File(buffer),
-                save=False
+            # Upload to Cloudinary
+            upload = cloudinary.uploader.upload(
+                buffer,
+                folder="vehicle_qrcodes",
+                public_id=f"vehicle_{self.id}_qr",
+                overwrite=True,
+                resource_type="image"
             )
-            super().save(update_fields=['qr_code', 'qr_value'])
+
+            self.qr_code = upload["public_id"]
+
+            super().save(update_fields=["qr_code", "qr_value"])
 
     def __str__(self):
         route_display = str(self.route) if self.route else "No Route"
         return f"{self.vehicle_name} ({self.license_plate}) – {route_display}"
-
 
 # ======================================================
 # WALLET MODEL
