@@ -152,7 +152,7 @@
                     <!-- Still in terminal - show countdown -->
                     <span class="status-badge status-boarding countdown-element">
                       <i class="fa-solid fa-clock"></i>
-                      <span class="countdown-text">Loading...</span>
+                      <span class="countdown-text">--:--</span>
                     </span>
                   {% endif %}
                 </td>
@@ -207,66 +207,121 @@ function filterRoute(slug){
 }
 
 /* ===================================================
-   COUNTDOWN LOGIC - REAL-TIME SMOOTH UPDATES
+   REAL-TIME COUNTDOWN - SMOOTH ANIMATION
 =================================================== */
-function updateAllCountdowns() {
-  const now = new Date().getTime();
-  const departureLimit = {{ stay_duration }} * 60 * 1000; // Convert minutes to milliseconds
-  
-  document.querySelectorAll(".countdown-element").forEach(badge => {
-    const row = badge.closest('tr');
-    
-    // Skip if vehicle has already departed
-    if (row.dataset.hasDeparted === 'true') {
-      return;
+class CountdownManager {
+  constructor() {
+    this.isRunning = false;
+    this.lastUpdateTime = 0;
+    this.updateInterval = 1000; // Update every second for countdown
+    this.animationFrame = null;
+  }
+
+  start() {
+    if (this.isRunning) return;
+    this.isRunning = true;
+    this.lastUpdateTime = Date.now();
+    this.update();
+  }
+
+  stop() {
+    this.isRunning = false;
+    if (this.animationFrame) {
+      cancelAnimationFrame(this.animationFrame);
+      this.animationFrame = null;
     }
-    
-    const departureTime = new Date(row.dataset.departure).getTime();
-    
-    // Check if departure time is valid
-    if (isNaN(departureTime)) {
-      console.error('Invalid departure time:', row.dataset.departure);
-      return;
+  }
+
+  update() {
+    if (!this.isRunning) return;
+
+    const currentTime = Date.now();
+    const elapsed = currentTime - this.lastUpdateTime;
+
+    // Update countdowns only once per second (for time display)
+    if (elapsed >= this.updateInterval) {
+      this.updateAllCountdowns(currentTime);
+      this.lastUpdateTime = currentTime;
     }
+
+    // Update progress bars more frequently for smooth animation
+    this.updateProgressBars(currentTime);
+
+    // Continue the animation loop
+    this.animationFrame = requestAnimationFrame(() => this.update());
+  }
+
+  updateAllCountdowns(currentTime) {
+    const departureLimit = {{ stay_duration }} * 60 * 1000;
     
-    const timeDiff = departureTime - now;
-    const progressBar = row.querySelector(".progress-bar");
-    
-    if (timeDiff <= 0) {
-      // TIME EXPIRED
-      badge.className = "status-badge status-departed";
-      badge.innerHTML = '<i class="fa-solid fa-hourglass-end"></i> <span class="countdown-text">TIME EXPIRED</span>';
+    document.querySelectorAll(".countdown-element").forEach(badge => {
+      const row = badge.closest('tr');
       
-      if (progressBar) {
-        progressBar.style.width = "100%";
-        progressBar.style.background = "linear-gradient(90deg, var(--danger), #c0392b)";
-        progressBar.classList.add("glow");
+      // Skip if vehicle has already departed
+      if (row.dataset.hasDeparted === 'true') {
+        return;
       }
       
-    } else if (timeDiff <= departureLimit) {
-      // COUNTDOWN ACTIVE - REAL-TIME SMOOTH UPDATES
+      const departureTime = new Date(row.dataset.departure).getTime();
+      
+      if (isNaN(departureTime)) {
+        console.error('Invalid departure time:', row.dataset.departure);
+        return;
+      }
+      
+      const timeDiff = departureTime - currentTime;
+      
+      if (timeDiff <= 0) {
+        // TIME EXPIRED
+        badge.className = "status-badge status-departed";
+        badge.innerHTML = '<i class="fa-solid fa-hourglass-end"></i> <span class="countdown-text">TIME EXPIRED</span>';
+        return;
+      }
+      
+      // Format time as MM:SS
       const totalMinutes = Math.floor(timeDiff / 60000);
       const seconds = Math.floor((timeDiff % 60000) / 1000);
-      
       const minsStr = totalMinutes.toString().padStart(2, '0');
       const secsStr = seconds.toString().padStart(2, '0');
       
       badge.className = "status-badge status-countdown";
       badge.innerHTML = `<i class="fa-solid fa-stopwatch"></i> <span class="countdown-text countdown-timer">${minsStr}:${secsStr}</span>`;
+    });
+  }
+
+  updateProgressBars(currentTime) {
+    const departureLimit = {{ stay_duration }} * 60 * 1000;
+    
+    document.querySelectorAll(".progress-bar").forEach(progressBar => {
+      const row = progressBar.closest('tr');
       
-      // Progress calculation for smooth animation
-      if (progressBar) {
+      // Skip if vehicle has already departed
+      if (row.dataset.hasDeparted === 'true') {
+        return;
+      }
+      
+      const departureTime = new Date(row.dataset.departure).getTime();
+      
+      if (isNaN(departureTime)) {
+        return;
+      }
+      
+      const timeDiff = departureTime - currentTime;
+      
+      if (timeDiff <= 0) {
+        progressBar.style.width = "100%";
+        progressBar.style.background = "linear-gradient(90deg, var(--danger), #c0392b)";
+        progressBar.classList.add("glow");
+        return;
+      }
+      
+      if (timeDiff <= departureLimit) {
         const progressPercent = 100 - (timeDiff / departureLimit) * 100;
-        const currentWidth = parseFloat(progressBar.style.width) || 0;
+        const targetWidth = Math.min(100, Math.max(0, progressPercent));
         
         // Smooth transition for progress bar
-        const targetWidth = Math.min(100, Math.max(0, progressPercent));
-        if (Math.abs(currentWidth - targetWidth) > 1) {
-          progressBar.style.width = `${targetWidth}%`;
-          progressBar.style.transition = 'width 0.5s ease';
-        } else {
-          progressBar.style.width = `${targetWidth}%`;
-        }
+        progressBar.style.width = `${targetWidth}%`;
+        progressBar.style.transition = 'width 0.3s linear';
         
         // Color gradient based on urgency
         if (progressPercent > 75) {
@@ -280,31 +335,19 @@ function updateAllCountdowns() {
         }
         
         // Add pulse animation when under 5 minutes
-        if (timeDiff < 5 * 60 * 1000) { // 5 minutes
-          if (!progressBar.classList.contains('pulse')) {
-            progressBar.classList.add('pulse');
-          }
+        if (timeDiff < 5 * 60 * 1000) {
+          progressBar.classList.add('pulse');
         } else {
           progressBar.classList.remove('pulse');
         }
         
         progressBar.classList.remove("glow");
-      }
-      
-    } else {
-      // BOARDING (still have plenty of time)
-      badge.className = "status-badge status-boarding";
-      badge.innerHTML = '<i class="fa-solid fa-users"></i> <span class="countdown-text">BOARDING</span>';
-      
-      if (progressBar) {
+      } else {
         progressBar.style.width = "0%";
         progressBar.classList.remove("glow", "pulse");
       }
-    }
-  });
-  
-  // Schedule next update using requestAnimationFrame for smooth 60fps updates
-  requestAnimationFrame(updateAllCountdowns);
+    });
+  }
 }
 
 /* ===================================================
@@ -314,7 +357,6 @@ let refreshInProgress = false;
 let lastRefresh = Date.now();
 
 function refreshContent() {
-  // Don't refresh if already refreshing or less than 30 seconds since last refresh
   if (refreshInProgress || (Date.now() - lastRefresh < 30000)) {
     return;
   }
@@ -337,13 +379,13 @@ function refreshContent() {
       return;
     }
     
-    // Compare current and new content
     const currentContent = document.getElementById('route-container').innerHTML;
     const newContent = newRouteContainer.innerHTML;
     
-    // Only update if content actually changed
     if (currentContent !== newContent) {
-      // Smooth transition
+      // Stop countdown manager before updating DOM
+      countdownManager.stop();
+      
       const routeContainer = document.getElementById('route-container');
       routeContainer.style.opacity = '0.7';
       routeContainer.style.transition = 'opacity 0.3s ease';
@@ -353,6 +395,9 @@ function refreshContent() {
         routeContainer.style.opacity = '1';
         lastRefresh = Date.now();
         refreshInProgress = false;
+        
+        // Restart countdown manager with new content
+        setTimeout(() => countdownManager.start(), 100);
       }, 300);
     } else {
       refreshInProgress = false;
@@ -381,13 +426,16 @@ fullscreenBtn.onclick = () => {
 /* ===================================================
    INITIALIZE ON PAGE LOAD
 =================================================== */
+let countdownManager;
+
 document.addEventListener('DOMContentLoaded', () => {
-  // Start clock with smooth updates
+  // Start clock
   updateDateTime();
   setInterval(updateDateTime, 1000);
   
-  // Start countdown with smooth real-time animation
-  updateAllCountdowns(); // Uses requestAnimationFrame for smooth updates
+  // Initialize and start countdown manager
+  countdownManager = new CountdownManager();
+  countdownManager.start();
   
   // Background refresh every 30 seconds
   setInterval(refreshContent, 30000);
@@ -413,6 +461,18 @@ style.textContent = `
 
 .pulse {
   animation: pulse 1s infinite;
+}
+
+/* Smooth transition for countdown text */
+.countdown-timer {
+  font-variant-numeric: tabular-nums;
+  font-family: 'JetBrains Mono', monospace;
+  transition: all 0.3s ease;
+}
+
+/* Smooth transition for progress bars */
+.progress-bar {
+  transition: width 0.3s linear, background-color 0.3s ease !important;
 }
 `;
 document.head.appendChild(style);
