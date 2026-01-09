@@ -11,6 +11,31 @@
   <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <style>
+  /* CRITICAL: Add these styles for smooth countdown */
+  .countdown-text {
+    font-variant-numeric: tabular-nums;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    transition: opacity 0.1s ease;
+  }
+  
+  .status-countdown .countdown-text {
+    color: #dc3545;
+    animation: countdownPulse 1s infinite;
+  }
+  
+  @keyframes countdownPulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.8; }
+    100% { opacity: 1; }
+  }
+  
+  .progress-bar {
+    transition: width 1s linear !important;
+  }
+  </style>
 </head>
 
 <body>
@@ -150,7 +175,8 @@
                     </span>
                   {% else %}
                     <!-- Still in terminal - show countdown -->
-                    <span class="status-badge status-boarding countdown-element">
+                    <span class="status-badge status-boarding countdown-element"
+                          data-departure="{{ v.departure_timestamp }}">
                       <i class="fa-solid fa-clock"></i>
                       <span class="countdown-text">--:--</span>
                     </span>
@@ -173,7 +199,7 @@
 
 <script>
 /* ===================================================
-   CLOCK UPDATE - SMOOTH REAL-TIME
+   CLOCK UPDATE - SIMPLE AND EFFECTIVE
 =================================================== */
 function updateDateTime() {
   const now = new Date();
@@ -207,275 +233,166 @@ function filterRoute(slug){
 }
 
 /* ===================================================
-   REAL-TIME COUNTDOWN - SMOOTH ANIMATION
+   SIMPLE REAL-TIME COUNTDOWN - NO FREEZING
 =================================================== */
-class CountdownManager {
-  constructor() {
-    this.isRunning = false;
-    this.lastUpdateTime = 0;
-    this.updateInterval = 1000; // Update every second for countdown
-    this.animationFrame = null;
-  }
+// Store countdown intervals to clean up later
+let countdownIntervals = new Map();
 
-  start() {
-    if (this.isRunning) return;
-    this.isRunning = true;
-    this.lastUpdateTime = Date.now();
-    this.update();
-  }
-
-  stop() {
-    this.isRunning = false;
-    if (this.animationFrame) {
-      cancelAnimationFrame(this.animationFrame);
-      this.animationFrame = null;
-    }
-  }
-
-  update() {
-    if (!this.isRunning) return;
-
-    const currentTime = Date.now();
-    const elapsed = currentTime - this.lastUpdateTime;
-
-    // Update countdowns only once per second (for time display)
-    if (elapsed >= this.updateInterval) {
-      this.updateAllCountdowns(currentTime);
-      this.lastUpdateTime = currentTime;
-    }
-
-    // Update progress bars more frequently for smooth animation
-    this.updateProgressBars(currentTime);
-
-    // Continue the animation loop
-    this.animationFrame = requestAnimationFrame(() => this.update());
-  }
-
-  updateAllCountdowns(currentTime) {
-    const departureLimit = {{ stay_duration }} * 60 * 1000;
+function startAllCountdowns() {
+  // Clear any existing intervals
+  stopAllCountdowns();
+  
+  const departureLimit = {{ stay_duration }} * 60 * 1000; // minutes to milliseconds
+  
+  document.querySelectorAll('.countdown-element').forEach(element => {
+    const row = element.closest('tr');
+    const departureTime = new Date(row.dataset.departure).getTime();
+    const progressBar = row.querySelector('.progress-bar');
     
-    document.querySelectorAll(".countdown-element").forEach(badge => {
-      const row = badge.closest('tr');
-      
-      // Skip if vehicle has already departed
-      if (row.dataset.hasDeparted === 'true') {
-        return;
-      }
-      
-      const departureTime = new Date(row.dataset.departure).getTime();
-      
-      if (isNaN(departureTime)) {
-        console.error('Invalid departure time:', row.dataset.departure);
-        return;
-      }
-      
-      const timeDiff = departureTime - currentTime;
+    if (isNaN(departureTime)) return;
+    
+    // Create a dedicated interval for each countdown element
+    const intervalId = setInterval(() => {
+      const now = Date.now();
+      const timeDiff = departureTime - now;
       
       if (timeDiff <= 0) {
-        // TIME EXPIRED
-        badge.className = "status-badge status-departed";
-        badge.innerHTML = '<i class="fa-solid fa-hourglass-end"></i> <span class="countdown-text">TIME EXPIRED</span>';
+        // Time expired
+        element.className = "status-badge status-departed";
+        element.innerHTML = '<i class="fa-solid fa-hourglass-end"></i> <span class="countdown-text">TIME EXPIRED</span>';
+        
+        if (progressBar) {
+          progressBar.style.width = "100%";
+          progressBar.style.background = "linear-gradient(90deg, var(--danger), #c0392b)";
+          progressBar.classList.add("glow");
+        }
+        
+        clearInterval(intervalId);
+        countdownIntervals.delete(element);
         return;
       }
       
-      // Format time as MM:SS
+      // Update countdown text
       const totalMinutes = Math.floor(timeDiff / 60000);
       const seconds = Math.floor((timeDiff % 60000) / 1000);
       const minsStr = totalMinutes.toString().padStart(2, '0');
       const secsStr = seconds.toString().padStart(2, '0');
       
-      badge.className = "status-badge status-countdown";
-      badge.innerHTML = `<i class="fa-solid fa-stopwatch"></i> <span class="countdown-text countdown-timer">${minsStr}:${secsStr}</span>`;
-    });
-  }
-
-  updateProgressBars(currentTime) {
-    const departureLimit = {{ stay_duration }} * 60 * 1000;
-    
-    document.querySelectorAll(".progress-bar").forEach(progressBar => {
-      const row = progressBar.closest('tr');
+      // Only update if time actually changed (prevents unnecessary DOM updates)
+      const currentDisplay = element.querySelector('.countdown-text').textContent;
+      const newDisplay = `${minsStr}:${secsStr}`;
       
-      // Skip if vehicle has already departed
-      if (row.dataset.hasDeparted === 'true') {
-        return;
+      if (currentDisplay !== newDisplay) {
+        element.querySelector('.countdown-text').textContent = newDisplay;
+        
+        // Update status class based on time remaining
+        if (timeDiff < 5 * 60 * 1000) { // Less than 5 minutes
+          element.className = "status-badge status-countdown";
+        } else {
+          element.className = "status-badge status-boarding";
+        }
       }
       
-      const departureTime = new Date(row.dataset.departure).getTime();
-      
-      if (isNaN(departureTime)) {
-        return;
-      }
-      
-      const timeDiff = departureTime - currentTime;
-      
-      if (timeDiff <= 0) {
-        progressBar.style.width = "100%";
-        progressBar.style.background = "linear-gradient(90deg, var(--danger), #c0392b)";
-        progressBar.classList.add("glow");
-        return;
-      }
-      
-      if (timeDiff <= departureLimit) {
+      // Update progress bar
+      if (progressBar && timeDiff <= departureLimit) {
         const progressPercent = 100 - (timeDiff / departureLimit) * 100;
         const targetWidth = Math.min(100, Math.max(0, progressPercent));
         
-        // Smooth transition for progress bar
-        progressBar.style.width = `${targetWidth}%`;
-        progressBar.style.transition = 'width 0.3s linear';
-        
-        // Color gradient based on urgency
-        if (progressPercent > 75) {
-          progressBar.style.background = "linear-gradient(90deg, #e74c3c, #c0392b)";
-        } else if (progressPercent > 50) {
-          progressBar.style.background = "linear-gradient(90deg, var(--soft-coral), #e67e73)";
-        } else if (progressPercent > 25) {
-          progressBar.style.background = "linear-gradient(90deg, var(--soft-peach), var(--soft-coral))";
-        } else {
-          progressBar.style.background = "linear-gradient(90deg, var(--muted-light-blue), var(--muted-light-blue-dark))";
+        // Only update if significantly changed (for performance)
+        const currentWidth = parseFloat(progressBar.style.width) || 0;
+        if (Math.abs(currentWidth - targetWidth) > 0.5) {
+          progressBar.style.width = `${targetWidth}%`;
+          
+          // Update color based on progress
+          if (progressPercent > 75) {
+            progressBar.style.background = "linear-gradient(90deg, #e74c3c, #c0392b)";
+          } else if (progressPercent > 50) {
+            progressBar.style.background = "linear-gradient(90deg, var(--soft-coral), #e67e73)";
+          } else if (progressPercent > 25) {
+            progressBar.style.background = "linear-gradient(90deg, var(--soft-peach), var(--soft-coral))";
+          } else {
+            progressBar.style.background = "linear-gradient(90deg, var(--muted-light-blue), var(--muted-light-blue-dark))";
+          }
         }
-        
-        // Add pulse animation when under 5 minutes
-        if (timeDiff < 5 * 60 * 1000) {
-          progressBar.classList.add('pulse');
-        } else {
-          progressBar.classList.remove('pulse');
-        }
-        
-        progressBar.classList.remove("glow");
-      } else {
-        progressBar.style.width = "0%";
-        progressBar.classList.remove("glow", "pulse");
       }
-    });
-  }
+      
+    }, 1000); // Update every second
+    
+    countdownIntervals.set(element, intervalId);
+    
+    // Trigger immediate first update
+    element.dispatchEvent(new Event('countdown-tick'));
+  });
+}
+
+function stopAllCountdowns() {
+  countdownIntervals.forEach((intervalId, element) => {
+    clearInterval(intervalId);
+  });
+  countdownIntervals.clear();
 }
 
 /* ===================================================
-   AUTO REFRESH - NON-BLOCKING
+   SIMPLE AUTO REFRESH
 =================================================== */
-let refreshInProgress = false;
-let lastRefresh = Date.now();
+let autoRefreshTimeout;
 
-function refreshContent() {
-  if (refreshInProgress || (Date.now() - lastRefresh < 30000)) {
-    return;
-  }
-  
-  refreshInProgress = true;
-  
-  fetch(location.href, {
-    headers: {
-      'X-Requested-With': 'XMLHttpRequest'
-    }
-  })
-  .then(response => response.text())
-  .then(html => {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
-    const newRouteContainer = doc.getElementById('route-container');
-    
-    if (!newRouteContainer) {
-      refreshInProgress = false;
-      return;
-    }
-    
-    const currentContent = document.getElementById('route-container').innerHTML;
-    const newContent = newRouteContainer.innerHTML;
-    
-    if (currentContent !== newContent) {
-      // Stop countdown manager before updating DOM
-      countdownManager.stop();
-      
-      const routeContainer = document.getElementById('route-container');
-      routeContainer.style.opacity = '0.7';
-      routeContainer.style.transition = 'opacity 0.3s ease';
-      
-      setTimeout(() => {
-        routeContainer.innerHTML = newContent;
-        routeContainer.style.opacity = '1';
-        lastRefresh = Date.now();
-        refreshInProgress = false;
-        
-        // Restart countdown manager with new content
-        setTimeout(() => countdownManager.start(), 100);
-      }, 300);
-    } else {
-      refreshInProgress = false;
-    }
-  })
-  .catch(error => {
-    console.error('Refresh failed:', error);
-    refreshInProgress = false;
-  });
+function scheduleAutoRefresh() {
+  clearTimeout(autoRefreshTimeout);
+  autoRefreshTimeout = setTimeout(() => {
+    window.location.reload();
+  }, 60000); // Full page reload every 60 seconds
 }
 
 /* ===================================================
    FULLSCREEN TOGGLE
 =================================================== */
-const fullscreenBtn = document.getElementById('fullscreenBtn');
-fullscreenBtn.onclick = () => {
+document.getElementById('fullscreenBtn').onclick = () => {
   if (!document.fullscreenElement) {
     document.documentElement.requestFullscreen();
-    fullscreenBtn.innerHTML = '<i class="fa-solid fa-compress me-1"></i> Exit Fullscreen';
+    document.getElementById('fullscreenBtn').innerHTML = '<i class="fa-solid fa-compress me-1"></i> Exit Fullscreen';
   } else {
     document.exitFullscreen();
-    fullscreenBtn.innerHTML = '<i class="fa-solid fa-expand me-1"></i> Fullscreen';
+    document.getElementById('fullscreenBtn').innerHTML = '<i class="fa-solid fa-expand me-1"></i> Fullscreen';
   }
 };
 
 /* ===================================================
-   INITIALIZE ON PAGE LOAD
+   INITIALIZE EVERYTHING - SIMPLE AND EFFECTIVE
 =================================================== */
-let countdownManager;
-
 document.addEventListener('DOMContentLoaded', () => {
   // Start clock
   updateDateTime();
   setInterval(updateDateTime, 1000);
   
-  // Initialize and start countdown manager
-  countdownManager = new CountdownManager();
-  countdownManager.start();
+  // Start all countdowns
+  startAllCountdowns();
   
-  // Background refresh every 30 seconds
-  setInterval(refreshContent, 30000);
+  // Schedule auto refresh
+  scheduleAutoRefresh();
   
   // Smooth page load
   document.body.style.opacity = '0';
-  document.body.style.transition = 'opacity 0.5s ease';
+  document.body.style.transition = 'opacity 0.3s ease';
   setTimeout(() => {
     document.body.style.opacity = '1';
   }, 100);
+  
+  // Handle page visibility changes
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      stopAllCountdowns();
+    } else {
+      startAllCountdowns();
+    }
+  });
 });
 
-/* ===================================================
-   ADD CSS FOR PULSE ANIMATION
-=================================================== */
-const style = document.createElement('style');
-style.textContent = `
-@keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.7; }
-  100% { opacity: 1; }
-}
-
-.pulse {
-  animation: pulse 1s infinite;
-}
-
-/* Smooth transition for countdown text */
-.countdown-timer {
-  font-variant-numeric: tabular-nums;
-  font-family: 'JetBrains Mono', monospace;
-  transition: all 0.3s ease;
-}
-
-/* Smooth transition for progress bars */
-.progress-bar {
-  transition: width 0.3s linear, background-color 0.3s ease !important;
-}
-`;
-document.head.appendChild(style);
+// Clean up on page unload
+window.addEventListener('beforeunload', () => {
+  stopAllCountdowns();
+  clearTimeout(autoRefreshTimeout);
+});
 </script>
 
 </body>
