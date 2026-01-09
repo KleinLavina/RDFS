@@ -722,7 +722,7 @@ function updateCountdowns(){
   });
 }
 
-/* AUTO REFRESH */
+/* AUTO REFRESH - IMPROVED WITHOUT VISUAL FREEZE */
 let refreshInProgress = false;
 
 function refreshContent() {
@@ -730,10 +730,7 @@ function refreshContent() {
   
   refreshInProgress = true;
   
-  const routeContainer = document.getElementById('route-container');
-  routeContainer.style.opacity = '0.7';
-  routeContainer.style.transition = 'opacity 0.3s ease';
-  
+  // Fetch new data WITHOUT replacing DOM (keep countdown running smoothly)
   fetch(location.href, {
     headers: {
       'X-Requested-With': 'XMLHttpRequest'
@@ -743,17 +740,93 @@ function refreshContent() {
   .then(html => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
-    const newContent = doc.getElementById('route-container').innerHTML;
+    const newRouteContainer = doc.getElementById('route-container');
     
-    routeContainer.innerHTML = newContent;
-    routeContainer.style.opacity = '1';
+    if (!newRouteContainer) {
+      refreshInProgress = false;
+      return;
+    }
     
-    updateCountdowns();
+    // Extract vehicle data from new HTML without replacing DOM
+    const currentRows = document.querySelectorAll('tr[data-departure]');
+    const newRows = newRouteContainer.querySelectorAll('tr[data-departure]');
+    
+    // Build map of new vehicle data
+    const newVehicleData = new Map();
+    newRows.forEach(row => {
+      const plate = row.querySelector('.vehicle-plate')?.textContent.trim();
+      if (plate) {
+        newVehicleData.set(plate, {
+          departure: row.dataset.departure,
+          hasDeparted: row.dataset.hasDeparted === 'true',
+          entryTime: row.querySelector('.entry-time')?.textContent.trim(),
+          driver: row.querySelector('.driver-info')?.textContent.trim(),
+          departureTimeDisplay: row.querySelector('.departure-time-display')?.textContent.trim()
+        });
+      }
+    });
+    
+    // Update existing rows data attributes WITHOUT replacing DOM
+    currentRows.forEach(row => {
+      const plate = row.querySelector('.vehicle-plate')?.textContent.trim();
+      if (plate && newVehicleData.has(plate)) {
+        const newData = newVehicleData.get(plate);
+        
+        // Update data attributes for countdown calculation
+        row.dataset.departure = newData.departure;
+        row.dataset.hasDeparted = newData.hasDeparted ? 'true' : 'false';
+        
+        // If vehicle departed, update the display immediately
+        if (newData.hasDeparted) {
+          const badge = row.querySelector('.status-badge');
+          if (badge && !badge.classList.contains('status-departed')) {
+            badge.className = 'status-badge status-departed';
+            badge.innerHTML = '<i class="fa-solid fa-circle-check"></i> <span class="countdown-text">DEPARTED</span>';
+            
+            const progressBar = row.querySelector('.progress-bar');
+            if (progressBar) {
+              progressBar.style.width = "100%";
+              progressBar.style.background = "linear-gradient(90deg, var(--dark-blue), var(--dark-blue-hover))";
+              progressBar.classList.add("glow");
+            }
+            
+            const departureDisplay = row.querySelector('.departure-time-display');
+            if (departureDisplay) {
+              departureDisplay.classList.add('departed');
+              departureDisplay.innerHTML = '<i class="fa-solid fa-calendar-xmark me-1"></i>' + newData.departureTimeDisplay;
+            }
+          }
+        }
+      }
+    });
+    
+    // Check for NEW vehicles or REMOVED vehicles (major changes require full refresh)
+    const currentPlates = new Set(Array.from(currentRows).map(r => 
+      r.querySelector('.vehicle-plate')?.textContent.trim()
+    ).filter(Boolean));
+    
+    const newPlates = new Set(newVehicleData.keys());
+    
+    // If vehicles added or removed, do a smooth full refresh
+    const vehiclesChanged = currentPlates.size !== newPlates.size || 
+                           ![...currentPlates].every(p => newPlates.has(p));
+    
+    if (vehiclesChanged) {
+      const routeContainer = document.getElementById('route-container');
+      routeContainer.style.transition = 'opacity 0.3s ease';
+      routeContainer.style.opacity = '0.7';
+      
+      setTimeout(() => {
+        routeContainer.innerHTML = newRouteContainer.innerHTML;
+        routeContainer.style.opacity = '1';
+        updateCountdowns(); // Restart countdown for new vehicles
+      }, 300);
+    }
+    
     refreshInProgress = false;
   })
   .catch(error => {
     console.error('Refresh failed:', error);
-    routeContainer.style.opacity = '1';
     refreshInProgress = false;
   });
 }
