@@ -24,6 +24,7 @@ def _maintenance_task(now=None):
     # load admin-config
     settings = SystemSettings.get_solo()
     departure_duration = int(getattr(settings, "departure_duration_minutes", 30))
+    departed_cutoff = now - timedelta(minutes=DEPARTED_VISIBLE_MINUTES)
 
     # 1) Auto-close active entries where created_at + departure_duration <= now
     cutoff = now - timedelta(minutes=departure_duration)
