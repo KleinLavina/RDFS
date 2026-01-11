@@ -127,6 +127,34 @@
     box-shadow:var(--shadow-sm);
   }
 
+  .table-toolbar__actions{
+    display:flex;
+    align-items:center;
+    gap:.75rem;
+  }
+
+  .table-toolbar__refresh{
+    border:1px solid var(--medium-blue);
+    background:#fff;
+    color:var(--medium-blue);
+    border-radius:999px;
+    padding:.35rem 1.2rem;
+    font-weight:600;
+    font-size:.85rem;
+    font-family:var(--font-body);
+    cursor:pointer;
+    transition:background .2s ease, color .2s ease, transform .2s ease;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  .table-toolbar__refresh:hover{
+    background:var(--medium-blue);
+    color:#fff;
+    transform:translateY(-1px);
+  }
+
   .table-toolbar__filter i{
     color:var(--medium-blue);
     font-size:.9rem;

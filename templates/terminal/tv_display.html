@@ -11,389 +11,151 @@
   <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  
-  <style>
-  /* CRITICAL: Add these styles for smooth countdown */
-  .countdown-text {
-    font-variant-numeric: tabular-nums;
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 600;
-    transition: opacity 0.1s ease;
-  }
-  
-  .status-countdown .countdown-text {
-    color: #dc3545;
-    animation: countdownPulse 1s infinite;
-  }
-  
-  @keyframes countdownPulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.8; }
-    100% { opacity: 1; }
-  }
-  
-  .progress-bar {
-    transition: width 1s linear !important;
-  }
-  </style>
+  <link rel="stylesheet" href="{% static 'styles/terminal/tv_display.css' %}">
 </head>
 
 <body>
 
-<!-- HEADER -->
-<div class="tv-header">
-  <h2><i class="fa-solid fa-tv me-2"></i> Terminal Queue Board</h2>
-
-  <div class="tv-sub">
-    {% if selected_route != "All Routes" %}
-      <i class="fa-solid fa-road me-1"></i> {{ selected_route }} Display
-    {% else %}
-      <i class="fa-solid fa-earth-americas me-1"></i> All Routes Display
-    {% endif %}
-  </div>
-
-  <div id="live-clock" class="tv-clock">
-    <i class="fa-solid fa-clock-rotate-left me-2"></i>
-    <span id="current-date"></span> | <span id="current-time"></span>
-  </div>
-
-  <a href="{% url 'accounts:staff_dashboard' %}" class="tv-btn back">
-    <i class="fa-solid fa-circle-arrow-left me-1"></i> Dashboard
-  </a>
-
-  <button id="fullscreenBtn" class="tv-btn full">
-    <i class="fa-solid fa-expand me-1"></i> Fullscreen
-  </button>
-</div>
-
-<!-- ROUTE CONTAINER -->
-<div class="container-fluid px-5">
-
-  <!-- CONTAINER HEADER -->
-  <div class="container-header">
-    <div class="container-title">
-      <i class="fa-solid fa-diagram-project me-2"></i>
-      Active Routes Overview
-    </div>
-
-    <div class="route-filter">
-      <label for="routeSelector">
-        <i class="fa-solid fa-filter me-1"></i> Filter Route
-      </label>
-      <select id="routeSelector" onchange="filterRoute(this.value)">
-        <option value="">All Routes</option>
-        {% for route in all_routes %}
-          <option value="{{ route.name|slugify }}"
-                  {% if route.name == selected_route %}selected{% endif %}>
-            {{ route.name }}
-          </option>
-        {% endfor %}
-      </select>
+<header class="tv-mini-header">
+  <div class="tv-mini-header__left">
+    <a href="{% url 'accounts:staff_dashboard' %}" class="tv-mini-btn tv-mini-btn--dashboard">
+      <i class="fa-solid fa-circle-arrow-left"></i>
+      <span>Back to dashboard</span>
+    </a>
+    <div class="tv-mini-route-chip">
+      <i class="fa-solid fa-location-dot"></i>
+      <span>
+        {% if selected_route %}
+          {{ selected_route }}
+        {% else %}
+          All routes
+        {% endif %}
+      </span>
     </div>
   </div>
+  <div class="tv-mini-header__right">
+    <div id="live-clock" class="tv-mini-clock">
+      <i class="fa-solid fa-clock-rotate-left"></i>
+      <span id="current-date"></span>
+      <span class="tv-mini-clock__divider">·</span>
+      <span id="current-time"></span>
+    </div>
+    <button id="fullscreenBtn" class="tv-mini-btn tv-mini-btn--fullscreen">
+      <i class="fa-solid fa-expand"></i>
+      <span>Fullscreen</span>
+    </button>
+  </div>
+</header>
 
-  <!-- ROUTES -->
-  <div id="route-container">
-    {% if grouped_routes %}
-      {% for route_name, vehicles in grouped_routes.items %}
-      <div class="route-section" data-route="{{ route_name|slugify }}">
-        <div class="route-header">
+<main class="tv-grid-wrapper">
+  <section class="route-grid">
+    {% if route_sections %}
+      {% for section in route_sections %}
+      <article class="route-card" data-route="{{ section.slug }}">
+        <header class="route-card__header">
           <div>
-            <i class="fa-solid fa-location-dot me-2"></i>
-            {{ route_name }}
+            <h3 class="route-card__title">{{ section.name }}</h3>
+            <p class="route-card__subtitle">
+              {{ section.entries|length }} Vehicles
+              <span class="route-card__subtitle-muted">
+                · Boarding {{ section.status_summary.Boarding|default:0 }}
+                · Queued {{ section.status_summary.Queued|default:0 }}
+                · Departed {{ section.status_summary.Departed|default:0 }}
+                {% if section.status_summary.Idle %}
+                  · Idle
+                {% endif %}
+              </span>
+            </p>
           </div>
-          <div class="route-count">
-            <i class="fa-solid fa-bus"></i>
-            {{ vehicles|length }} Active
+          <div class="route-card__badges">
+            <span class="route-card__badge route-card__badge--boarding">
+              <i class="fa-solid fa-person-running"></i>
+              <strong>{{ section.status_summary.Boarding|default:0 }}</strong>
+              <span>boarding</span>
+            </span>
+            <span class="route-card__badge route-card__badge--queued">
+              <i class="fa-solid fa-hashtag"></i>
+              <strong>{{ section.status_summary.Queued|default:0 }}</strong>
+              <span>queued</span>
+            </span>
+            <span class="route-card__badge route-card__badge--departed">
+              <i class="fa-solid fa-check-circle"></i>
+              <strong>{{ section.status_summary.Departed|default:0 }}</strong>
+              <span>departed</span>
+            </span>
+            {% if section.status_summary.Idle %}
+            <span class="route-card__badge route-card__badge--idle">
+              <i class="fa-solid fa-signal"></i>
+              <strong>Idle</strong>
+            </span>
+            {% endif %}
           </div>
+        </header>
+        <div class="route-card__entries">
+          {% if section.entries %}
+            {% for entry in section.entries %}
+            <div class="route-entry">
+              <div class="route-entry__top">
+                <span class="route-entry__plate">{{ entry.vehicle_plate|default:"—" }}</span>
+                <span class="status-pill status-pill-{{ entry.status|lower }}">
+                  {{ entry.status }}
+                </span>
         </div>
-
-        <div class="table-responsive">
-          <table class="table table-bordered align-middle mb-0">
-            <thead>
-              <tr>
-                <th><i class="fa-solid fa-door-open"></i> Entry Time</th>
-                <th><i class="fa-solid fa-van-shuttle"></i> Vehicle</th>
-                <th><i class="fa-solid fa-user-tie"></i> Driver</th>
-                <th><i class="fa-solid fa-clock-four"></i> Departure Time</th>
-                <th><i class="fa-solid fa-hourglass-half"></i> Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for v in vehicles %}
-              <tr data-departure="{{ v.departure_timestamp }}" 
-                  data-has-departed="{{ v.has_departed|yesno:'true,false' }}"
-                  data-plate="{{ v.plate }}"
-                  data-departure-time="{{ v.departure_time }}"
-                  data-actual-departed="{{ v.actual_departed_at|default:'' }}">
-                <td>
-                  <span class="entry-time">
-                    <i class="fa-solid fa-calendar-check me-1"></i>{{ v.entry_time }}
+              <div class="route-entry__info">
+                <span class="route-entry__driver">
+                  <i class="fa-solid fa-user-tie"></i> {{ entry.driver_name }}
                   </span>
-                </td>
-                <td>
-                  <span class="vehicle-plate">
-                    <i class="fa-solid fa-id-card me-1"></i>{{ v.plate }}
+                <span class="route-entry__times">
+                  <i class="fa-solid fa-calendar-days"></i>
+                  {{ entry.entry_time_display }} → {{ entry.departure_time_display }}
                   </span>
-                </td>
-                <td class="driver-info">
-                  <i class="fa-solid fa-id-badge me-2"></i>{{ v.driver }}
-                </td>
-                <td>
-                  <div class="countdown-container">
-                    {% if v.has_departed %}
-                      <!-- Already departed -->
-                      <span class="departure-time-display departed">
-                        <i class="fa-solid fa-calendar-xmark me-1"></i>
-                        {{ v.actual_departed_at }}
+              </div>
+              <div class="route-entry__countdown">
+                {% if entry.countdown_active %}
+                <span class="countdown-element" data-expiry="{{ entry.expiry_timestamp }}">
+                  <span class="countdown-text">--:--</span>
                       </span>
+                {% elif entry.status == "Queued" %}
+                <span class="queued-pill">Queued</span>
                     {% else %}
-                      <!-- Still in terminal -->
-                      <span class="departure-time-display">
-                        <i class="fa-solid fa-calendar-days me-1"></i>
-                        {{ v.departure_time }}
-                      </span>
-                    {% endif %}
-                    
-                    <div class="progress-container">
-                      <div class="progress">
-                        {% if v.has_departed %}
-                          <div class="progress-bar glow" style="width:100%; background:linear-gradient(90deg, var(--dark-blue), var(--dark-blue-hover));"></div>
-                        {% else %}
-                          <div class="progress-bar" style="width:0%"></div>
+                <span class="departed-pill">Departed</span>
                         {% endif %}
                       </div>
                     </div>
+            {% endfor %}
+          {% else %}
+          <div class="route-card__empty">
+            <i class="fa-solid fa-circle-dot"></i>
+            <span>Awaiting vehicles</span>
                   </div>
-                </td>
-                <td>
-                  {% if v.has_departed %}
-                    <!-- Already departed - show static state -->
-                    <span class="status-badge status-departed">
-                      <i class="fa-solid fa-circle-check"></i>
-                      <span class="countdown-text">DEPARTED</span>
-                    </span>
-                  {% else %}
-                    <!-- Still in terminal - show countdown -->
-                    <span class="status-badge status-boarding countdown-element"
-                          data-departure="{{ v.departure_timestamp }}">
-                      <i class="fa-solid fa-clock"></i>
-                      <span class="countdown-text">--:--</span>
-                    </span>
                   {% endif %}
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
         </div>
-      </div>
+        {% if section.history_events %}
+        <div class="route-card__history">
+          <div class="history-title">Recent activity</div>
+          <ul>
+            {% for event in section.history_events %}
+            <li>
+              <span class="history-plate">{{ event.vehicle_plate }}</span>
+              <span class="history-action">{{ event.action }}</span>
+              <span class="history-time">{{ event.timestamp }}</span>
+            </li>
+              {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+      </article>
       {% endfor %}
     {% else %}
-      <div class="alert alert-secondary text-center">
-        <i class="fa-solid fa-circle-info me-2"></i> No active vehicles in terminal.
+    <div class="route-empty-state">
+      <i class="fa-solid fa-circle-exclamation"></i>
+      <p>No routes active right now.</p>
       </div>
     {% endif %}
-  </div>
-</div>
+  </section>
+</main>
 
-<script>
-/* ===================================================
-   CLOCK UPDATE - SIMPLE AND EFFECTIVE
-=================================================== */
-function updateDateTime() {
-  const now = new Date();
-  
-  const dateOptions = { 
-    weekday: 'long', 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  };
-  const timeOptions = { 
-    hour12: true, 
-    hour: 'numeric', 
-    minute: '2-digit', 
-    second: '2-digit',
-    timeZoneName: 'short' 
-  };
-  
-  document.getElementById('current-date').textContent = 
-    now.toLocaleDateString('en-US', dateOptions);
-  document.getElementById('current-time').textContent = 
-    now.toLocaleTimeString('en-US', timeOptions);
-}
-
-/* ===================================================
-   ROUTE FILTER
-=================================================== */
-function filterRoute(slug){
-  const base = window.location.origin + "{% url 'terminal:tv_display' %}";
-  window.location.href = slug ? base + slug + "/" : base;
-}
-
-/* ===================================================
-   SIMPLE REAL-TIME COUNTDOWN - NO FREEZING
-=================================================== */
-// Store countdown intervals to clean up later
-let countdownIntervals = new Map();
-
-function startAllCountdowns() {
-  // Clear any existing intervals
-  stopAllCountdowns();
-  
-  const departureLimit = {{ stay_duration }} * 60 * 1000; // minutes to milliseconds
-  
-  document.querySelectorAll('.countdown-element').forEach(element => {
-    const row = element.closest('tr');
-    const departureTime = new Date(row.dataset.departure).getTime();
-    const progressBar = row.querySelector('.progress-bar');
-    
-    if (isNaN(departureTime)) return;
-    
-    // Create a dedicated interval for each countdown element
-    const intervalId = setInterval(() => {
-      const now = Date.now();
-      const timeDiff = departureTime - now;
-      
-      if (timeDiff <= 0) {
-        // Time expired
-        element.className = "status-badge status-departed";
-        element.innerHTML = '<i class="fa-solid fa-hourglass-end"></i> <span class="countdown-text">TIME EXPIRED</span>';
-        
-        if (progressBar) {
-          progressBar.style.width = "100%";
-          progressBar.style.background = "linear-gradient(90deg, var(--danger), #c0392b)";
-          progressBar.classList.add("glow");
-        }
-        
-        clearInterval(intervalId);
-        countdownIntervals.delete(element);
-        return;
-      }
-      
-      // Update countdown text
-      const totalMinutes = Math.floor(timeDiff / 60000);
-      const seconds = Math.floor((timeDiff % 60000) / 1000);
-      const minsStr = totalMinutes.toString().padStart(2, '0');
-      const secsStr = seconds.toString().padStart(2, '0');
-      
-      // Only update if time actually changed (prevents unnecessary DOM updates)
-      const currentDisplay = element.querySelector('.countdown-text').textContent;
-      const newDisplay = `${minsStr}:${secsStr}`;
-      
-      if (currentDisplay !== newDisplay) {
-        element.querySelector('.countdown-text').textContent = newDisplay;
-        
-        // Update status class based on time remaining
-        if (timeDiff < 5 * 60 * 1000) { // Less than 5 minutes
-          element.className = "status-badge status-countdown";
-        } else {
-          element.className = "status-badge status-boarding";
-        }
-      }
-      
-      // Update progress bar
-      if (progressBar && timeDiff <= departureLimit) {
-        const progressPercent = 100 - (timeDiff / departureLimit) * 100;
-        const targetWidth = Math.min(100, Math.max(0, progressPercent));
-        
-        // Only update if significantly changed (for performance)
-        const currentWidth = parseFloat(progressBar.style.width) || 0;
-        if (Math.abs(currentWidth - targetWidth) > 0.5) {
-          progressBar.style.width = `${targetWidth}%`;
-          
-          // Update color based on progress
-          if (progressPercent > 75) {
-            progressBar.style.background = "linear-gradient(90deg, #e74c3c, #c0392b)";
-          } else if (progressPercent > 50) {
-            progressBar.style.background = "linear-gradient(90deg, var(--soft-coral), #e67e73)";
-          } else if (progressPercent > 25) {
-            progressBar.style.background = "linear-gradient(90deg, var(--soft-peach), var(--soft-coral))";
-          } else {
-            progressBar.style.background = "linear-gradient(90deg, var(--muted-light-blue), var(--muted-light-blue-dark))";
-          }
-        }
-      }
-      
-    }, 1000); // Update every second
-    
-    countdownIntervals.set(element, intervalId);
-    
-    // Trigger immediate first update
-    element.dispatchEvent(new Event('countdown-tick'));
-  });
-}
-
-function stopAllCountdowns() {
-  countdownIntervals.forEach((intervalId, element) => {
-    clearInterval(intervalId);
-  });
-  countdownIntervals.clear();
-}
-
-/* ===================================================
-   SIMPLE AUTO REFRESH
-=================================================== */
-let autoRefreshTimeout;
-
-function scheduleAutoRefresh() {
-  clearTimeout(autoRefreshTimeout);
-  autoRefreshTimeout = setTimeout(() => {
-    window.location.reload();
-  }, 60000); // Full page reload every 60 seconds
-}
-
-/* ===================================================
-   FULLSCREEN TOGGLE
-=================================================== */
-document.getElementById('fullscreenBtn').onclick = () => {
-  if (!document.fullscreenElement) {
-    document.documentElement.requestFullscreen();
-    document.getElementById('fullscreenBtn').innerHTML = '<i class="fa-solid fa-compress me-1"></i> Exit Fullscreen';
-  } else {
-    document.exitFullscreen();
-    document.getElementById('fullscreenBtn').innerHTML = '<i class="fa-solid fa-expand me-1"></i> Fullscreen';
-  }
-};
-
-/* ===================================================
-   INITIALIZE EVERYTHING - SIMPLE AND EFFECTIVE
-=================================================== */
-document.addEventListener('DOMContentLoaded', () => {
-  // Start clock
-  updateDateTime();
-  setInterval(updateDateTime, 1000);
-  
-  // Start all countdowns
-  startAllCountdowns();
-  
-  // Schedule auto refresh
-  scheduleAutoRefresh();
-  
-  // Smooth page load
-  document.body.style.opacity = '0';
-  document.body.style.transition = 'opacity 0.3s ease';
-  setTimeout(() => {
-    document.body.style.opacity = '1';
-  }, 100);
-  
-  // Handle page visibility changes
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      stopAllCountdowns();
-    } else {
-      startAllCountdowns();
-    }
-  });
-});
-
-// Clean up on page unload
-window.addEventListener('beforeunload', () => {
-  stopAllCountdowns();
-  clearTimeout(autoRefreshTimeout);
-});
-</script>
+<script src="{% static 'js/terminal/tv_display.js' %}" defer></script>
 
 </body>
 </html>

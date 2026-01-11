@@ -160,9 +160,10 @@
 
 .rdfs-vehicle-info-grid{
   display:grid;
-  grid-template-columns:1fr 120px;
+  grid-template-columns:minmax(0,1fr) 140px;
   gap:1.5rem;
   margin-bottom:1.5rem;
+  align-items:start;
 }
 
 /* DRIVER SECTION WITH PFP */
@@ -243,14 +244,27 @@
 /* QR */
 .rdfs-vehicle-qr{
   text-align:center;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:0.6rem;
+  padding:0.25rem;
+  background:var(--gray-100);
+  border-radius:12px;
 }
 
 .rdfs-vehicle-qr img{
   width:100%;
-  max-width:120px;
+  max-width:150px;
   height:auto;
-  border-radius:10px;
+  border-radius:12px;
   border:1px solid var(--gray-300);
+  object-fit:contain;
+}
+
+.rdfs-vehicle-qr .btn{
+  width:100%;
+  max-width:150px;
 }
 
 /* FOOTER */
@@ -263,6 +277,17 @@
   gap:.5rem;
   background:#fafbfd;
   border-radius:0 0 16px 16px;
+}
+
+@media (max-width: 992px){
+  .rdfs-vehicle-info-grid{
+    grid-template-columns:1fr;
+  }
+  .rdfs-vehicle-qr{
+    padding:0;
+    background:transparent;
+    border-radius:0;
+  }
 }
 
 /* DELETE BUTTON */

@@ -58,6 +58,7 @@ class EntryLog(models.Model):
         blank=True,
         help_text="Wallet balance snapshot at the time the entry log was created.",
     )
+    boarding_started_at = models.DateTimeField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_FAILED)
     message = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)

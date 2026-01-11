@@ -81,7 +81,11 @@ def _build_public_queue_entries(queue_logs, now, departure_duration, departed_cu
 
             expiry_timestamp = None
             if status == "Boarding":
-                expiry = log.created_at + timedelta(minutes=departure_duration)
+                boarding_start = log.boarding_started_at
+                if not boarding_start:
+                    boarding_start = now
+                    EntryLog.objects.filter(pk=log.pk).update(boarding_started_at=boarding_start)
+                expiry = boarding_start + timedelta(minutes=departure_duration)
                 expiry_timestamp = int(expiry.timestamp())
 
             vehicle = getattr(log, "vehicle", None)

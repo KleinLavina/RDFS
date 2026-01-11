@@ -38,6 +38,7 @@
 
 <!-- SHARED HEADER -->
 {% include "passenger/header.html" %}
+
 <!-- HERO -->
 <section class="queue-hero">
   <div class="container">
@@ -58,18 +59,24 @@
           <i class="bi bi-list-ul"></i>
           <span>Vehicle Queue</span>
         </div>
-        <form method="get" class="table-toolbar__filter">
-          <i class="bi bi-funnel"></i>
-          <select name="route" onchange="this.form.submit()">
-            <option value="all">All Routes</option>
-            {% for route in routes %}
-              <option value="{{ route.id }}"
-                {% if route.id|stringformat:'s' == selected_route %}selected{% endif %}>
-                {{ route.origin }} → {{ route.destination }}
-              </option>
-            {% endfor %}
-          </select>
-        </form>
+        <div class="table-toolbar__actions">
+          <form method="get" class="table-toolbar__filter">
+            <i class="bi bi-funnel"></i>
+            <select name="route" onchange="this.form.submit()">
+              <option value="all">All Routes</option>
+              {% for route in routes %}
+                <option value="{{ route.id }}"
+                  {% if route.id|stringformat:'s' == selected_route %}selected{% endif %}>
+                  {{ route.origin }} → {{ route.destination }}
+                </option>
+              {% endfor %}
+            </select>
+          </form>
+          <button type="button" class="table-toolbar__refresh" onclick="window.location.reload()">
+            <i class="fa-solid fa-rotate-right"></i>
+            Refresh Page
+          </button>
+        </div>
       </div>
 
         <!-- DESKTOP TABLE (hidden on mobile) -->
@@ -135,7 +142,7 @@
 <!-- MOBILE CARDS (hidden on desktop) -->
 <div class="mobile-cards-container">
   {% for q in queue_entries %}
-  <div class="vehicle-card"{% if q.countdown_active %} data-expiry="{{ q.expiry_timestamp }}"{% endif %}>
+  <div class="vehicle-card vehicle-card--landscape"{% if q.countdown_active %} data-expiry="{{ q.expiry_timestamp }}"{% endif %}>
     
     <!-- CARD HEADER: Vehicle & Status -->
     <div class="card-header">
@@ -157,7 +164,32 @@
       <span class="status-pill status-pill-{{ q.status|lower }}">
         {{ q.status }}
       </span>
+          <!-- COUNTDOWN STATUS -->
+    <div class="card-countdown">
+      <div class="countdown-section">
+        <div class="countdown-label">
+          <i class="bi bi-stopwatch"></i>
+          <span>Countdown</span>
+        </div>
+        <div class="countdown-timer">
+          {% if q.countdown_active %}
+            <span class="countdown-mobile countdown-mobile-element" 
+                  data-expiry="{{ q.expiry_timestamp }}">
+              --
+            </span>
+          {% elif q.status == "Queued" %}
+            <span class="queued-badge">Waiting in line</span>
+          {% else %}
+            <span class="departed-badge">
+              <i class="bi bi-check-circle"></i> Departed
+            </span>
+          {% endif %}
+        </div>
+      </div>
     </div>
+    </div>
+    
+
     
     <!-- CARD BODY: Key Information -->
     <div class="card-body">
@@ -189,30 +221,6 @@
         </div>
       </div>
       
-    </div>
-    
-    <!-- CARD FOOTER: Countdown -->
-    <div class="card-footer">
-      <div class="countdown-section">
-        <div class="countdown-label">
-          <i class="bi bi-stopwatch"></i>
-          <span>Countdown</span>
-        </div>
-        <div class="countdown-timer">
-          {% if q.countdown_active %}
-            <span class="countdown-mobile countdown-mobile-element" 
-                  data-expiry="{{ q.expiry_timestamp }}">
-              --
-            </span>
-          {% elif q.status == "Queued" %}
-            <span class="queued-badge">Waiting in line</span>
-          {% else %}
-            <span class="departed-badge">
-              <i class="bi bi-check-circle"></i> Departed
-            </span>
-          {% endif %}
-        </div>
-      </div>
     </div>
     
   </div>

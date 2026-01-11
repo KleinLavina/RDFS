@@ -1,0 +1,22 @@
+/* CRITICAL: Add these styles for smooth countdown */
+.countdown-text {
+  font-variant-numeric: tabular-nums;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  transition: opacity 0.1s ease;
+}
+
+.status-countdown .countdown-text {
+  color: #dc3545;
+  animation: countdownPulse 1s infinite;
+}
+
+@keyframes countdownPulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.8; }
+  100% { opacity: 1; }
+}
+
+.progress-bar {
+  transition: width 1s linear !important;
+}

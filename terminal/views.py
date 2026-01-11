@@ -1,6 +1,7 @@
 import calendar
 import csv
 import json
+from collections import OrderedDict
 from datetime import datetime, timedelta, timezone as dt_timezone
 from decimal import Decimal
 
@@ -16,9 +17,13 @@ from django.views.decorators.cache import never_cache
 from pytz import timezone as pytz_timezone
 
 from accounts.utils import is_staff_admin_or_admin, is_admin   # ✅ imported shared role checks
+from passenger.views import (
+    PASSENGER_DELETE_AFTER_MINUTES,
+    DEPARTED_VISIBLE_MINUTES,
+    _build_public_queue_entries,
+)
 from vehicles.models import Vehicle, Wallet, Driver, Deposit, Route, QueueHistory
 from .models import EntryLog, SystemSettings
-from django.utils import timezone
 
 
 # Default delete window (minutes) for cleanup of old logs (tweakable)
@@ -541,90 +546,109 @@ def terminal_queue(request):
 def tv_display_view(request, route_slug=None):
     """
     Terminal TV Display
-    - Correct route filtering using slug
-    - Groups active vehicles by route
-    - Includes departure time and countdown data
-    - Shows DEPARTED if departed_at is set, otherwise shows countdown
+    - Shares the same queue sourcing logic as the passenger view
+    - Groups vehicles by route, showing boarding, queued, and departed states
+    - Includes recent QueueHistory snippets to highlight activity per route
     """
 
-    # Run cleanup for consistency
-    _apply_auto_close_and_cleanup()
+    _apply_auto_close_and_cleanup(delete_after_minutes=PASSENGER_DELETE_AFTER_MINUTES)
 
-    # Local timezone
     ph_tz = pytz_timezone("Asia/Manila")
-
     settings = SystemSettings.get_solo()
     duration = getattr(settings, "departure_duration_minutes", 30)
 
-    # All available routes (for dropdown)
     all_routes = Route.objects.filter(active=True).order_by("origin", "destination")
-
-    # Build slug → name mapping
     route_map = {slugify(r.name): r.name for r in all_routes}
-
     selected_route_name = None
-
-    # If slug is provided, convert to real route name
     if route_slug:
-        route_slug = route_slug.lower().strip("/")
-        selected_route_name = route_map.get(route_slug)
+        selected_route_name = route_map.get(route_slug.lower().strip("/"))
 
-    # Base queryset of active entries (only show vehicles still in terminal)
-    logs = (
-        EntryLog.objects.filter(is_active=True, status=EntryLog.STATUS_SUCCESS)
+    now = timezone.now()
+    departed_cutoff = now - timedelta(minutes=DEPARTED_VISIBLE_MINUTES)
+
+    queue_logs = (
+        EntryLog.objects
+        .filter(status=EntryLog.STATUS_SUCCESS)
+        .filter(Q(is_active=True) | Q(departed_at__gte=departed_cutoff))
         .select_related("vehicle__assigned_driver", "vehicle__route")
         .order_by("vehicle__route__origin", "vehicle__route__destination", "created_at")
     )
-
-    # Apply route filter
     if selected_route_name:
-        logs = logs.filter(vehicle__route__name=selected_route_name)
+        queue_logs = queue_logs.filter(vehicle__route__name=selected_route_name)
 
-    # Current time for countdown calculation
-    now = timezone.now()
+    entries = _build_public_queue_entries(queue_logs, now, duration, departed_cutoff)
+    entries_by_route = OrderedDict()
+    for entry in entries:
+        entries_by_route.setdefault(entry["route"], []).append(entry)
 
-    # Group output
-    grouped_routes = {}
-    for log in logs:
-        v = log.vehicle
-        d = v.assigned_driver if v else None
-        route_name = v.route.name if v and v.route else "Unassigned Route"
+    status_summary_by_route = {}
+    for route_name, route_entries in entries_by_route.items():
+        summary = {"Boarding": 0, "Queued": 0, "Departed": 0}
+        for entry in route_entries:
+            summary[entry["status"]] = summary.get(entry["status"], 0) + 1
+        status_summary_by_route[route_name] = summary
 
-        # Calculate projected departure time (entry + duration)
-        projected_departure = log.created_at + timedelta(minutes=duration)
-        
-        # Check if vehicle has actually departed
-        has_departed = log.departed_at is not None
-        
-        # Calculate remaining time (only if not departed)
-        if has_departed:
-            time_remaining_seconds = 0
-            is_expired = True
-            actual_departure_time = log.departed_at
-        else:
-            time_remaining = (projected_departure - now).total_seconds()
-            time_remaining_seconds = int(time_remaining)
-            is_expired = time_remaining_seconds <= 0
-            actual_departure_time = projected_departure
+    history_queryset = QueueHistory.objects.select_related("vehicle__route").order_by("-timestamp")
+    if selected_route_name:
+        history_queryset = history_queryset.filter(vehicle__route__name=selected_route_name)
 
-        grouped_routes.setdefault(route_name, []).append({
-            "plate": getattr(v, "license_plate", "N/A"),
-            "driver": f"{d.first_name} {d.last_name}" if d else "N/A",
-            "entry_time": timezone.localtime(log.created_at, ph_tz).strftime("%I:%M %p"),
-            "departure_time": timezone.localtime(projected_departure, ph_tz).strftime("%I:%M %p"),
-            "departure_timestamp": projected_departure.isoformat(),  # For JS countdown
-            "time_remaining_seconds": max(0, time_remaining_seconds),
-            "is_expired": is_expired,
-            "has_departed": has_departed,  # NEW: Track actual departure
-            "actual_departed_at": timezone.localtime(actual_departure_time, ph_tz).strftime("%I:%M %p") if has_departed else None,
+    history_map = OrderedDict()
+    for event in history_queryset[:48]:
+        route_name = str(event.vehicle.route) if event.vehicle and event.vehicle.route else "Unassigned Route"
+        history_list = history_map.setdefault(route_name, [])
+        if len(history_list) >= 3:
+            continue
+        history_list.append({
+            "vehicle_plate": getattr(event.vehicle, "license_plate", "—") if event.vehicle else "—",
+            "action": event.get_action_display(),
+            "timestamp": timezone.localtime(event.timestamp, ph_tz).strftime("%I:%M %p"),
+        })
+
+    route_order = []
+    seen_routes = set()
+    if selected_route_name:
+        route_order.append(selected_route_name)
+        seen_routes.add(selected_route_name)
+    for name in entries_by_route:
+        if name in seen_routes:
+            continue
+        route_order.append(name)
+        seen_routes.add(name)
+    if not selected_route_name:
+        for route in all_routes:
+            name = str(route)
+            if name in seen_routes:
+                continue
+            route_order.append(name)
+            seen_routes.add(name)
+            if len(route_order) >= 16:
+                break
+    if not route_order:
+        for route in all_routes[:16]:
+            route_order.append(str(route))
+    route_order = route_order[:16]
+
+    route_sections = []
+    for route_name in route_order:
+        route_entries = entries_by_route.get(route_name, [])
+        summary = status_summary_by_route.get(route_name, {"Boarding": 0, "Queued": 0, "Departed": 0}).copy()
+        summary.setdefault("Idle", 0)
+        if not route_entries:
+            summary["Idle"] = 1
+        route_sections.append({
+            "name": route_name,
+            "slug": slugify(route_name),
+            "entries": route_entries,
+            "history_events": history_map.get(route_name, []),
+            "status_summary": summary,
         })
 
     context = {
-        "grouped_routes": grouped_routes,
-        "stay_duration": duration,
+        "route_sections": route_sections,
         "all_routes": all_routes,
-        "selected_route": selected_route_name or "All Routes",
-        "current_time": now.isoformat(),  # For JS time sync
+        "selected_route": selected_route_name,
+        "selected_route_slug": slugify(selected_route_name) if selected_route_name else "",
+        "current_time": timezone.localtime(now, ph_tz).isoformat(),
     }
 
     return render(request, "terminal/tv_display.html", context)

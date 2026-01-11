@@ -21,7 +21,7 @@
 }
 .card-header,
 .card-body,
-.card-footer {
+.card-countdown {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
@@ -68,7 +68,7 @@
   font-size: 0.75rem;
   font-weight: 600;
 }
-.card-footer {
+.card-countdown {
   padding-top: 0.2rem;
 }
 .countdown-label {
@@ -116,7 +116,7 @@
 }
 .card-header,
 .card-body,
-.card-footer {
+.card-countdown {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
@@ -161,7 +161,7 @@
 .time-value {
   font-size: 0.72rem;
 }
-.card-footer {
+.card-countdown {
   padding-top: 0.2rem;
 }
 .countdown-label {
@@ -353,7 +353,7 @@
 }
 
 /* Card Footer */
-.card-footer {
+.card-countdown {
   padding: 1rem 1.25rem 1.25rem;
   border-top: 1px solid #f1f3f4;
   background: #f8fafc;
@@ -489,11 +489,106 @@
 @media (max-width: 768px) {
   .mobile-cards-container {
     display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    padding: 0.35rem 0;
   }
-  
-  .times-grid {
-    grid-template-columns: 1fr;
+
+  .vehicle-card {
+    width: 100%;
+  }
+
+  .vehicle-card--landscape {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
     gap: 0.75rem;
+    padding: 0.65rem 0.85rem;
+    min-height: 110px;
+    border-radius: 12px;
+    background: #ffffff;
+    border: 1px solid #e5e9f0;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
+  }
+
+  .vehicle-card--landscape.departed-row {
+    opacity: 1;
+    background: #f6f8fb;
+  }
+
+  .vehicle-card--landscape .card-header,
+  .vehicle-card--landscape .card-body,
+  .vehicle-card--landscape .card-countdown {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .vehicle-card--landscape .card-header {
+    flex: 0 0 170px;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .vehicle-card--landscape .card-body {
+    flex: 1;
+    flex-direction: column;
+    gap: 0.35rem;
+    justify-content: center;
+  }
+
+  .vehicle-card--landscape .info-section {
+    margin: 0;
+  }
+
+  .vehicle-card--landscape .times-grid {
+    display: flex;
+    flex-direction: row;
+    gap: 0.35rem;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+  }
+
+  .vehicle-card--landscape .time-item {
+    padding: 0.2rem 0.4rem;
+    background: rgba(67, 97, 238, 0.08);
+    border-radius: 6px;
+    flex: 1;
+  }
+
+  .vehicle-card--landscape .card-countdown {
+    flex: 0 0 auto;
+    align-items: flex-end;
+  }
+
+  .vehicle-card--landscape .countdown-section {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.15rem;
+  }
+
+  .vehicle-card--landscape .countdown-timer span,
+  .vehicle-card--landscape .queued-badge,
+  .vehicle-card--landscape .departed-badge {
+    font-size: 0.75rem;
+    padding: 0.15rem 0.45rem;
+  }
+
+  .vehicle-card--landscape .vehicle-icon {
+    width: 38px;
+    height: 38px;
+  }
+
+  .vehicle-card--landscape .vehicle-plate {
+    font-size: 1rem;
+  }
+
+  .vehicle-card--landscape .driver-name {
+    font-size: 0.75rem;
   }
 }
 
