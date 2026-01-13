@@ -63,16 +63,16 @@
       <div class="camera-card">
         <!-- Start Camera Button -->
         <div id="startCameraSection" class="text-center mb-3">
-          <button id="startCameraBtn" class="btn btn-primary btn-lg">
-            <i class="fas fa-camera me-2"></i>
-            Start Camera for Photo Capture
+          <button type="button" id="startCameraBtn" class="btn btn-primary btn-lg">
+            <i class="fas fa-video me-2"></i>
+            Open Camera
           </button>
-          <p class="text-muted small mt-2">
-            Click button above to activate camera for driver photo
+          <p class="text-muted small mt-2 mb-0">
+            Click to allow camera access for driver photo capture
           </p>
         </div>
-        
-        <!-- Live camera stream (hidden initially) -->
+
+        <!-- Live camera stream -->
         <video id="cameraStream"
               autoplay
               playsinline
@@ -92,7 +92,7 @@
               style="display:none;"
               required>
 
-        <button type="button" class="capture-btn d-none" id="captureBtn">
+        <button type="button" class="capture-btn" id="captureBtn" disabled>
           <i class="fas fa-camera me-1"></i> Capture Photo
         </button>
 
@@ -662,94 +662,152 @@ document.addEventListener("DOMContentLoaded", () => {
 /* =====================================================
    CAMERA CAPTURE (SAFE + ASYNC)
 ===================================================== */
-let cameraStarted = false;
-
-async function startCamera() {
-  if (cameraStarted) {
-    alert("Camera already started.");
-    return;
-  }
-  
-  const video = document.getElementById("cameraStream");
-  const canvas = document.getElementById("photoCanvas");
-  const preview = document.getElementById("photoPreview");
-  const captureBtn = document.getElementById("captureBtn");
-  const fileInput = document.getElementById("id_driver_photo");
-  const startSection = document.getElementById("startCameraSection");
-
-  // SAFETY GUARD
-  if (!video || !canvas || !preview || !captureBtn || !fileInput || !startSection) {
-    console.warn("Camera capture skipped: required elements not found");
-    return;
-  }
-
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "environment" },
-      audio: false
-    });
-    
-    video.srcObject = stream;
-    
-    // Show video and capture button, hide start section
-    video.classList.remove('d-none');
-    captureBtn.classList.remove('d-none');
-    startSection.classList.add('d-none');
-    
-    cameraStarted = true;
-  } catch (err) {
-    alert("Camera access denied or not available.");
-  }
-}
-
-// Add event listener for start button
 document.addEventListener("DOMContentLoaded", () => {
-  const startBtn = document.getElementById("startCameraBtn");
-  if (startBtn) {
-    startBtn.addEventListener("click", startCamera);
-  }
+    const video = document.getElementById("cameraStream");
+    const canvas = document.getElementById("photoCanvas");
+    const preview = document.getElementById("photoPreview");
+    const captureBtn = document.getElementById("captureBtn");
+    const fileInput = document.getElementById("id_driver_photo");
+    const startSection = document.getElementById("startCameraSection");
+    const startBtn = document.getElementById("startCameraBtn");
+
+    if (!video || !canvas || !preview || !captureBtn || !fileInput || !startSection || !startBtn) {
+        console.warn("Camera capture skipped: required elements not found");
+        return;
+    }
+
+    let cameraStream = null;
+    let cameraActive = false;
+
+    const setCaptureMode = (mode) => {
+        captureBtn.dataset.mode = mode;
+        if (mode === "capture") {
+            captureBtn.innerHTML = '<i class="fas fa-camera me-1"></i> Capture Photo';
+        } else {
+            captureBtn.innerHTML = '<i class="fas fa-undo me-1"></i> Retake Photo';
+        }
+    };
+
+    setCaptureMode("capture");
+
+    async function requestCameraStream() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            throw new Error("Camera API not supported in this browser.");
+        }
+
+        const constraintsList = [
+            { video: { facingMode: { ideal: "environment" } }, audio: false },
+            { video: true, audio: false },
+        ];
+
+        let lastError = null;
+
+        for (const constraints of constraintsList) {
+            try {
+                return await navigator.mediaDevices.getUserMedia(constraints);
+            } catch (err) {
+                lastError = err;
+                // For user gesture requirements we should break on permission denial
+                if (err && (err.name === "NotAllowedError" || err.name === "PermissionDeniedError")) {
+                    break;
+                }
+            }
+        }
+
+        throw lastError || new Error("Camera access failed.");
+    }
+
+    async function openCamera() {
+        startBtn.disabled = true;
+
+        try {
+            cameraStream = await requestCameraStream();
+
+            video.srcObject = cameraStream;
+            video.classList.remove("d-none");
+
+            video.style.display = "block";
+            preview.style.display = "none";
+
+            startSection.classList.add("d-none");
+            captureBtn.disabled = false;
+            setCaptureMode("capture");
+            cameraActive = true;
+        } catch (err) {
+            const message = err && err.message ? err.message : "Camera access denied or not available.";
+            alert(message);
+            startBtn.disabled = false;
+            setCaptureMode("capture");
+        }
+    }
+
+    function stopCamera() {
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+            cameraStream = null;
+        }
+
+        cameraActive = false;
+        captureBtn.disabled = true;
+        preview.style.display = "none";
+        video.classList.add("d-none");
+        startSection.classList.remove("d-none");
+        startBtn.disabled = false;
+        setCaptureMode("capture");
+    }
+
+    function captureFrame() {
+        const width = video.videoWidth;
+        const height = video.videoHeight;
+
+        if (!width || !height) return;
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(video, 0, 0, width, height);
+
+        canvas.toBlob(blob => {
+            if (!blob) return;
+
+            const file = new File([blob], "driver_photo.jpg", { type: "image/jpeg" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInput.files = dataTransfer.files;
+
+            preview.src = URL.createObjectURL(blob);
+            preview.style.display = "block";
+            video.style.display = "none";
+            setCaptureMode("retake");
+        }, "image/jpeg", 0.92);
+    }
+
+    function retakePhoto() {
+        preview.style.display = "none";
+        video.style.display = "block";
+        setCaptureMode("capture");
+    }
+
+    function handleCaptureClick() {
+        if (!cameraActive) {
+            alert("Please open the camera first.");
+            return;
+        }
+
+        if (captureBtn.dataset.mode === "retake") {
+            retakePhoto();
+        } else {
+            captureFrame();
+        }
+    }
+
+    startBtn.addEventListener("click", openCamera);
+    captureBtn.addEventListener("click", handleCaptureClick);
+
+    document.addEventListener("htmx:beforeSwap", stopCamera);
+    window.addEventListener("beforeunload", stopCamera);
 });
-
-// Capture button event listener (will be added when camera starts)
-document.addEventListener("DOMContentLoaded", () => {
-  const video = document.getElementById("cameraStream");
-  const canvas = document.getElementById("photoCanvas");
-  const preview = document.getElementById("photoPreview");
-  const captureBtn = document.getElementById("captureBtn");
-  const fileInput = document.getElementById("id_driver_photo");
-
-  if (captureBtn) {
-    captureBtn.addEventListener("click", () => {
-      const width = video.videoWidth;
-      const height = video.videoHeight;
-
-      if (!width || !height) return;
-
-      canvas.width = width;
-      canvas.height = height;
-
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(video, 0, 0, width, height);
-
-      canvas.toBlob(blob => {
-        if (!blob) return;
-
-        const file = new File([blob], "driver_photo.jpg", { type: "image/jpeg" });
-        const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(file);
-        fileInput.files = dataTransfer.files;
-
-        // Show preview
-        preview.src = URL.createObjectURL(blob);
-        preview.style.display = "block";
-        video.style.display = "none";
-        captureBtn.textContent = " Retake Photo";
-      }, "image/jpeg", 0.92);
-    });
-  }
-});
-
 </script>
-
 
 {% endblock %}
