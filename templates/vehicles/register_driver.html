@@ -61,11 +61,22 @@
       </div>
 
       <div class="camera-card">
-        <!-- Live camera stream -->
+        <!-- Start Camera Button -->
+        <div id="startCameraSection" class="text-center mb-3">
+          <button id="startCameraBtn" class="btn btn-primary btn-lg">
+            <i class="fas fa-camera me-2"></i>
+            Start Camera for Photo Capture
+          </button>
+          <p class="text-muted small mt-2">
+            Click button above to activate camera for driver photo
+          </p>
+        </div>
+        
+        <!-- Live camera stream (hidden initially) -->
         <video id="cameraStream"
               autoplay
               playsinline
-              class="camera-preview">
+              class="camera-preview d-none">
         </video>
 
         <!-- Captured image preview (hidden initially) -->
@@ -81,7 +92,7 @@
               style="display:none;"
               required>
 
-        <button type="button" class="capture-btn" id="captureBtn">
+        <button type="button" class="capture-btn d-none" id="captureBtn">
           <i class="fas fa-camera me-1"></i> Capture Photo
         </button>
 
@@ -651,60 +662,92 @@ document.addEventListener("DOMContentLoaded", () => {
 /* =====================================================
    CAMERA CAPTURE (SAFE + ASYNC)
 ===================================================== */
-(async function () {
-    const video = document.getElementById("cameraStream");
-    const canvas = document.getElementById("photoCanvas");
-    const preview = document.getElementById("photoPreview");
-    const captureBtn = document.getElementById("captureBtn");
-    const fileInput = document.getElementById("id_driver_photo");
+let cameraStarted = false;
 
-    // 🔒 SAFETY GUARD
-    if (!video || !canvas || !preview || !captureBtn || !fileInput) {
-        console.warn("Camera capture skipped: required elements not found");
-        return;
-    }
+async function startCamera() {
+  if (cameraStarted) {
+    alert("Camera already started.");
+    return;
+  }
+  
+  const video = document.getElementById("cameraStream");
+  const canvas = document.getElementById("photoCanvas");
+  const preview = document.getElementById("photoPreview");
+  const captureBtn = document.getElementById("captureBtn");
+  const fileInput = document.getElementById("id_driver_photo");
+  const startSection = document.getElementById("startCameraSection");
 
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "environment" },
-            audio: false
-        });
-        video.srcObject = stream;
-    } catch (err) {
-        alert("Camera access denied or not available.");
-        return;
-    }
+  // SAFETY GUARD
+  if (!video || !canvas || !preview || !captureBtn || !fileInput || !startSection) {
+    console.warn("Camera capture skipped: required elements not found");
+    return;
+  }
 
-    captureBtn.addEventListener("click", () => {
-        const width = video.videoWidth;
-        const height = video.videoHeight;
-
-        if (!width || !height) return;
-
-        canvas.width = width;
-        canvas.height = height;
-
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(video, 0, 0, width, height);
-
-        canvas.toBlob(blob => {
-            if (!blob) return;
-
-            const file = new File([blob], "driver_photo.jpg", {
-                type: "image/jpeg"
-            });
-
-            const dataTransfer = new DataTransfer();
-            dataTransfer.items.add(file);
-            fileInput.files = dataTransfer.files;
-
-            preview.src = URL.createObjectURL(blob);
-            preview.style.display = "block";
-            video.style.display = "none";
-            captureBtn.textContent = "🔄 Retake Photo";
-        }, "image/jpeg", 0.92);
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment" },
+      audio: false
     });
-})();
+    
+    video.srcObject = stream;
+    
+    // Show video and capture button, hide start section
+    video.classList.remove('d-none');
+    captureBtn.classList.remove('d-none');
+    startSection.classList.add('d-none');
+    
+    cameraStarted = true;
+  } catch (err) {
+    alert("Camera access denied or not available.");
+  }
+}
+
+// Add event listener for start button
+document.addEventListener("DOMContentLoaded", () => {
+  const startBtn = document.getElementById("startCameraBtn");
+  if (startBtn) {
+    startBtn.addEventListener("click", startCamera);
+  }
+});
+
+// Capture button event listener (will be added when camera starts)
+document.addEventListener("DOMContentLoaded", () => {
+  const video = document.getElementById("cameraStream");
+  const canvas = document.getElementById("photoCanvas");
+  const preview = document.getElementById("photoPreview");
+  const captureBtn = document.getElementById("captureBtn");
+  const fileInput = document.getElementById("id_driver_photo");
+
+  if (captureBtn) {
+    captureBtn.addEventListener("click", () => {
+      const width = video.videoWidth;
+      const height = video.videoHeight;
+
+      if (!width || !height) return;
+
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(video, 0, 0, width, height);
+
+      canvas.toBlob(blob => {
+        if (!blob) return;
+
+        const file = new File([blob], "driver_photo.jpg", { type: "image/jpeg" });
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        fileInput.files = dataTransfer.files;
+
+        // Show preview
+        preview.src = URL.createObjectURL(blob);
+        preview.style.display = "block";
+        video.style.display = "none";
+        captureBtn.textContent = " Retake Photo";
+      }, "image/jpeg", 0.92);
+    });
+  }
+});
 
 </script>
 
