@@ -227,9 +227,15 @@
       <div class="summary-card__icon">
         <i class="bi bi-percent"></i>
       </div>
-      <div class="summary-card__value">{{ ratio|floatformat:1 }}%</div>
+      <div class="summary-card__value">
+        {% if has_deposits %}
+          {{ ratio|floatformat:1 }}%
+        {% else %}
+          —
+        {% endif %}
+      </div>
       <div class="summary-card__label">Usage Ratio</div>
-      <div class="summary-card__sub">Revenue ÷ Deposits</div>
+      <div class="summary-card__sub">{{ ratio_label }}</div>
     </div>
 
     <div class="summary-card balance">

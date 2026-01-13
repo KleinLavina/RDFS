@@ -232,7 +232,12 @@ def deposit_vs_revenue(request):
     total_revenue = sum(revenue_values)
     
     # Calculate ratio (revenue as percentage of deposits)
-    ratio = (total_revenue / total_deposit * 100) if total_deposit > 0 else 0
+    if total_deposit > 0:
+        ratio = (total_revenue / total_deposit) * 100
+        ratio_label = "Revenue ÷ Deposits"
+    else:
+        ratio = 0
+        ratio_label = "No deposits recorded"
     
     # Net balance (deposits - revenue = money still in wallets)
     net_balance = total_deposit - total_revenue
@@ -244,11 +249,13 @@ def deposit_vs_revenue(request):
         "total_deposit": total_deposit,
         "total_revenue": total_revenue,
         "ratio": ratio,
+        "ratio_label": ratio_label,
+        "has_deposits": total_deposit > 0,
         "net_balance": net_balance,
         "start_date": start_date.strftime("%Y-%m-%d"),
         "end_date": end_date.strftime("%Y-%m-%d"),
-        "labels": chart_labels,
-        "deposit_data": deposits_data,
+        "today": today.strftime("%Y-%m-%d"),
+        "selected_range": f"{start_date.strftime('%b %d')} - {end_date.strftime('%b %d')}",
     }
     return render(request, "reports/deposit_vs_revenue.html", context)
 
