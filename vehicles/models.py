@@ -14,6 +14,7 @@ from django.utils import timezone
 
 from django.core.files.base import ContentFile
 from cloudinary.models import CloudinaryField
+import cloudinary.uploader
 
 # ======================================================
 # ROUTE MODEL
@@ -177,12 +178,7 @@ class Vehicle(models.Model):
     seat_capacity = models.PositiveIntegerField(blank=True, null=True)
 
     # ✅ LOCAL QR IMAGE FIELD
-    qr_code = CloudinaryField(
-        "vehicle_qrcodes",
-        blank=True,
-        null=True,
-    )
-
+    qr_code = models.CharField(max_length=255, blank=True, null=True)
     qr_value = models.CharField(
         max_length=255,
         unique=True,
@@ -241,9 +237,16 @@ class Vehicle(models.Model):
             buffer = BytesIO()
             qr_img.save(buffer, format="PNG")
 
-            file_name = f"vehicle_{self.id}_qr.png"
-            self.qr_code = ContentFile(buffer.getvalue(), name=file_name)
+            upload_result = cloudinary.uploader.upload(
+                buffer.getvalue(),
+                folder="vehicles/qrcodes",
+                public_id=f"vehicle_{self.id}_qr",
+                overwrite=True,
+                resource_type="image",
+                format="png",
+            )
 
+            self.qr_code = upload_result.get("public_id")
             super().save(update_fields=["qr_code", "qr_value"])
 
     def __str__(self):
