@@ -151,8 +151,19 @@
       </p>
 
       <!-- QR SCANNER -->
+      <!-- Start Camera Button -->
+      <div id="startCameraSection" class="text-center mb-3">
+        <button id="startCameraBtn" class="btn btn-primary btn-lg">
+          <i class="bi bi-camera-fill me-2"></i>
+          Start Camera / Scan QR
+        </button>
+        <p class="text-muted small mt-2">
+          Click button above to activate camera for QR scanning
+        </p>
+      </div>
+      
       <div id="rdfsQrReader"
-           class="rounded mb-3"
+           class="rounded mb-3 d-none"
            style="width:100%;max-width:400px;margin:auto;"></div>
 
       <!-- FEEDBACK -->
@@ -230,14 +241,43 @@ function pause(ms){
   setTimeout(()=>{paused=false;show("Ready for next scan","info");},ms);
 }
 
-document.addEventListener("DOMContentLoaded",()=>{
-  const qr=new Html5Qrcode("rdfsQrReader");
-  let last="";
-  qr.start({facingMode:"environment"},{fps:10,qrbox:250},txt=>{
+let qrScanner = null;
+
+function startCamera() {
+  if (qrScanner) {
+    show("Camera already started", "warning");
+    return;
+  }
+  
+  const startBtn = document.getElementById('startCameraBtn');
+  const startSection = document.getElementById('startCameraSection');
+  const qrReader = document.getElementById('rdfsQrReader');
+  
+  // Hide start button and show QR reader
+  startSection.classList.add('d-none');
+  qrReader.classList.remove('d-none');
+  
+  // Initialize QR scanner
+  qrScanner = new Html5Qrcode("rdfsQrReader");
+  qrScanner.start({facingMode:"environment"},{fps:10,qrbox:250},txt=>{
     if(paused||txt===last) return;
     last=txt;
     postQR(txt);
-  }).catch(e=>show("Camera error: "+e,"danger"));
+  }).catch(e=>{
+    show("Camera error: "+e,"danger");
+    // Show start button again on error
+    startSection.classList.remove('d-none');
+    qrReader.classList.add('d-none');
+    qrScanner = null;
+  });
+}
+
+// Add event listener for start button
+document.addEventListener("DOMContentLoaded",()=>{
+  const startBtn = document.getElementById('startCameraBtn');
+  if (startBtn) {
+    startBtn.addEventListener('click', startCamera);
+  }
 });
 </script>
 
