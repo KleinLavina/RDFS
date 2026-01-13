@@ -124,8 +124,8 @@
           </div>
 
           <div class="rdfs-vehicle-qr">
-            {% if vehicle.qr_code %}
-              <img src="{{ vehicle.qr_code.url }}" alt="QR Code">
+            {% if vehicle.qr_code_url %}
+              <img src="{{ vehicle.qr_code_url }}" alt="QR Code">
               <div class="mt-2">
                 <a href="{% url 'vehicles:vehicle_qr' vehicle.id %}"
                    target="_blank"

@@ -177,8 +177,13 @@ class Vehicle(models.Model):
 
     seat_capacity = models.PositiveIntegerField(blank=True, null=True)
 
-    # ✅ LOCAL QR IMAGE FIELD
-    qr_code = models.CharField(max_length=255, blank=True, null=True)
+    # ✅ QR IMAGE (Cloudinary)
+    qr_code = CloudinaryField(
+        "vehicle_qrcodes",
+        blank=True,
+        null=True,
+    )
+
     qr_value = models.CharField(
         max_length=255,
         unique=True,
@@ -222,7 +227,7 @@ class Vehicle(models.Model):
             raise ValidationError(errors)
 
     # --------------------------------------------------
-    # SAVE & LOCAL QR GENERATION
+    # SAVE & QR GENERATION
     # --------------------------------------------------
     def save(self, *args, **kwargs):
         creating = self.pk is None
@@ -248,6 +253,19 @@ class Vehicle(models.Model):
 
             self.qr_code = upload_result.get("public_id")
             super().save(update_fields=["qr_code", "qr_value"])
+
+    @property
+    def qr_code_url(self):
+        """Return a usable QR image URL regardless of storage backend."""
+        if not self.qr_code:
+            return None
+        qr_value = self.qr_code
+        url = getattr(qr_value, "url", None)
+        if url:
+            return url
+        if isinstance(qr_value, str):
+            return qr_value
+        return None
 
     def __str__(self):
         route_display = str(self.route) if self.route else "No Route"
