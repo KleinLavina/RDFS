@@ -50,6 +50,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    # Channels
+    'channels',
+
     # Project apps
     'accounts',
     'main',
@@ -163,6 +166,20 @@ DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 # DEFAULT PK
 # ======================================================
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ======================================================
+# CHANNELS CONFIGURATION
+# ======================================================
+ASGI_APPLICATION = 'rdfs.asgi.application'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
 
 # ======================================================
 # SESSION / SECURITY
