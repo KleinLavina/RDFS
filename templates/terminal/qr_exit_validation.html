@@ -202,6 +202,7 @@ const ok=new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobbl
 const err=new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg");
 
 let paused=false, recent=[];
+let last="";
 
 function show(msg,type="info"){
   const fb=document.getElementById("rdfsQrFeedback");
