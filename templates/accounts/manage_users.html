@@ -4,195 +4,174 @@
 {% block title %}Manage Accounts | RDFS{% endblock %}
 
 {% block content %}
-<style>
-/* ===============================
-   RDFS MANAGE ACCOUNTS (SCOPED)
-================================ */
-:root{
-  --rdfs-blue:#112666;
-  --rdfs-blue-dark:#180f92;
-  --rdfs-blue-soft:#e8f4fd;
+<link rel="stylesheet" href="{% static 'styles/accounts/manage-users.css' %}">
 
-  --rdfs-bg:#f7fafc;
-  --rdfs-card:#ffffff;
-
-  --rdfs-text:#1c1b1b;
-  --rdfs-muted:#64748b;
-
-  --rdfs-border:#e2e8f0;
-  --rdfs-radius:12px;
-
-  --rdfs-shadow-sm:0 2px 6px rgba(0,0,0,.05);
-  --rdfs-shadow-md:0 10px 22px rgba(0,0,0,.1);
-
-  --rdfs-transition:.25s ease;
-}
-
-/* PAGE */
-.rdfs-users-page{
-  background:var(--rdfs-bg);
-  min-height:100vh;
-  padding:1.5rem 0;
-}
-
-/* HEADER */
-.rdfs-users-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:1.6rem;
-}
-
-.rdfs-users-title{
-  font-weight:800;
-  color:var(--rdfs-blue-dark);
-}
-
-/* CARD */
-.rdfs-users-card{
-  background:var(--rdfs-card);
-  border-radius:var(--rdfs-radius);
-  box-shadow:var(--rdfs-shadow-md);
-  border:1px solid var(--rdfs-border);
-}
-
-/* TABLE */
-.rdfs-users-table th{
-  background:var(--rdfs-blue-soft);
-  color:var(--rdfs-blue-dark);
-  font-size:.8rem;
-  text-transform:uppercase;
-  letter-spacing:.6px;
-  border-bottom:2px solid var(--rdfs-blue);
-}
-
-.rdfs-users-table td{
-  vertical-align:middle;
-}
-
-.rdfs-users-table tbody tr:hover{
-  background:rgba(17,38,102,.04);
-}
-
-/* ROLE BADGES */
-.rdfs-role-admin{
-  background:#dc2626;
-}
-
-.rdfs-role-staff{
-  background:var(--rdfs-blue);
-}
-
-/* ACTION BUTTONS */
-.rdfs-action-btn{
-  font-size:.8rem;
-  font-weight:600;
-  border-radius:8px;
-}
-
-/* CREATE BUTTON */
-.rdfs-create-btn{
-  background:linear-gradient(
-    135deg,
-    var(--rdfs-blue),
-    var(--rdfs-blue-dark)
-  );
-  border:none;
-  font-weight:700;
-}
-
-.rdfs-create-btn:hover{
-  box-shadow:0 8px 18px rgba(17,38,102,.35);
-  transform:translateY(-1px);
-}
-</style>
-
-<div class="container rdfs-users-page">
+<div class="container manage-users-page">
 
   <!-- HEADER -->
-  <div class="rdfs-users-header">
-    <div>
-      <h3 class="rdfs-users-title">
-        <i class="bi bi-person-badge-fill me-2"></i>
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">
+        <i class="fas fa-users-cog me-2"></i>
         Manage Accounts
-      </h3>
-      <p class="text-muted mb-0">
-        View, create, and manage admin and staff accounts.
+      </h1>
+      <p class="page-subtitle">
+        <i class="fas fa-info-circle me-1"></i>
+        View, create, edit, and manage admin and staff accounts
       </p>
     </div>
 
-    <a href="{% url 'accounts:create_user' %}"
-       class="btn rdfs-create-btn text-white">
-      <i class="bi bi-person-plus-fill me-1"></i>
-      Create Account
+    <a href="{% url 'accounts:create_user' %}" class="btn-create">
+      <i class="fas fa-user-plus me-2"></i>
+      Create New Account
     </a>
   </div>
 
-  <!-- TABLE CARD -->
-  <div class="rdfs-users-card p-3">
+  <!-- STATS CARDS -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon admin-icon">
+        <i class="fas fa-shield-alt"></i>
+      </div>
+      <div class="stat-info">
+        <div class="stat-value">{{ users|length }}</div>
+        <div class="stat-label">Total Users</div>
+      </div>
+    </div>
 
-    <div class="table-responsive">
-      <table class="table rdfs-users-table align-middle mb-0">
+    <div class="stat-card">
+      <div class="stat-icon admin-icon">
+        <i class="fas fa-user-shield"></i>
+      </div>
+      <div class="stat-info">
+        <div class="stat-value">{{ admin_count }}</div>
+        <div class="stat-label">Admins</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon staff-icon">
+        <i class="fas fa-user-tie"></i>
+      </div>
+      <div class="stat-info">
+        <div class="stat-value">{{ staff_admin_count }}</div>
+        <div class="stat-label">Staff Admins</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- USERS TABLE -->
+  <div class="users-card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <i class="fas fa-list me-2"></i>
+        User Accounts
+      </h2>
+      <div class="card-actions">
+        <span class="user-count">{{ users|length }} user{{ users|length|pluralize }}</span>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table class="users-table">
         <thead>
           <tr>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th class="text-center">Actions</th>
+            <th>
+              <i class="fas fa-user me-1"></i>
+              User
+            </th>
+            <th>
+              <i class="fas fa-envelope me-1"></i>
+              Email
+            </th>
+            <th>
+              <i class="fas fa-id-badge me-1"></i>
+              Role
+            </th>
+            <th class="text-center">
+              <i class="fas fa-cog me-1"></i>
+              Actions
+            </th>
           </tr>
         </thead>
 
         <tbody>
           {% for user in users %}
-          <tr>
-            <td><strong>{{ user.username }}</strong></td>
-            <td>{{ user.email }}</td>
+          <tr class="user-row">
+            <td>
+              <div class="user-info">
+                <div class="user-avatar">
+                  <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="user-details">
+                  <div class="user-name">{{ user.username }}</div>
+                  <div class="user-id">ID: {{ user.id }}</div>
+                </div>
+              </div>
+            </td>
+
+            <td>
+              <div class="user-email">
+                <i class="fas fa-envelope me-2 text-muted"></i>
+                {{ user.email|default:"No email" }}
+              </div>
+            </td>
 
             <td>
               {% if user.role == 'admin' %}
-                <span class="badge rdfs-role-admin">
-                  <i class="bi bi-shield-lock-fill me-1"></i>
+                <span class="role-badge role-admin">
+                  <i class="fas fa-shield-alt me-1"></i>
                   Admin
                 </span>
               {% elif user.role == 'staff_admin' %}
-                <span class="badge rdfs-role-staff">
-                  <i class="bi bi-person-badge-fill me-1"></i>
+                <span class="role-badge role-staff">
+                  <i class="fas fa-user-tie me-1"></i>
                   Staff Admin
                 </span>
               {% else %}
-                <span class="badge bg-secondary">Unknown</span>
+                <span class="role-badge role-unknown">
+                  <i class="fas fa-question-circle me-1"></i>
+                  Unknown
+                </span>
               {% endif %}
             </td>
 
-            <td class="text-center">
-              <a href="{% url 'accounts:edit_user' user.id %}"
-                 class="btn btn-warning btn-sm rdfs-action-btn me-1">
-                <i class="bi bi-pencil-fill"></i>
-                Edit
-              </a>
+            <td>
+              <div class="action-buttons">
+                <a href="{% url 'accounts:edit_user' user.id %}" 
+                   class="btn-action btn-edit"
+                   title="Edit user">
+                  <i class="fas fa-edit"></i>
+                  <span>Edit</span>
+                </a>
 
-              <a href="{% url 'accounts:delete_user' user.id %}"
-                 class="btn btn-danger btn-sm rdfs-action-btn">
-                <i class="bi bi-trash-fill"></i>
-                Delete
-              </a>
+                {% if request.user.role == 'admin' %}
+                <a href="{% url 'accounts:delete_user' user.id %}" 
+                   class="btn-action btn-delete"
+                   title="Delete user"
+                   onclick="return confirm('Are you sure you want to delete {{ user.username }}?');">
+                  <i class="fas fa-trash-alt"></i>
+                  <span>Delete</span>
+                </a>
+                {% endif %}
+              </div>
             </td>
           </tr>
           {% empty %}
           <tr>
-            <td colspan="4" class="text-center text-muted py-4">
-              <i class="bi bi-info-circle me-1"></i>
-              No users found.
+            <td colspan="4" class="empty-state">
+              <div class="empty-icon">
+                <i class="fas fa-users-slash"></i>
+              </div>
+              <div class="empty-text">No users found</div>
+              <div class="empty-subtext">Create a new account to get started</div>
             </td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
-
   </div>
-
-
 
 </div>
 {% endblock %}

@@ -23,7 +23,7 @@ def is_admin(user):
 
 
 def is_staff_admin(user):
-    return user.is_authenticated and (user.is_staff or getattr(user, 'role', '') == 'staff_admin')
+    return user.is_authenticated and getattr(user, 'role', '') == 'staff_admin'
 
 
 # ===============================
@@ -88,7 +88,18 @@ def manage_users(request):
         users = CustomUser.objects.exclude(username=request.user.username).order_by('username')
     else:
         users = CustomUser.objects.filter(role='staff_admin').exclude(username=request.user.username)
-    return render(request, 'accounts/manage_users.html', {'users': users})
+    
+    # Calculate stats
+    admin_count = users.filter(role='admin').count()
+    staff_admin_count = users.filter(role='staff_admin').count()
+    
+    context = {
+        'users': users,
+        'admin_count': admin_count,
+        'staff_admin_count': staff_admin_count,
+    }
+    
+    return render(request, 'accounts/manage_users.html', context)
 
 
 # ===============================
@@ -121,7 +132,13 @@ def create_user(request):
 def edit_user(request, user_id):
     user_obj = get_object_or_404(CustomUser, id=user_id)
 
-    # Staff Admin cannot edit Admin accounts
+    # Prevent editing yourself
+    if user_obj.id == request.user.id:
+        messages.error(request, "You cannot edit your own account from this page.")
+        return redirect('accounts:manage_users')
+    
+    # Only Staff Admins are blocked from editing Admin accounts
+    # Admins CAN edit other Admin accounts
     if is_staff_admin(request.user) and user_obj.role == 'admin':
         messages.error(request, "Access denied: You cannot edit Admin accounts.")
         return redirect('accounts:manage_users')
