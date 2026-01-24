@@ -121,7 +121,7 @@
     </div>
 
     <!-- RETURN BUTTON -->
-    <a href="{% url 'accounts:staff_dashboard' %}"
+    <a href="{% if user.role == 'admin' %}{% url 'accounts:admin_dashboard' %}{% else %}{% url 'accounts:staff_dashboard' %}{% endif %}"
        class="btn rdfs-qr-exit-back">
       <i class="bi bi-arrow-left-circle me-1"></i>
       Return to Dashboard

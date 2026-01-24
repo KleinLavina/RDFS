@@ -282,7 +282,11 @@ def staff_dashboard(request):
             if driver_form.is_valid():
                 driver_form.save()
                 messages.success(request, "✅ Driver registered successfully!")
-                return redirect('staff_dashboard')
+                # Redirect based on user role
+                if request.user.role == 'admin':
+                    return redirect('accounts:admin_dashboard')
+                else:
+                    return redirect('accounts:staff_dashboard')
             else:
                 messages.error(request, "❌ Driver form contains errors.")
 
@@ -304,7 +308,11 @@ def staff_dashboard(request):
                     vehicle.full_clean()
                     vehicle.save()
                     messages.success(request, f"✅ Vehicle '{vehicle.vehicle_name}' registered successfully!")
-                    return redirect('staff_dashboard')
+                    # Redirect based on user role
+                    if request.user.role == 'admin':
+                        return redirect('accounts:admin_dashboard')
+                    else:
+                        return redirect('accounts:staff_dashboard')
                 except ValidationError as ve:
                     vehicle_form.add_error(None, ve)
                     maybe_show_plate_duplicate_toast(request, error=ve)

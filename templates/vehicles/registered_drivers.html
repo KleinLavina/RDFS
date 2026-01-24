@@ -21,7 +21,7 @@
       </p>
     </div>
 
-    <a href="{% url 'accounts:staff_dashboard' %}" class="rdfs-drivers-back">
+    <a href="{% if user.role == 'admin' %}{% url 'accounts:admin_dashboard' %}{% else %}{% url 'accounts:staff_dashboard' %}{% endif %}" class="rdfs-drivers-back">
       <i class="fas fa-arrow-left-circle me-1"></i>
       Return to Dashboard
     </a>

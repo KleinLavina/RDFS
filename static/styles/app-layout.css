@@ -66,7 +66,7 @@ html, body {
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  display: none;
+  display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 12px rgba(0, 0, 0, .25);
@@ -104,23 +104,67 @@ html, body {
   transform: translateY(-50%) translateX(0);
 }
 
+.app-sidebar-toggle:focus-visible {
+  outline: 2px solid #0c1c4a;
+  outline-offset: 2px;
+}
+
+@media (min-width: 993px) {
+  .app-sidebar-toggle {
+    display: flex;
+  }
+}
+
 .app-shell.sidebar-collapsed .app-sidebar {
   width: 72px;
 }
 
 .app-shell.sidebar-collapsed .rdfs-sidebar__link span,
-.app-shell.sidebar-collapsed .rdfs-adm-sb__link span {
+.app-shell.sidebar-collapsed .rdfs-adm-sb__link span,
+.app-shell.sidebar-collapsed .rdfs-sidebar__group-toggle span span,
+.app-shell.sidebar-collapsed .rdfs-adm-sb__group-toggle span span {
   display: none;
 }
 
 .app-shell.sidebar-collapsed .rdfs-sidebar__section,
 .app-shell.sidebar-collapsed .rdfs-adm-sb__section {
   opacity: 0;
+  height: 0;
+  margin: 0;
+  overflow: hidden;
 }
 
 .app-shell.sidebar-collapsed .rdfs-sidebar__logo,
 .app-shell.sidebar-collapsed .rdfs-adm-sb__logo {
   width: 40px;
+  transition: width .25s ease;
+}
+
+.app-shell.sidebar-collapsed .rdfs-sidebar__group-toggle,
+.app-shell.sidebar-collapsed .rdfs-adm-sb__group-toggle {
+  justify-content: center;
+}
+
+.app-shell.sidebar-collapsed .rdfs-sidebar__group-chevron,
+.app-shell.sidebar-collapsed .rdfs-adm-sb__group-chevron {
+  display: none;
+}
+
+.app-shell.sidebar-collapsed .rdfs-sidebar__group-list,
+.app-shell.sidebar-collapsed .rdfs-adm-sb__group-list {
+  display: none;
+}
+
+.app-shell.sidebar-collapsed .rdfs-sidebar__link,
+.app-shell.sidebar-collapsed .rdfs-adm-sb__link {
+  justify-content: center;
+  padding: 10px;
+}
+
+.app-shell.sidebar-collapsed .rdfs-sidebar__link i,
+.app-shell.sidebar-collapsed .rdfs-adm-sb__link i {
+  margin: 0;
+  min-width: auto;
 }
 
 .sidebar-backdrop {
@@ -152,6 +196,7 @@ html, body {
     transform: translateX(-100%);
     transition: transform .25s ease;
     will-change: transform;
+    width: 250px !important;
   }
 
   body.sidebar-open .app-sidebar {
@@ -170,6 +215,31 @@ html, body {
   #main-content {
     margin-top: 60px;
     padding-top: 24px;
+  }
+
+  /* Force show all sidebar content on mobile */
+  body.sidebar-open .rdfs-sidebar__link span,
+  body.sidebar-open .rdfs-adm-sb__link span,
+  body.sidebar-open .rdfs-sidebar__group-toggle span span,
+  body.sidebar-open .rdfs-adm-sb__group-toggle span span {
+    display: inline !important;
+  }
+
+  body.sidebar-open .rdfs-sidebar__section,
+  body.sidebar-open .rdfs-adm-sb__section {
+    opacity: 1 !important;
+    height: auto !important;
+    margin: 10px 8px 4px !important;
+  }
+
+  body.sidebar-open .rdfs-sidebar__logo,
+  body.sidebar-open .rdfs-adm-sb__logo {
+    width: 175px !important;
+  }
+
+  body.sidebar-open .rdfs-sidebar__group-chevron,
+  body.sidebar-open .rdfs-adm-sb__group-chevron {
+    display: inline !important;
   }
 }
 

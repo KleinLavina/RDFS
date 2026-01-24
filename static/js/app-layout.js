@@ -103,7 +103,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   updateState();
 
-  const groupButtons = document.querySelectorAll('.rdfs-sidebar__group-toggle, .rdfs-adm-sb__group-toggle');
+  const activeSidebar = document.querySelector('.rdfs-sidebar, .rdfs-adm-sb');
+  if (!activeSidebar) return;
+  
+  const groupToggleSelector = activeSidebar.classList.contains('rdfs-sidebar') 
+    ? '.rdfs-sidebar__group-toggle' 
+    : '.rdfs-adm-sb__group-toggle';
+  
+  const groupButtons = activeSidebar.querySelectorAll(groupToggleSelector);
   const loadGroupState = () => {
     if (!storage) return [];
     try {
@@ -154,7 +161,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const normalizePath = (path) => path.replace(/\/$/, '') || '/';
   const highlightActiveLink = () => {
     const currentPath = normalizePath(window.location.pathname);
-    document.querySelectorAll('.rdfs-sidebar__link, .rdfs-adm-sb__link').forEach((link) => {
+    const activeSidebar = document.querySelector('.rdfs-sidebar, .rdfs-adm-sb');
+    if (!activeSidebar) return;
+    
+    const linkSelector = activeSidebar.classList.contains('rdfs-sidebar') 
+      ? '.rdfs-sidebar__link' 
+      : '.rdfs-adm-sb__link';
+    
+    activeSidebar.querySelectorAll(linkSelector).forEach((link) => {
       let linkPath = link.getAttribute('href') || '';
       try {
         linkPath = normalizePath(new URL(link.href, window.location.origin).pathname);
@@ -164,7 +178,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const isActive = linkPath === currentPath;
       link.classList.toggle('active', isActive);
       if (isActive) {
-        const parentList = link.closest('.rdfs-sidebar__group-list, .rdfs-adm-sb__group-list');
+        const groupListClass = activeSidebar.classList.contains('rdfs-sidebar') 
+          ? '.rdfs-sidebar__group-list' 
+          : '.rdfs-adm-sb__group-list';
+        const parentList = link.closest(groupListClass);
         const toggleButton = parentList?.previousElementSibling;
         const groupId = toggleButton?.dataset?.group;
         if (toggleButton && parentList && groupId) {

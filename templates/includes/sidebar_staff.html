@@ -7,11 +7,13 @@
 
   <!-- TOP (LOGO) -->
   <div class="rdfs-sidebar__top">
-    <img
-      src="{% static 'img/RDFS-Logo-White.png' %}"
-      alt="RDFS Logo"
-      class="rdfs-sidebar__logo"
-    >
+    <a href="{% url 'accounts:staff_dashboard' %}" style="display: flex; align-items: center;">
+      <img
+        src="{% static 'img/RDFS-Logo-White.png' %}"
+        alt="RDFS Logo"
+        class="rdfs-sidebar__logo"
+      >
+    </a>
   </div>
 
   <!-- MIDDLE (SCROLLABLE NAV) -->
@@ -19,7 +21,7 @@
     <ul class="rdfs-sidebar__nav">
 
       <li class="rdfs-sidebar__item">
-        <a href="{% url 'accounts:staff_dashboard' %}" class="rdfs-sidebar__link">
+        <a href="{% url 'accounts:staff_dashboard' %}" class="rdfs-sidebar__link" data-title="Staff Dashboard">
           <i class="bi bi-house-door-fill"></i><span>Staff Dashboard</span>
         </a>
       </li>
@@ -34,12 +36,12 @@
         </button>
         <ul class="rdfs-sidebar__group-list" aria-hidden="true">
           <li class="rdfs-sidebar__item">
-            <a href="{% url 'vehicles:register_driver' %}" class="rdfs-sidebar__link">
+            <a href="{% url 'vehicles:register_driver' %}" class="rdfs-sidebar__link" data-title="Add Driver">
               <i class="bi bi-person-plus-fill"></i><span>Add Driver</span>
             </a>
           </li>
           <li class="rdfs-sidebar__item">
-            <a href="{% url 'vehicles:registered_drivers' %}" class="rdfs-sidebar__link">
+            <a href="{% url 'vehicles:registered_drivers' %}" class="rdfs-sidebar__link" data-title="Drivers">
               <i class="bi bi-people-fill"></i><span>Drivers</span>
             </a>
           </li>
@@ -56,12 +58,12 @@
         </button>
         <ul class="rdfs-sidebar__group-list" aria-hidden="true">
           <li class="rdfs-sidebar__item">
-            <a href="{% url 'vehicles:register_vehicle' %}" class="rdfs-sidebar__link">
+            <a href="{% url 'vehicles:register_vehicle' %}" class="rdfs-sidebar__link" data-title="Add Vehicle">
               <i class="bi bi-truck-front-fill"></i><span>Add Vehicle</span>
             </a>
           </li>
           <li class="rdfs-sidebar__item">
-            <a href="{% url 'vehicles:registered_vehicles' %}" class="rdfs-sidebar__link">
+            <a href="{% url 'vehicles:registered_vehicles' %}" class="rdfs-sidebar__link" data-title="Vehicles">
               <i class="bi bi-card-list"></i><span>Vehicles</span>
             </a>
           </li>
@@ -78,12 +80,12 @@
         </button>
         <ul class="rdfs-sidebar__group-list" aria-hidden="true">
           <li class="rdfs-sidebar__item">
-            <a href="{% url 'terminal:deposit_menu' %}" class="rdfs-sidebar__link">
+            <a href="{% url 'terminal:deposit_menu' %}" class="rdfs-sidebar__link" data-title="Deposits">
               <i class="bi bi-cash-stack"></i><span>Deposits</span>
             </a>
           </li>
           <li class="rdfs-sidebar__item">
-            <a href="{% url 'terminal:transactions' %}" class="rdfs-sidebar__link">
+            <a href="{% url 'terminal:transactions' %}" class="rdfs-sidebar__link" data-title="Transactions">
               <i class="bi bi-receipt-cutoff"></i><span>Transactions</span>
             </a>
           </li>
@@ -100,12 +102,12 @@
         </button>
         <ul class="rdfs-sidebar__group-list" aria-hidden="true">
           <li class="rdfs-sidebar__item">
-            <a href="{% url 'terminal:qr_scan_entry' %}" class="rdfs-sidebar__link">
+            <a href="{% url 'terminal:qr_scan_entry' %}" class="rdfs-sidebar__link" data-title="Entry">
               <i class="bi bi-qr-code-scan"></i><span>Entry</span>
             </a>
           </li>
           <li class="rdfs-sidebar__item">
-            <a href="{% url 'terminal:qr_exit_page' %}" class="rdfs-sidebar__link">
+            <a href="{% url 'terminal:qr_exit_page' %}" class="rdfs-sidebar__link" data-title="Exit">
               <i class="bi bi-qr-code"></i><span>Exit</span>
             </a>
           </li>
@@ -115,7 +117,7 @@
       <li class="rdfs-sidebar__section">Monitoring</li>
 
       <li class="rdfs-sidebar__item">
-        <a href="{% url 'terminal:tv_display' %}" target="_blank" class="rdfs-sidebar__link">
+        <a href="{% url 'terminal:tv_display' %}" target="_blank" class="rdfs-sidebar__link" data-title="TV Display">
           <i class="bi bi-display-fill"></i><span>TV Display</span>
         </a>
       </li>
@@ -125,7 +127,7 @@
 
   <!-- BOTTOM (LOGOUT STICKY) -->
   <div class="rdfs-sidebar__bottom">
-    <a href="{% url 'accounts:logout' %}" class="rdfs-sidebar__link rdfs-sidebar__logout">
+    <a href="{% url 'accounts:logout' %}" class="rdfs-sidebar__link rdfs-sidebar__logout" data-title="Logout">
       <i class="bi bi-door-closed-fill"></i><span>Logout</span>
     </a>
   </div>
@@ -151,6 +153,7 @@
   background:linear-gradient(180deg,var(--rdfs-blue),var(--rdfs-blue-dark));
   display:flex;
   flex-direction:column;
+  transition: width .25s ease;
 }
 
 /* TOP */
@@ -158,10 +161,13 @@
   padding:12px;
   display:flex;
   justify-content:center;
+  align-items: center;
+  min-height: 60px;
 }
 
 .rdfs-sidebar__logo{
   width:175px;
+  transition: width .25s ease;
 }
 
 /* MIDDLE (SCROLL AREA) */
@@ -259,17 +265,51 @@
   font-weight:600;
   color:var(--rdfs-text);
   transition:var(--rdfs-transition);
+  white-space: nowrap;
+  overflow: hidden;
+  position: relative;
 }
 
 .rdfs-sidebar__link i{
   font-size:14px;
   min-width:18px;
+  flex-shrink: 0;
+}
+
+.rdfs-sidebar__link span{
+  transition: opacity .2s ease;
 }
 
 .rdfs-sidebar__link:hover,
 .rdfs-sidebar__link.active{
   background:var(--rdfs-blue-soft);
   transform:translateX(2px);
+}
+
+/* Tooltip for collapsed state */
+.app-shell.sidebar-collapsed .rdfs-sidebar__link::after {
+  content: attr(data-title);
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%) translateX(8px);
+  background: rgba(17, 38, 102, .95);
+  color: #fff;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+  transition: opacity .2s ease, transform .2s ease;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, .2);
+  z-index: 1000;
+  margin-left: 8px;
+}
+
+.app-shell.sidebar-collapsed .rdfs-sidebar__link:hover::after {
+  opacity: 1;
+  transform: translateY(-50%) translateX(12px);
 }
 
 /* BOTTOM */

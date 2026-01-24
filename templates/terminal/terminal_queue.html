@@ -91,7 +91,7 @@
       </p>
     </div>
 
-    <a hx-get="{% url 'accounts:staff_dashboard' %}"
+    <a hx-get="{% if user.role == 'admin' %}{% url 'accounts:admin_dashboard' %}{% else %}{% url 'accounts:staff_dashboard' %}{% endif %}"
        hx-target="#main-content"
        hx-swap="innerHTML transition:true"
        class="btn rdfs-queue-back">
