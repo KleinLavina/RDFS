@@ -379,38 +379,38 @@
 <!-- ADD DEPOSIT MODAL -->
 <div class="modal fade" id="addDepositModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
+    <div class="modal-content deposit-modal">
       <div class="modal-header">
         <h5 class="modal-title">
           <i class="fas fa-hand-holding-dollar me-2"></i>
           Add Deposit
         </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
         <form method="POST" id="addDepositForm">
           {% csrf_token %}
           <input type="hidden" name="vehicle_id" id="vehicleId">
 
-          <div class="form-group">
-            <label class="form-label">
-              <i class="fas fa-user me-1"></i>
+          <div class="modal-form-group">
+            <label class="modal-label">
+              <i class="fas fa-user me-2"></i>
               Select Driver / Vehicle
             </label>
             <div class="search-wrapper">
               <input type="text"
                      id="driverSearch"
-                     class="form-control"
+                     class="modal-input"
                      placeholder="Search by name, license, or plate..."
                      autocomplete="off">
               <div id="driverSuggestions" class="suggestions-dropdown"></div>
             </div>
-            <small class="form-hint">Start typing to search for a driver</small>
+            <small class="modal-hint">Start typing to search for a driver</small>
           </div>
 
-          <div class="form-group">
-            <label class="form-label">
-              <i class="fas fa-money-bill-wave me-1"></i>
+          <div class="modal-form-group">
+            <label class="modal-label">
+              <i class="fas fa-money-bill-wave me-2"></i>
               Deposit Amount (₱)
             </label>
             <input type="number"
@@ -418,27 +418,28 @@
                    id="depositAmount"
                    min="1"
                    step="0.01"
-                   class="form-control form-control-lg"
+                   class="modal-input modal-input-amount"
                    placeholder="0.00"
                    required>
-            <small class="form-hint">Enter amount to deposit</small>
+            <small class="modal-hint">Enter amount to deposit</small>
           </div>
 
-          <div class="selected-info" id="selectedInfo">
-            <div class="info-icon">
+          <div class="modal-selected-info" id="selectedInfo">
+            <div class="modal-info-icon">
               <i class="fas fa-info-circle"></i>
             </div>
-            <div class="info-content">
-              <div id="selectedLabel" class="info-label">Select a driver to proceed</div>
-              <div id="walletInfo" class="info-value"></div>
+            <div class="modal-info-content">
+              <div id="selectedLabel" class="modal-info-label">Select a driver to proceed</div>
+              <div id="walletInfo" class="modal-info-value"></div>
             </div>
           </div>
 
           <div class="modal-actions">
-            <button type="button" class="btn-secondary" data-bs-dismiss="modal">
+            <button type="button" class="modal-btn-cancel" data-bs-dismiss="modal">
+              <i class="fas fa-times me-2"></i>
               Cancel
             </button>
-            <button type="submit" class="btn-primary" id="submitDepositBtn" disabled>
+            <button type="submit" class="modal-btn-submit" id="submitDepositBtn" disabled>
               <i class="fas fa-check-circle me-2"></i>
               Confirm Deposit
             </button>
