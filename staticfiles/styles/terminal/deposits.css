@@ -205,28 +205,6 @@
   margin-top: 0.25rem;
 }
 
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-}
-
-.btn-filter {
-  background: var(--rdfs-accent);
-  color: #fff;
-  border: none;
-  padding: 0.625rem 1.25rem;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 0.9rem;
-}
-
-.btn-filter:hover {
-  background: var(--rdfs-blue);
-}
-
 /* SEARCH STATUS */
 .search-status {
   display: flex;

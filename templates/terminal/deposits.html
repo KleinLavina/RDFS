@@ -270,23 +270,22 @@
     <!-- HISTORY SEARCH & FILTER -->
     <div class="content-card">
       <h2 class="section-title">
-        <i class="fas fa-filter me-2"></i>
-        Filter History
+        <i class="fas fa-search me-2"></i>
+        Search & Filter
       </h2>
 
-      <form method="GET" class="form-grid">
-        <input type="hidden" name="tab" value="history">
-        
+      <div class="form-grid">
         <div class="form-group">
           <label class="form-label">
-            <i class="fas fa-search me-1"></i>
-            Search
+            <i class="fas fa-magnifying-glass me-1"></i>
+            Live Search
           </label>
           <input type="text"
-                 name="history_query"
-                 value="{{ history_query }}"
+                 id="historySearchInput"
                  class="form-control"
-                 placeholder="Driver name, license, or plate...">
+                 placeholder="Driver name, license, or plate..."
+                 value="{{ history_query }}">
+          <small class="form-hint">Search updates automatically as you type</small>
         </div>
 
         <div class="form-group">
@@ -294,7 +293,7 @@
             <i class="fas fa-sort me-1"></i>
             Sort By
           </label>
-          <select name="history_sort" class="form-select">
+          <select id="historySortSelect" class="form-select">
             <option value="newest" {% if history_sort == 'newest' %}selected{% endif %}>Newest First</option>
             <option value="largest" {% if history_sort == 'largest' %}selected{% endif %}>Largest Amount</option>
             <option value="smallest" {% if history_sort == 'smallest' %}selected{% endif %}>Smallest Amount</option>
@@ -302,14 +301,15 @@
             <option value="driver_desc" {% if history_sort == 'driver_desc' %}selected{% endif %}>Driver Z → A</option>
           </select>
         </div>
+      </div>
 
-        <div class="form-actions">
-          <button type="submit" class="btn-filter">
-            <i class="fas fa-check-circle me-2"></i>
-            Apply Filters
-          </button>
+      <div class="search-status">
+        <span id="historyVisibleCount">{{ history_deposits|length }}</span> of <span id="historyTotalCount">{{ history_count }}</span> records
+        <div class="loading-indicator" id="historyLoadingIndicator">
+          <i class="fas fa-spinner fa-spin"></i>
+          <span>Searching...</span>
         </div>
-      </form>
+      </div>
     </div>
 
     <!-- HISTORY TABLE -->
@@ -332,36 +332,42 @@
               <th>Date & Time</th>
             </tr>
           </thead>
-          <tbody>
-            {% for deposit in history_deposits %}
-              <tr>
-                <td>{{ forloop.counter }}</td>
-                <td><code class="ref-code">{{ deposit.reference_number }}</code></td>
-                <td class="fw-semibold">
-                  {{ deposit.wallet.vehicle.assigned_driver.first_name }}
-                  {{ deposit.wallet.vehicle.assigned_driver.last_name }}
-                </td>
-                <td>
-                  <span class="plate-badge">{{ deposit.wallet.vehicle.license_plate }}</span>
-                </td>
-                <td>
-                  <span class="amount-badge">₱{{ deposit.amount|floatformat:2 }}</span>
-                </td>
-                <td>
-                  <span class="status-badge status-{{ deposit.status|lower }}">
-                    {{ deposit.status|capfirst }}
-                  </span>
-                </td>
-                <td>{{ deposit.created_at|date:"M d, Y h:i A" }}</td>
-              </tr>
-            {% empty %}
-              <tr>
+          <tbody id="historyTableBody">
+            {% if history_deposits %}
+              {% for deposit in history_deposits %}
+                <tr data-driver="{{ deposit.wallet.vehicle.assigned_driver.first_name|lower }} {{ deposit.wallet.vehicle.assigned_driver.last_name|lower }}"
+                    data-plate="{{ deposit.wallet.vehicle.license_plate|lower }}"
+                    data-license="{{ deposit.wallet.vehicle.assigned_driver.license_number|lower|default:'' }}"
+                    data-amount="{{ deposit.amount }}"
+                    data-date="{{ deposit.created_at|date:'Y-m-d H:i:s' }}">
+                  <td class="history-row-number">{{ forloop.counter }}</td>
+                  <td><code class="ref-code">{{ deposit.reference_number }}</code></td>
+                  <td class="fw-semibold">
+                    {{ deposit.wallet.vehicle.assigned_driver.first_name }}
+                    {{ deposit.wallet.vehicle.assigned_driver.last_name }}
+                  </td>
+                  <td>
+                    <span class="plate-badge">{{ deposit.wallet.vehicle.license_plate }}</span>
+                  </td>
+                  <td>
+                    <span class="amount-badge">₱{{ deposit.amount|floatformat:2 }}</span>
+                  </td>
+                  <td>
+                    <span class="status-badge status-{{ deposit.status|lower }}">
+                      {{ deposit.status|capfirst }}
+                    </span>
+                  </td>
+                  <td>{{ deposit.created_at|date:"M d, Y h:i A" }}</td>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <tr id="historyEmptyRow">
                 <td colspan="7" class="text-center text-muted py-4">
                   <i class="fas fa-inbox fs-1 d-block mb-2 opacity-50"></i>
                   No deposit records found
                 </td>
               </tr>
-            {% endfor %}
+            {% endif %}
           </tbody>
         </table>
       </div>
