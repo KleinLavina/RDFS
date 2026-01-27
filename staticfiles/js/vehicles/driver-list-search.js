@@ -1,9 +1,10 @@
 // =====================================================
-// DRIVER LIST - AUTO-FILTERING SEARCH
+// DRIVER LIST - AUTO-FILTERING SEARCH & SORTING
 // =====================================================
 
 document.addEventListener('DOMContentLoaded', function() {
   const searchInput = document.getElementById('driverSearch');
+  const sortSelect = document.getElementById('sortBy');
   const clearBtn = document.getElementById('clearSearch');
   const tableBody = document.getElementById('driversTableBody');
   const resultsText = document.getElementById('resultsText');
@@ -24,14 +25,13 @@ document.addEventListener('DOMContentLoaded', function() {
     clearBtn.addEventListener('click', function() {
       searchInput.value = '';
       updateClearButton();
-      performSearch('');
+      performSearch();
     });
   }
 
   // Debounced search on input
   if (searchInput) {
     searchInput.addEventListener('input', function() {
-      const query = this.value.trim();
       updateClearButton();
 
       // Clear previous timeout
@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       // Debounce the search
       searchTimeout = setTimeout(() => {
-        performSearch(query);
+        performSearch();
       }, DEBOUNCE_DELAY);
     });
 
@@ -52,14 +52,42 @@ document.addEventListener('DOMContentLoaded', function() {
     updateClearButton();
   }
 
+  // Sort change handler
+  if (sortSelect) {
+    sortSelect.addEventListener('change', function() {
+      performSearch();
+    });
+
+    // Restore sort from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const sortParam = urlParams.get('sort');
+    if (sortParam) {
+      sortSelect.value = sortParam;
+    }
+  }
+
   // Perform the actual search
-  function performSearch(query) {
+  function performSearch() {
+    const query = searchInput ? searchInput.value.trim() : '';
+    const sortBy = sortSelect ? sortSelect.value : 'name-asc';
+    
     const url = new URL(window.location.href);
     
     if (query) {
       url.searchParams.set('q', query);
     } else {
       url.searchParams.delete('q');
+    }
+
+    if (sortBy && sortBy !== 'name-asc') {
+      url.searchParams.set('sort', sortBy);
+    } else {
+      url.searchParams.delete('sort');
+    }
+
+    // Show loading
+    if (loadingIndicator) {
+      loadingIndicator.style.display = 'flex';
     }
 
     // Fetch filtered results
