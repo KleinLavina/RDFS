@@ -409,6 +409,7 @@ def tv_display_view(request, route_slug=None):
         "current_time": timezone.localtime(timezone.now(), ph_tz).isoformat(),
         "countdown_duration": tv_state.get("countdown_duration", 30),
         "refresh_interval": tv_state.get("refresh_interval", 15),
+        "departure_duration_minutes": tv_state.get("departure_duration_minutes", 30),
     }
 
     return render(request, "terminal/tv_display.html", context)

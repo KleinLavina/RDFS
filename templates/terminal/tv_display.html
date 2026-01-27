@@ -9,7 +9,7 @@
   <link rel="icon" type="image/png" href="{% static 'img/RDFS-Logo.png' %}">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link href="{% static 'styles/terminal/tv_display.css' %}?v=6.0" rel="stylesheet">
+  <link href="{% static 'styles/terminal/tv_display.css' %}?v=7.0" rel="stylesheet">
 </head>
 
 <body>
@@ -45,25 +45,25 @@
   
   <!-- Board Header -->
   <div class="board-header">
-    <div class="col-time">
+    <div class="col-entry-time">
       <i class="fa-solid fa-clock"></i>
-      DEPARTURE
+      ENTRY TIME
     </div>
     <div class="col-route">
       <i class="fa-solid fa-route"></i>
       ROUTE
     </div>
-    <div class="col-destination">
-      <i class="fa-solid fa-location-dot"></i>
-      DESTINATION
-    </div>
     <div class="col-vehicle">
       <i class="fa-solid fa-bus"></i>
       VEHICLE
     </div>
-    <div class="col-status">
-      <i class="fa-solid fa-circle-info"></i>
-      STATUS
+    <div class="col-driver">
+      <i class="fa-solid fa-user"></i>
+      DRIVER
+    </div>
+    <div class="col-countdown">
+      <i class="fa-solid fa-hourglass-half"></i>
+      COUNTDOWN
     </div>
   </div>
 
@@ -75,20 +75,20 @@
   <!-- Empty State -->
   <div class="board-empty" id="emptyState" style="display: none;">
     <i class="fa-solid fa-calendar-xmark"></i>
-    <p>NO SCHEDULED DEPARTURES</p>
-    <small>Please check back later</small>
+    <p>NO VEHICLES IN QUEUE</p>
+    <small>Waiting for entries</small>
   </div>
 
 </main>
 
-<script src="{% static 'js/terminal/tv_display.js' %}?v=6.0"></script>
+<script src="{% static 'js/terminal/tv_display.js' %}?v=7.0"></script>
 <script>
 // Initialize TV Display
 window.TV_DISPLAY_CONFIG = {
   apiUrl: "{% url 'terminal:tv_display_api' %}",
   refreshInterval: {{ refresh_interval|default:15 }},
-  countdownDuration: {{ countdown_duration|default:30 }},
-  initialData: {{ route_sections|safe }},
+  departureDuration: {{ departure_duration_minutes|default:30 }},
+  serverTime: {{ current_time|safe }},
 };
 </script>
 
