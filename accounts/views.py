@@ -220,18 +220,6 @@ def admin_dashboard_view(request):
         created_at__year=today.year,
     ).aggregate(Sum('fee_charged'))['fee_charged__sum'] or 0
 
-    # Chart data for last 7 days (server-side)
-    today = timezone.now().date()
-    last_7_days = [today - timedelta(days=i) for i in range(6, -1, -1)]
-    chart_labels = [d.strftime("%b %d") for d in last_7_days]
-    chart_data = []
-
-    for day in last_7_days:
-        start = timezone.make_aware(datetime.combine(day, datetime.min.time()))
-        end = timezone.make_aware(datetime.combine(day, datetime.max.time()))
-        day_total = Profit.objects.filter(date_recorded__range=[start, end]).aggregate(Sum('amount'))['amount__sum'] or 0
-        chart_data.append(float(day_total))
-
     context = {
         'total_drivers': total_drivers,
         'total_vehicles': total_vehicles,
@@ -239,8 +227,6 @@ def admin_dashboard_view(request):
         'total_profit': total_profit,
         'monthly_revenue': monthly_revenue,
         'annual_revenue': annual_revenue,
-        'chart_labels': chart_labels,
-        'chart_data': chart_data,
         'now': timezone.now(),
     }
     return render(request, 'accounts/admin_dashboard.html', context)

@@ -92,19 +92,6 @@
       </div>
     </div>
 
-    <!-- PROFIT CHART -->
-    <div class="row g-4 mb-4">
-      <div class="col-12">
-        <div class="chart-card">
-          <h3 class="chart-card__title">
-            <i class="bi bi-graph-up"></i>
-            7-Day Profit Trend
-          </h3>
-          <canvas id="profitChart" height="80"></canvas>
-        </div>
-      </div>
-    </div>
-
     <!-- QUICK ACTIONS -->
     <div class="mb-4">
       <h3 class="section-header__title mb-3">
@@ -172,92 +159,4 @@
 
   </div>
 </div>
-
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  const ctx = document.getElementById('profitChart');
-  if (ctx) {
-    new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: {{ chart_labels|safe }},
-        datasets: [{
-          label: 'Daily Profit (₱)',
-          data: {{ chart_data|safe }},
-          borderColor: '#2563eb',
-          backgroundColor: 'rgba(37, 99, 235, 0.1)',
-          borderWidth: 3,
-          fill: true,
-          tension: 0.4,
-          pointRadius: 5,
-          pointHoverRadius: 7,
-          pointBackgroundColor: '#2563eb',
-          pointBorderColor: '#fff',
-          pointBorderWidth: 2,
-          pointHoverBackgroundColor: '#1d4ed8',
-          pointHoverBorderColor: '#fff',
-          pointHoverBorderWidth: 3
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: {
-            display: false
-          },
-          tooltip: {
-            backgroundColor: 'rgba(17, 38, 102, 0.95)',
-            titleColor: '#fff',
-            bodyColor: '#fff',
-            padding: 12,
-            borderColor: '#2563eb',
-            borderWidth: 1,
-            displayColors: false,
-            callbacks: {
-              label: function(context) {
-                return '₱' + context.parsed.y.toLocaleString('en-US', {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2
-                });
-              }
-            }
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: {
-              callback: function(value) {
-                return '₱' + value.toLocaleString();
-              },
-              color: '#6b7280',
-              font: {
-                size: 12
-              }
-            },
-            grid: {
-              color: '#e5e7eb',
-              drawBorder: false
-            }
-          },
-          x: {
-            ticks: {
-              color: '#6b7280',
-              font: {
-                size: 12
-              }
-            },
-            grid: {
-              display: false
-            }
-          }
-        }
-      }
-    });
-  }
-});
-</script>
 {% endblock %}

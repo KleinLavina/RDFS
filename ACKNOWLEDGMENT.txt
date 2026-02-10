@@ -1,0 +1,25 @@
+ACKNOWLEDGMENT
+
+
+I would like to express my deepest gratitude to all those who have supported and guided me throughout my On-the-Job Training (OJT) experience, which has been instrumental in my professional growth and development.
+
+First and foremost, I extend my sincere appreciation to [Company/Organization Name] for providing me with the invaluable opportunity to undergo my OJT at their esteemed organization. The hands-on experience I gained working on the Roxas District Ferry System (RDFS) has been transformative, allowing me to apply theoretical knowledge to real-world scenarios and develop practical skills in web development, database management, and system design.
+
+I am profoundly grateful to my OJT Supervisor, [Supervisor Name], for their exceptional guidance, patience, and mentorship throughout this journey. Their willingness to share expertise, provide constructive feedback, and support my learning process has been invaluable. The technical skills I acquired under their supervision—including Django framework development, frontend design, database optimization, and system architecture—have significantly enhanced my capabilities as a developer.
+
+My heartfelt thanks go to my School Adviser/Instructor, [Adviser/Instructor Name], from [School Name], for their continuous support, encouragement, and academic guidance. Their dedication to ensuring that my OJT experience aligned with my educational objectives and their regular monitoring of my progress have been crucial to the success of this training period.
+
+I would also like to acknowledge my family and friends for their unwavering support, understanding, and encouragement throughout this challenging yet rewarding experience. Their belief in my abilities and their constant motivation have been a source of strength during demanding times.
+
+This OJT experience has not only equipped me with technical competencies but has also instilled in me professional values such as teamwork, problem-solving, attention to detail, and effective communication. I am confident that the knowledge and skills I have gained will serve as a strong foundation for my future career in the field of information technology.
+
+Once again, my sincere gratitude to everyone who contributed to making this OJT experience meaningful and successful.
+
+
+Thank you.
+
+
+[Your Name]
+[Course/Program]
+[School Name]
+[Date]
