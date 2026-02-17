@@ -60,6 +60,8 @@ INSTALLED_APPS = [
     'terminal',
     'vehicles',
     'reports',
+    
+    # Cloudinary
     'cloudinary',
     'cloudinary_storage',
 ]
@@ -109,6 +111,7 @@ TEMPLATES = [
 # ======================================================
 # DATABASE
 # ======================================================
+# Production PostgreSQL
 DATABASES = {
     'default': env.db('DATABASE_URL', default='postgresql://postgres:admin@localhost:5432/rdfs_db')
 }
@@ -141,9 +144,9 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 # ======================================================
-# MEDIA FILE STORAGE (Cloudinary)
+# MEDIA FILE STORAGE
 # ======================================================
-# Parse CLOUDINARY_URL if provided (format: cloudinary://api_key:api_secret@cloud_name)
+# Cloudinary Configuration
 CLOUDINARY_URL = env('CLOUDINARY_URL', default='')
 
 if CLOUDINARY_URL:
@@ -170,6 +173,8 @@ else:
     }
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+MEDIA_URL = '/media/'  # Fallback for local development
+MEDIA_ROOT = BASE_DIR / 'media'  # Fallback for local development
 
 # ======================================================
 # DEFAULT PK

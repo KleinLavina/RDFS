@@ -18,7 +18,7 @@
   <!-- Custom CSS -->
   <link rel="stylesheet" href="{% static 'styles/passenger/03.css' %}">
   <link rel="stylesheet" href="{% static 'styles/passenger/04.css' %}">
-  <link rel="stylesheet" href="{% static 'styles/passenger/05.css' %}">
+  <link rel="stylesheet" href="{% static 'styles/passenger/05-compact.css' %}">
 
   <style>
     /* Countdown animations */
@@ -258,7 +258,7 @@
 
     return `
       <tr class="${isDeparted ? 'departed-row' : ''}" data-entry-id="${entry.id}">
-        <td class="entry-time-cell">${escapeHtml(entry.entry_time_numeric)}</td>
+        <td class="entry-time-cell">${escapeHtml(entry.entry_time_display)}</td>
         <td>${escapeHtml(entry.vehicle_plate)}</td>
         <td><span class="route-badge">${escapeHtml(entry.route)}</span></td>
         <td>${escapeHtml(entry.driver_name)}</td>
@@ -282,58 +282,44 @@
     } else if (entry.departed_countdown_active && entry.departed_countdown_expiry) {
       countdownHtml = `<span class="countdown-mobile countdown-mobile-element departed-countdown" data-expiry="${entry.departed_countdown_expiry}">--:--</span>`;
     } else if (entry.status === 'Queued') {
-      countdownHtml = '<span class="queued-badge">Waiting in line</span>';
+      countdownHtml = '<span class="queued-badge">Waiting</span>';
     } else {
-      countdownHtml = '<span class="departed-badge"><i class="bi bi-check-circle"></i> Departed</span>';
+      countdownHtml = '<span class="departed-badge">Departed</span>';
     }
 
     return `
       <div class="vehicle-card vehicle-card--landscape" data-entry-id="${entry.id}">
         <div class="card-header">
-          <div class="vehicle-info">
-            <div class="vehicle-icon">
-              <i class="bi bi-truck"></i>
-            </div>
-            <div class="vehicle-details">
-              <div class="vehicle-plate">${escapeHtml(entry.vehicle_plate) || 'Unassigned'}</div>
-              <div class="driver-name">${escapeHtml(entry.driver_name)}</div>
-            </div>
+          <div class="route-header">
+            <i class="bi bi-signpost-2"></i>
+            <span class="route-name">${escapeHtml(entry.route)}</span>
           </div>
           <span class="status-pill status-pill-${statusClass}">
             ${escapeHtml(entry.status)}
           </span>
-          <div class="card-countdown">
-            <div class="countdown-section">
-              <div class="countdown-label">
-                <i class="bi bi-stopwatch"></i>
-                <span>Countdown</span>
-              </div>
-              <div class="countdown-timer">${countdownHtml}</div>
-            </div>
-          </div>
         </div>
         <div class="card-body">
-          <div class="info-section">
-            <div class="info-label">
-              <i class="bi bi-signpost"></i>
-              <span>Route</span>
-            </div>
-            <div class="route-tag">${escapeHtml(entry.route)}</div>
-          </div>
-          <div class="times-grid">
-            <div class="time-item">
-              <div class="time-label">
-                <i class="bi bi-clock"></i>
-                <span>Entry</span>
+          <div class="info-row">
+            <div class="info-item">
+              <div class="info-label">
+                <i class="bi bi-truck"></i>
+                <span>Vehicle</span>
               </div>
-              <div class="time-value">${escapeHtml(entry.entry_time_display)}</div>
+              <div class="info-value">${escapeHtml(entry.vehicle_plate) || 'Unassigned'}</div>
             </div>
-            <div class="time-item">
-              <div class="time-label">
+            <div class="info-item">
+              <div class="info-label">
                 <i class="bi bi-calendar2-check"></i>
                 <span>Departure</span>
               </div>
-              <div class="time-value">${escapeHtml(entry.departure_time_display)}</div>
+              <div class="info-value">${escapeHtml(entry.departure_time_display)}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">
+                <i class="bi bi-stopwatch"></i>
+                <span>Countdown</span>
+              </div>
+              <div class="info-value countdown-value">${countdownHtml}</div>
             </div>
           </div>
         </div>

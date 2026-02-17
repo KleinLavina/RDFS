@@ -61,6 +61,12 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 
+# Media files (local development)
+media/
+
+# Static files
+staticfiles/
+
 # Flask stuff:
 instance/
 .webassets-cache
@@ -205,3 +211,5 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+*.md

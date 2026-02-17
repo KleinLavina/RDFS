@@ -13,6 +13,8 @@ from django.dispatch import receiver
 from django.utils import timezone
 
 from django.core.files.base import ContentFile
+
+# Cloudinary imports
 from cloudinary.models import CloudinaryField
 import cloudinary.uploader
 
@@ -87,8 +89,9 @@ class Driver(models.Model):
     # -----------------------------
     # DRIVER PHOTO (REQUIRED)
     # -----------------------------
+    # Cloudinary field for production
     driver_photo = CloudinaryField(
-        "driver_photos",
+        'driver_photo',
         blank=False,
         null=False,
     )
@@ -177,9 +180,9 @@ class Vehicle(models.Model):
 
     seat_capacity = models.PositiveIntegerField(blank=True, null=True)
 
-    # ✅ QR IMAGE (Cloudinary)
+    # QR IMAGE (Cloudinary for production)
     qr_code = CloudinaryField(
-        "vehicle_qrcodes",
+        'qr_code',
         blank=True,
         null=True,
     )
@@ -227,7 +230,7 @@ class Vehicle(models.Model):
             raise ValidationError(errors)
 
     # --------------------------------------------------
-    # SAVE & QR GENERATION
+    # SAVE & QR GENERATION (Cloudinary)
     # --------------------------------------------------
     def save(self, *args, **kwargs):
         creating = self.pk is None
@@ -238,33 +241,30 @@ class Vehicle(models.Model):
         if creating or self.qr_value != expected_qr_value:
             self.qr_value = expected_qr_value
 
+            # Generate QR code image
             qr_img = qrcode.make(self.qr_value)
             buffer = BytesIO()
             qr_img.save(buffer, format="PNG")
+            buffer.seek(0)
 
+            # Upload to Cloudinary
             upload_result = cloudinary.uploader.upload(
-                buffer.getvalue(),
+                buffer,
                 folder="vehicles/qrcodes",
                 public_id=f"vehicle_{self.id}_qr",
                 overwrite=True,
-                resource_type="image",
-                format="png",
+                resource_type="image"
             )
 
-            self.qr_code = upload_result.get("public_id")
+            # Store the Cloudinary URL
+            self.qr_code = upload_result['secure_url']
             super().save(update_fields=["qr_code", "qr_value"])
 
     @property
     def qr_code_url(self):
-        """Return a usable QR image URL regardless of storage backend."""
-        if not self.qr_code:
-            return None
-        qr_value = self.qr_code
-        url = getattr(qr_value, "url", None)
-        if url:
-            return url
-        if isinstance(qr_value, str):
-            return qr_value
+        """Return a usable QR image URL from Cloudinary."""
+        if self.qr_code:
+            return self.qr_code.url if hasattr(self.qr_code, 'url') else str(self.qr_code)
         return None
 
     def __str__(self):

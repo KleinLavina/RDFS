@@ -743,11 +743,6 @@ def qr_exit_validation(request):
             "status": "error",
             "message": f"Unexpected error: {str(e)}"
         })
-                fee_charged=None,
-            )
-        return JsonResponse({"status": "success", "message": f"✅ {vehicle.license_plate} departed."})
-    except Exception as e:
-        return JsonResponse({"status": "error", "message": str(e)})
 
 
 @login_required(login_url='accounts:login')

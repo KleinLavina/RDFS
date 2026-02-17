@@ -147,6 +147,7 @@
             <option value="driver_asc" {% if wallet_sort == 'driver_asc' %}selected{% endif %}>Driver A → Z</option>
             <option value="driver_desc" {% if wallet_sort == 'driver_desc' %}selected{% endif %}>Driver Z → A</option>
           </select>
+          <small class="form-hint" style="visibility: hidden;">&nbsp;</small>
         </div>
       </div>
 
@@ -439,7 +440,7 @@
               <i class="fas fa-times me-2"></i>
               Cancel
             </button>
-            <button type="submit" class="modal-btn-submit" id="submitDepositBtn" disabled>
+            <button type="submit" class="modal-btn-submit text text-black border border-black" id="submitDepositBtn" disabled>
               <i class="fas fa-check-circle me-2"></i>
               Confirm Deposit
             </button>
