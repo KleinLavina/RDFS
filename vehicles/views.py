@@ -609,6 +609,7 @@ def register_vehicle(request):
                     'vehicle_type': 'Vehicle Type',
                     'ownership_type': 'Ownership Type',
                     'assigned_driver': 'Assigned Driver',
+                    'route': 'Route',
                 }
 
                 missing_required = [

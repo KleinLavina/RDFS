@@ -116,6 +116,14 @@ DATABASES = {
     'default': env.db('DATABASE_URL', default='postgresql://postgres:admin@localhost:5432/rdfs_db')
 }
 
+# Local SQLite3 (commented out)
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
 # ======================================================
 # AUTH / USERS
 # ======================================================
@@ -175,6 +183,11 @@ else:
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 MEDIA_URL = '/media/'  # Fallback for local development
 MEDIA_ROOT = BASE_DIR / 'media'  # Fallback for local development
+
+# Local media storage (commented out)
+# DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+# MEDIA_URL = '/media/'
+# MEDIA_ROOT = BASE_DIR / 'media'
 
 # ======================================================
 # DEFAULT PK

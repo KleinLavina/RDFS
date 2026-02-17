@@ -374,6 +374,18 @@ class QueueService:
 
         entry_time = timezone.localtime(log.created_at)
         departure_time = log.created_at + timedelta(minutes=departure_duration)
+        
+        # Format: "February 17, 2026 (Tuesday) 03:45 PM"
+        entry_date = entry_time.strftime("%B %d, %Y")
+        entry_day = entry_time.strftime("%A")
+        entry_time_str = entry_time.strftime("%I:%M %p")
+        entry_display = f"{entry_date} ({entry_day}) {entry_time_str}"
+        
+        departure_local = timezone.localtime(departure_time)
+        departure_date = departure_local.strftime("%B %d, %Y")
+        departure_day = departure_local.strftime("%A")
+        departure_time_str = departure_local.strftime("%I:%M %p")
+        departure_display = f"{departure_date} ({departure_day}) {departure_time_str}"
 
         return {
             "id": log.id,
@@ -384,9 +396,9 @@ class QueueService:
             "route": route_name,
             "route_id": getattr(getattr(vehicle, "route", None), "id", None) if vehicle else None,
             "status": status,
-            "entry_time_display": entry_time.isoformat(),
-            "entry_time_numeric": entry_time.strftime("%Y-%m-%d %H:%M:%S"),
-            "departure_time_display": timezone.localtime(departure_time).strftime("%b %d, %Y %I:%M %p"),
+            "entry_time_display": entry_display,
+            "entry_time_numeric": entry_display,
+            "departure_time_display": departure_display,
             "countdown_active": status == QUEUE_STATUS_BOARDING,
             "expiry_timestamp": expiry_timestamp,
             "departed_countdown_active": status == QUEUE_STATUS_DEPARTED and departed_countdown_expiry is not None,

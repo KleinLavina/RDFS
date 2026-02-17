@@ -53,6 +53,9 @@ class VehicleRegistrationForm(forms.ModelForm):
             'assigned_driver': {
                 'required': '❌ Assigned driver is required. Please select a driver.',
             },
+            'route': {
+                'required': '❌ Route is required. Please select a route.',
+            },
             'cr_number': {
                 'required': '❌ CR (Certificate of Registration) number is required.',
                 'unique': '❌ This CR number is already registered in the system.',
@@ -141,7 +144,7 @@ class VehicleRegistrationForm(forms.ModelForm):
             
         # Set optional fields
         self.fields['vehicle_name'].required = False
-        self.fields['route'].required = False
+        self.fields['route'].required = True  # Route is now required
         self.fields['seat_capacity'].required = False
         
         # Filter querysets
@@ -152,7 +155,7 @@ class VehicleRegistrationForm(forms.ModelForm):
         self.fields['vehicle_type'].empty_label = "Select Vehicle Type"
         self.fields['ownership_type'].empty_label = "Select Ownership Type"
         self.fields['assigned_driver'].empty_label = "Select Driver"
-        self.fields['route'].empty_label = "Select Route (Optional)"
+        self.fields['route'].empty_label = "Select Route"
 
     # --------------------------------------------------
     # FIELD VALIDATIONS
