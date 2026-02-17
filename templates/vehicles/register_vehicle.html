@@ -4,9 +4,9 @@
 {% block title %}Register Vehicle | RDFS{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'styles/vehicles/03.css' %}">
-<link rel="stylesheet" href="{% static 'styles/vehicles/driver-search-dropdown.css' %}">
-<link rel="stylesheet" href="{% static 'styles/vehicles/vehicle-registration.css' %}">
+<link rel="stylesheet" href="{% static 'styles/vehicles/03.css' %}?v=2">
+<link rel="stylesheet" href="{% static 'styles/vehicles/driver-search-dropdown.css' %}?v=2">
+<link rel="stylesheet" href="{% static 'styles/vehicles/vehicle-registration.css' %}?v=2">
 
 <!-- Global z-index overrides for dropdowns and calendars -->
 <style>
@@ -172,7 +172,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         <div class="form-group col-md-6">
           <label for="{{ form.route.id_for_label }}" class="form-label">
             <i class="fas fa-route me-1"></i> Route
-            <span class="text-muted">(Optional)</span>
+            <span class="text-danger">*</span>
           </label>
           {{ form.route }}
           {% if form.route.errors %}

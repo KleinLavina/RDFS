@@ -54,7 +54,7 @@
 
     <div class="row g-3 mt-1">
       <div class="col-md-6">
-        <label class="form-label"><i class="fas fa-route me-1"></i> Route (Optional)</label>
+        <label class="form-label"><i class="fas fa-route me-1"></i> Route <span class="text-danger">*</span></label>
         {{ form.route }}
         {% if form.route.errors %}
           <div class="invalid-feedback d-block">{{ form.route.errors.0 }}</div>
