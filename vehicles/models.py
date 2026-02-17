@@ -4,6 +4,7 @@ import qrcode
 from decimal import Decimal
 from io import BytesIO
 
+from django.conf import settings
 from django.core.files import File
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
@@ -322,6 +323,14 @@ class Deposit(models.Model):
     wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE, related_name='deposits')
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     reference_number = models.CharField(max_length=50, unique=True, blank=True)
+    
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='deposits_created'
+    )
 
     status = models.CharField(max_length=15, default='successful')
     payment_method = models.CharField(max_length=20, default='cash')

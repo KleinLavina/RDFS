@@ -483,6 +483,21 @@
   color: #fff;
 }
 
+.btn-receipt {
+  border-color: var(--rdfs-accent);
+  color: var(--rdfs-accent);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-receipt:hover {
+  background: var(--rdfs-accent);
+  color: #fff;
+  text-decoration: none;
+}
+
 /* MODAL */
 .modal-content.deposit-modal {
   border: none;
@@ -785,4 +800,123 @@
   .btn-secondary, .btn-primary {
     flex: 1;
   }
+
+  .month-selector-export-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .month-selector-inline {
+    flex-direction: column;
+    align-items: stretch;
+    min-width: 100%;
+  }
+
+  .month-selector-inline .form-label {
+    margin-bottom: 0.5rem;
+  }
+
+  .month-selector-inline .form-select {
+    max-width: 100%;
+  }
+
+  .btn-export {
+    width: 100%;
+    justify-content: center;
+  }
 }
+
+
+/* MONTH NAVIGATION */
+.month-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--rdfs-soft);
+  border-radius: 8px;
+}
+
+.btn-month-nav {
+  padding: 0.5rem 1rem;
+  background: var(--rdfs-blue);
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-month-nav:hover:not(.disabled) {
+  background: var(--rdfs-blue-dark);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.btn-month-nav.disabled {
+  background: #cbd5e1;
+  color: #94a3b8;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.current-month {
+  font-size: 1.125rem;
+  color: var(--rdfs-blue-dark);
+  font-weight: 700;
+}
+
+.month-selector-export-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.month-selector-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 300px;
+}
+
+.month-selector-inline .form-label {
+  font-weight: 600;
+  color: var(--rdfs-blue-dark);
+  margin-bottom: 0;
+  white-space: nowrap;
+}
+
+.month-selector-inline .form-select {
+  max-width: 250px;
+  flex: 1;
+}
+
+.btn-export {
+  padding: 0.625rem 1.25rem;
+  background: var(--success);
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn-export:hover {
+  background: #059669;
+  color: white;
+  transform: translateY(-1px);
+}
+
+

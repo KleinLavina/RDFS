@@ -73,6 +73,7 @@
 
     <!-- STATS GRID -->
     <div class="stats-grid">
+      {% if user.role == 'admin' %}
       <div class="stat-card">
         <div class="stat-icon wallets-icon">
           <i class="fas fa-wallet"></i>
@@ -94,24 +95,15 @@
       </div>
 
       <div class="stat-card">
-        <div class="stat-icon low-icon">
-          <i class="fas fa-exclamation-triangle"></i>
-        </div>
-        <div class="stat-info">
-          <div class="stat-value">{{ low_balance_count }}</div>
-          <div class="stat-label">Low Balance</div>
-        </div>
-      </div>
-
-      <div class="stat-card">
         <div class="stat-icon deposits-icon">
           <i class="fas fa-receipt"></i>
         </div>
         <div class="stat-info">
           <div class="stat-value">{{ total_deposits }}</div>
-          <div class="stat-label">Total Deposits</div>
+          <div class="stat-label">Total Deposits Made</div>
         </div>
       </div>
+      {% endif %}
     </div>
 
     <!-- SEARCH & FILTER -->
@@ -253,7 +245,7 @@
         </div>
         <div class="stat-info">
           <div class="stat-value">{{ history_count }}</div>
-          <div class="stat-label">Total Records</div>
+          <div class="stat-label">Total Records ({{ selected_month_name }})</div>
         </div>
       </div>
 
@@ -263,53 +255,57 @@
         </div>
         <div class="stat-info">
           <div class="stat-value">₱{{ history_total|floatformat:2 }}</div>
-          <div class="stat-label">Total Amount</div>
+          <div class="stat-label">Total Deposited ({{ selected_month_name }})</div>
         </div>
       </div>
     </div>
 
-    <!-- HISTORY SEARCH & FILTER -->
+    <!-- MONTH NAVIGATION -->
     <div class="content-card">
       <h2 class="section-title">
-        <i class="fas fa-search me-2"></i>
-        Search & Filter
+        <i class="fas fa-calendar me-2"></i>
+        Month Selection
       </h2>
-
-      <div class="form-grid">
-        <div class="form-group">
-          <label class="form-label">
-            <i class="fas fa-magnifying-glass me-1"></i>
-            Live Search
-          </label>
-          <input type="text"
-                 id="historySearchInput"
-                 class="form-control"
-                 placeholder="Driver name, license, or plate..."
-                 value="{{ history_query }}">
-          <small class="form-hint">Search updates automatically as you type</small>
+      
+      <div class="month-navigation">
+        <a href="?tab=history&month={{ prev_month }}" 
+           class="btn-month-nav {% if not has_prev_month %}disabled{% endif %}"
+           {% if not has_prev_month %}aria-disabled="true"{% endif %}>
+          <i class="fas fa-chevron-left"></i> Previous Month
+        </a>
+        
+        <div class="current-month">
+          <i class="fas fa-calendar-day me-2"></i>
+          <strong>{{ selected_month_name }}</strong>
         </div>
-
-        <div class="form-group">
-          <label class="form-label">
-            <i class="fas fa-sort me-1"></i>
-            Sort By
+        
+        <a href="?tab=history&month={{ next_month }}" 
+           class="btn-month-nav {% if not has_next_month %}disabled{% endif %}"
+           {% if not has_next_month %}aria-disabled="true"{% endif %}>
+          Next Month <i class="fas fa-chevron-right"></i>
+        </a>
+      </div>
+      
+      <div class="month-selector-export-row">
+        <div class="month-selector-inline">
+          <label for="monthSelect" class="form-label">
+            <i class="fas fa-calendar-alt me-1"></i>
+            Jump to Month:
           </label>
-          <select id="historySortSelect" class="form-select">
-            <option value="newest" {% if history_sort == 'newest' %}selected{% endif %}>Newest First</option>
-            <option value="largest" {% if history_sort == 'largest' %}selected{% endif %}>Largest Amount</option>
-            <option value="smallest" {% if history_sort == 'smallest' %}selected{% endif %}>Smallest Amount</option>
-            <option value="driver_asc" {% if history_sort == 'driver_asc' %}selected{% endif %}>Driver A → Z</option>
-            <option value="driver_desc" {% if history_sort == 'driver_desc' %}selected{% endif %}>Driver Z → A</option>
+          <select id="monthSelect" class="form-select" onchange="window.location.href='?tab=history&month=' + this.value">
+            {% for month_data in available_months %}
+              <option value="{{ month_data.month|date:'Y-m' }}" 
+                      {% if month_data.month|date:'Y-m' == selected_month %}selected{% endif %}>
+                {{ month_data.month|date:"F Y" }}
+              </option>
+            {% endfor %}
           </select>
         </div>
-      </div>
-
-      <div class="search-status">
-        <span id="historyVisibleCount">{{ history_deposits|length }}</span> of <span id="historyTotalCount">{{ history_count }}</span> records
-        <div class="loading-indicator" id="historyLoadingIndicator">
-          <i class="fas fa-spinner fa-spin"></i>
-          <span>Searching...</span>
-        </div>
+        
+        <a href="?tab=history&month={{ selected_month }}&export=csv" class="btn-export">
+          <i class="fas fa-file-csv me-2"></i>
+          Export {{ selected_month_name }} to CSV
+        </a>
       </div>
     </div>
 
@@ -331,6 +327,7 @@
               <th>Amount</th>
               <th>Status</th>
               <th>Date & Time</th>
+              <th class="text-center">Receipt</th>
             </tr>
           </thead>
           <tbody id="historyTableBody">
@@ -359,11 +356,19 @@
                     </span>
                   </td>
                   <td>{{ deposit.created_at|date:"M d, Y h:i A" }}</td>
+                  <td class="text-center">
+                    <a href="{% url 'terminal:deposit_receipt' deposit.id %}" 
+                       class="btn-action btn-receipt" 
+                       title="View Receipt"
+                       target="_blank">
+                      <i class="fas fa-receipt"></i>
+                    </a>
+                  </td>
                 </tr>
               {% endfor %}
             {% else %}
               <tr id="historyEmptyRow">
-                <td colspan="7" class="text-center text-muted py-4">
+                <td colspan="8" class="text-center text-muted py-4">
                   <i class="fas fa-inbox fs-1 d-block mb-2 opacity-50"></i>
                   No deposit records found
                 </td>

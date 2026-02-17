@@ -154,11 +154,9 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 # ======================================================
 # MEDIA FILE STORAGE
 # ======================================================
-# Cloudinary Configuration
+# Cloudinary Configuration for production
 CLOUDINARY_URL = env('CLOUDINARY_URL', default='')
-
 if CLOUDINARY_URL:
-    # Parse the URL to extract components
     import re
     match = re.match(r'cloudinary://(\d+):([^@]+)@(.+)', CLOUDINARY_URL)
     if match:
@@ -167,22 +165,7 @@ if CLOUDINARY_URL:
             'API_KEY': match.group(1),
             'API_SECRET': match.group(2),
         }
-    else:
-        CLOUDINARY_STORAGE = {
-            'CLOUD_NAME': env('CLOUDINARY_CLOUD_NAME', default=''),
-            'API_KEY': env('CLOUDINARY_API_KEY', default=''),
-            'API_SECRET': env('CLOUDINARY_API_SECRET', default=''),
-        }
-else:
-    CLOUDINARY_STORAGE = {
-        'CLOUD_NAME': env('CLOUDINARY_CLOUD_NAME', default=''),
-        'API_KEY': env('CLOUDINARY_API_KEY', default=''),
-        'API_SECRET': env('CLOUDINARY_API_SECRET', default=''),
-    }
-
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-MEDIA_URL = '/media/'  # Fallback for local development
-MEDIA_ROOT = BASE_DIR / 'media'  # Fallback for local development
 
 # Local media storage (commented out)
 # DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'

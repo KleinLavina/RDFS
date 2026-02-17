@@ -1,9 +1,12 @@
 from decimal import Decimal
+from datetime import timedelta
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Count, DecimalField, OuterRef, Q, Subquery, Sum
-from django.shortcuts import render, redirect
+from django.db.models.functions import TruncMonth
+from django.shortcuts import render, redirect, get_object_or_404
+from django.utils import timezone
 from django.views.decorators.cache import never_cache
 
 from accounts.utils import is_staff_admin_or_admin
@@ -267,12 +270,41 @@ def deposits(request):
     total_deposits_count = Deposit.objects.count()
     
     # HISTORY TAB DATA
+    from datetime import datetime
+    import calendar
+    
+    # Get selected month/year from query params (default to current month)
+    selected_month_str = request.GET.get("month", "")
+    now = timezone.now()
+    
+    if selected_month_str:
+        try:
+            selected_date = datetime.strptime(selected_month_str, "%Y-%m")
+            selected_year = selected_date.year
+            selected_month = selected_date.month
+        except ValueError:
+            selected_year = now.year
+            selected_month = now.month
+    else:
+        selected_year = now.year
+        selected_month = now.month
+    
+    # Calculate month boundaries
+    month_start = timezone.make_aware(datetime(selected_year, selected_month, 1))
+    if selected_month == 12:
+        month_end = timezone.make_aware(datetime(selected_year + 1, 1, 1)) - timedelta(seconds=1)
+    else:
+        month_end = timezone.make_aware(datetime(selected_year, selected_month + 1, 1)) - timedelta(seconds=1)
+    
     history_sort = request.GET.get("history_sort", "newest").lower()
     if history_sort not in ("newest", "largest", "smallest", "driver_asc", "driver_desc"):
         history_sort = "newest"
     history_query = request.GET.get("history_query", "").strip()
     
     deposits_qs = Deposit.objects.select_related("wallet__vehicle__assigned_driver")
+    
+    # Filter by selected month
+    deposits_qs = deposits_qs.filter(created_at__gte=month_start, created_at__lte=month_end)
     
     if history_query:
         deposits_qs = deposits_qs.filter(
@@ -305,7 +337,87 @@ def deposits(request):
     deposits_sorted = deposits_qs.order_by(*ordering)
     history_total = deposits_sorted.aggregate(Sum("amount"))["amount__sum"] or 0
     history_count = deposits_sorted.count()
+    
+    # Handle CSV Export
+    export_action = request.GET.get("export", "")
+    if export_action == "csv":
+        import csv
+        from django.http import HttpResponse
+        from io import StringIO
+        
+        output = StringIO()
+        output.write('\ufeff')  # UTF-8 BOM for Excel compatibility
+        
+        writer = csv.writer(output)
+        writer.writerow([
+            'Reference Number',
+            'Date & Time',
+            'Driver Name',
+            'License Plate',
+            'Amount',
+            'Payment Method',
+            'Status',
+            'Processed By',
+        ])
+        
+        for deposit in deposits_sorted:
+            driver = deposit.wallet.vehicle.assigned_driver if deposit.wallet.vehicle else None
+            driver_name = f"{driver.first_name} {driver.last_name}" if driver else "N/A"
+            vehicle_plate = deposit.wallet.vehicle.license_plate if deposit.wallet.vehicle else "—"
+            processed_by = deposit.created_by.username if deposit.created_by else "N/A"
+            
+            writer.writerow([
+                deposit.reference_number,
+                deposit.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                driver_name,
+                vehicle_plate,
+                f"₱{deposit.amount}",
+                deposit.payment_method.upper(),
+                deposit.status.capitalize(),
+                processed_by,
+            ])
+        
+        response = HttpResponse(content_type="text/csv; charset=utf-8")
+        response["Content-Disposition"] = f'attachment; filename="deposits_{selected_year}_{selected_month:02d}.csv"'
+        response.write(output.getvalue())
+        return response
+    
     history_deposits = deposits_sorted[:200]
+    
+    # Get available months with deposits for navigation
+    available_months = (
+        Deposit.objects
+        .annotate(month=TruncMonth('created_at'))
+        .values('month')
+        .distinct()
+        .order_by('-month')
+    )
+    
+    # Calculate previous/next month
+    current_month_date = datetime(selected_year, selected_month, 1)
+    
+    # Previous month
+    if selected_month == 1:
+        prev_month_date = datetime(selected_year - 1, 12, 1)
+    else:
+        prev_month_date = datetime(selected_year, selected_month - 1, 1)
+    
+    # Next month
+    if selected_month == 12:
+        next_month_date = datetime(selected_year + 1, 1, 1)
+    else:
+        next_month_date = datetime(selected_year, selected_month + 1, 1)
+    
+    # Check if prev/next months have data
+    has_prev_month = Deposit.objects.filter(
+        created_at__year=prev_month_date.year,
+        created_at__month=prev_month_date.month
+    ).exists()
+    
+    has_next_month = Deposit.objects.filter(
+        created_at__year=next_month_date.year,
+        created_at__month=next_month_date.month
+    ).exists() and next_month_date <= now
     
     # HANDLE POST (Add Deposit)
     if request.method == "POST":
@@ -326,16 +438,23 @@ def deposits(request):
             messages.error(request, "⚠️ Deposit amount must be greater than zero.")
             return redirect('terminal:deposits')
         
+        # ✅ VALIDATE MINIMUM DEPOSIT AMOUNT
+        if amount < min_deposit:
+            messages.error(request, f"❌ Deposit amount must be at least ₱{min_deposit}. You entered ₱{amount}.")
+            return redirect('terminal:deposits')
+        
         vehicle = Vehicle.objects.filter(id=vehicle_id).first()
         if not vehicle:
             messages.error(request, "❌ Vehicle not found.")
             return redirect('terminal:deposits')
         
         wallet, _ = Wallet.objects.get_or_create(vehicle=vehicle)
-        Deposit.objects.create(wallet=wallet, amount=amount)
+        deposit = Deposit.objects.create(wallet=wallet, amount=amount, created_by=request.user)
         
         messages.success(request, f"✅ Successfully deposited ₱{amount} to {vehicle.license_plate}.")
-        return redirect('terminal:deposits')
+        
+        # Redirect to receipt page
+        return redirect('terminal:deposit_receipt', deposit_id=deposit.id)
     
     context = {
         "min_deposit": min_deposit,
@@ -353,5 +472,33 @@ def deposits(request):
         "history_total": history_total,
         "history_count": history_count,
         "active_tab": active_tab,
+        "selected_month": f"{selected_year}-{selected_month:02d}",
+        "selected_month_name": current_month_date.strftime("%B %Y"),
+        "prev_month": f"{prev_month_date.year}-{prev_month_date.month:02d}",
+        "next_month": f"{next_month_date.year}-{next_month_date.month:02d}",
+        "has_prev_month": has_prev_month,
+        "has_next_month": has_next_month,
+        "available_months": available_months,
     }
     return render(request, "terminal/deposits.html", context)
+
+
+
+@login_required
+@user_passes_test(is_staff_admin_or_admin)
+@never_cache
+def deposit_receipt(request, deposit_id):
+    """Generate printable wallet-size deposit receipt."""
+    deposit = get_object_or_404(Deposit.objects.select_related('wallet__vehicle__assigned_driver'), id=deposit_id)
+    
+    vehicle = deposit.wallet.vehicle
+    driver = vehicle.assigned_driver if vehicle else None
+    
+    context = {
+        'deposit': deposit,
+        'vehicle': vehicle,
+        'driver': driver,
+        'current_balance': deposit.wallet.balance,
+    }
+    
+    return render(request, 'terminal/deposit_receipt.html', context)

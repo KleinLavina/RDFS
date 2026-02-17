@@ -7,6 +7,7 @@ urlpatterns = [
     path('deposit-menu/', views.deposit_menu, name='deposit_menu'),
     path('deposit-history/', views.deposit_history, name='deposit_history'),
     path('deposits/', views.deposits, name='deposits'),
+    path('deposit-receipt/<int:deposit_id>/', views.deposit_receipt, name='deposit_receipt'),
     path('transactions/', views.transactions_view, name='transactions'),
     path('past-transactions/', views.past_transactions_view, name='past_transactions'),
     path('queue/', views.terminal_queue, name='terminal_queue'),
