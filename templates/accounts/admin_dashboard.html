@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Admin Dashboard | RDFS{% endblock %}
+{% block title %}Dashboard | RDFS{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'styles/accounts/admin-dashboard.css' %}?v=1.0">
@@ -14,7 +14,7 @@
     <div class="admin-dashboard__header">
       <h1 class="admin-dashboard__title">
         <i class="bi bi-speedometer2"></i>
-        Admin Dashboard
+        Dashboard
       </h1>
       <p class="admin-dashboard__subtitle">
         Welcome back, <strong>{{ user.username }}</strong>. Here is your system overview.

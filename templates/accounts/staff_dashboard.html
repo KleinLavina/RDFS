@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Staff Dashboard | RDFS{% endblock %}
+{% block title %}Dashboard | RDFS{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'styles/accounts/staff-dashboard.css' %}?v=1.0">
@@ -14,7 +14,7 @@
     <div class="staff-dashboard__header">
       <h1 class="staff-dashboard__title">
         <i class="bi bi-house-heart-fill"></i>
-        Staff Dashboard
+        Dashboard
       </h1>
       <p class="staff-dashboard__subtitle">
         Welcome, <strong>{{ user.username }}</strong>. Ready to manage terminal operations.
