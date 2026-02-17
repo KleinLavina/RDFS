@@ -74,10 +74,22 @@ def build_public_queue_entries(queue_logs, now, departure_duration, departed_cut
 
             vehicle = getattr(log, "vehicle", None)
             driver = getattr(vehicle, "assigned_driver", None)
-            entry_display = timezone.localtime(log.created_at).strftime("%b %d, %Y %I:%M %p")
-            entry_numeric = timezone.localtime(log.created_at).strftime("%b %d, %Y %I:%M %p")
+            
+            # Format: "February 17, 2026" for date, "Tuesday" for day, "03:45 PM" for time
+            entry_local = timezone.localtime(log.created_at)
+            entry_date = entry_local.strftime("%B %d, %Y")  # February 17, 2026
+            entry_day = entry_local.strftime("%A")  # Tuesday
+            entry_time = entry_local.strftime("%I:%M %p")  # 03:45 PM
+            entry_display = f"{entry_date} ({entry_day}) {entry_time}"
+            entry_numeric = entry_display  # Same format for both
+            
             departure_time = log.created_at + timedelta(minutes=departure_duration)
-            departure_display = timezone.localtime(departure_time).strftime("%b %d, %Y %I:%M %p")
+            departure_local = timezone.localtime(departure_time)
+            departure_date = departure_local.strftime("%B %d, %Y")
+            departure_day = departure_local.strftime("%A")
+            departure_time_str = departure_local.strftime("%I:%M %p")
+            departure_display = f"{departure_date} ({departure_day}) {departure_time_str}"
+            
             entries.append({
                 "id": log.id,
                 "entry_time_display": entry_display,

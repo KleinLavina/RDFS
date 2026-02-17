@@ -545,6 +545,31 @@ def qr_scan_entry(request):
                     "balance": None
                 })
 
+            # ========================
+            # 🚨 EXPIRY VALIDATION
+            # ========================
+            from datetime import date
+            today = date.today()
+            
+            # Check vehicle registration expiry
+            if vehicle.registration_expiry:
+                if vehicle.registration_expiry < today:
+                    return JsonResponse({
+                        "status": "error",
+                        "message": "❌ Vehicle registration expired. Please renew registration. Contact the terminal operator for assistance.",
+                        "balance": None
+                    })
+            
+            # Check driver license expiry
+            driver = vehicle.assigned_driver
+            if driver and driver.license_expiry:
+                if driver.license_expiry < today:
+                    return JsonResponse({
+                        "status": "error",
+                        "message": "❌ License expired. Please renew your license. Contact the terminal operator for assistance.",
+                        "balance": None
+                    })
+
             # 🏦 Get or create wallet
             wallet, _ = Wallet.objects.get_or_create(vehicle=vehicle)
 
@@ -683,13 +708,20 @@ def qr_exit_validation(request):
         if not vehicle:
             return JsonResponse({"status": "error", "message": "❌ No vehicle found."})
 
+        # Validate that vehicle has an active entry record
         active_log = EntryLog.objects.filter(vehicle=vehicle, is_active=True).first()
         if not active_log:
-            return JsonResponse({"status": "error", "message": f"⚠️ {vehicle.license_plate} not inside terminal."})
+            return JsonResponse({
+                "status": "error", 
+                "message": f"⚠️ {vehicle.license_plate} not inside terminal. No active entry found."
+            })
 
+        # Mark as exited
         active_log.is_active = False
         active_log.departed_at = timezone.now()
         active_log.save(update_fields=["is_active", "departed_at"])
+        
+        # Create exit queue history
         vehicle = active_log.vehicle
         if vehicle:
             QueueHistory.objects.create(
@@ -698,6 +730,19 @@ def qr_exit_validation(request):
                 action="exit",
                 departure_time_snapshot=active_log.departed_at,
                 wallet_balance_snapshot=getattr(getattr(vehicle, "wallet", None), "balance", None),
+                fee_charged=Decimal("0.00"),
+            )
+
+        return JsonResponse({
+            "status": "success",
+            "message": f"✅ {vehicle.license_plate} successfully exited terminal."
+        })
+
+    except Exception as e:
+        return JsonResponse({
+            "status": "error",
+            "message": f"Unexpected error: {str(e)}"
+        })
                 fee_charged=None,
             )
         return JsonResponse({"status": "success", "message": f"✅ {vehicle.license_plate} departed."})

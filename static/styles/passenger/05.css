@@ -496,20 +496,22 @@
 
   .vehicle-card {
     width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .vehicle-card--landscape {
     display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: stretch;
     gap: 0.75rem;
-    padding: 0.65rem 0.85rem;
-    min-height: 110px;
+    padding: 0.85rem;
+    min-height: auto;
     border-radius: 12px;
     background: #ffffff;
     border: 1px solid #e5e9f0;
     box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
+    overflow: hidden;
   }
 
   .vehicle-card--landscape.departed-row {
@@ -527,26 +529,55 @@
   }
 
   .vehicle-card--landscape .card-header {
-    flex: 0 0 170px;
-    align-items: flex-start;
-    gap: 0.25rem;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0;
+    margin-bottom: 0.75rem;
+  }
+
+  .vehicle-card--landscape .vehicle-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .vehicle-card--landscape .vehicle-details {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .vehicle-card--landscape .vehicle-plate,
+  .vehicle-card--landscape .driver-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .vehicle-card--landscape .card-body {
-    flex: 1;
     flex-direction: column;
-    gap: 0.35rem;
-    justify-content: center;
+    gap: 0.75rem;
+    padding: 0;
   }
 
   .vehicle-card--landscape .info-section {
     margin: 0;
   }
 
+  .vehicle-card--landscape .route-tag {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   .vehicle-card--landscape .times-grid {
-    display: flex;
-    flex-direction: row;
-    gap: 0.35rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
     background: transparent;
     border: none;
     border-radius: 0;
@@ -554,28 +585,58 @@
   }
 
   .vehicle-card--landscape .time-item {
-    padding: 0.2rem 0.4rem;
+    padding: 0.5rem;
     background: rgba(67, 97, 238, 0.08);
-    border-radius: 6px;
-    flex: 1;
+    border-radius: 8px;
+    min-width: 0;
+  }
+
+  .vehicle-card--landscape .time-label,
+  .vehicle-card--landscape .time-value {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .vehicle-card--landscape .card-countdown {
-    flex: 0 0 auto;
-    align-items: flex-end;
+    padding: 0;
+    margin-top: 0.5rem;
   }
 
   .vehicle-card--landscape .countdown-section {
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.15rem;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
   }
 
   .vehicle-card--landscape .countdown-timer span,
   .vehicle-card--landscape .queued-badge,
   .vehicle-card--landscape .departed-badge {
-    font-size: 0.75rem;
-    padding: 0.15rem 0.45rem;
+    font-size: 0.85rem;
+    padding: 0.35rem 0.75rem;
+    white-space: nowrap;
+  }
+
+  .vehicle-card--landscape .vehicle-icon {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+  }
+
+  .vehicle-card--landscape .vehicle-plate {
+    font-size: 1.05rem;
+  }
+
+  .vehicle-card--landscape .driver-name {
+    font-size: 0.8rem;
+  }
+}
+
+/* Additional responsive breakpoints for smaller screens */
+@media (max-width: 500px) {
+  .vehicle-card--landscape {
+    padding: 0.75rem;
   }
 
   .vehicle-card--landscape .vehicle-icon {
@@ -584,11 +645,116 @@
   }
 
   .vehicle-card--landscape .vehicle-plate {
-    font-size: 1rem;
+    font-size: 0.95rem;
+  }
+
+  .vehicle-card--landscape .time-item {
+    padding: 0.4rem;
+  }
+
+  .vehicle-card--landscape .time-label {
+    font-size: 0.7rem;
+  }
+
+  .vehicle-card--landscape .time-value {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .vehicle-card--landscape {
+    padding: 0.65rem;
+  }
+
+  .vehicle-card--landscape .vehicle-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 1.1rem;
+  }
+
+  .vehicle-card--landscape .vehicle-plate {
+    font-size: 0.9rem;
   }
 
   .vehicle-card--landscape .driver-name {
     font-size: 0.75rem;
+  }
+
+  .vehicle-card--landscape .route-tag {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+  }
+
+  .vehicle-card--landscape .time-label {
+    font-size: 0.65rem;
+  }
+
+  .vehicle-card--landscape .time-value {
+    font-size: 0.8rem;
+  }
+
+  .vehicle-card--landscape .countdown-timer span,
+  .vehicle-card--landscape .queued-badge,
+  .vehicle-card--landscape .departed-badge {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+  }
+}
+
+@media (max-width: 300px) {
+  .vehicle-card--landscape {
+    padding: 0.5rem;
+  }
+
+  .vehicle-card--landscape .card-header {
+    gap: 0.4rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .vehicle-card--landscape .vehicle-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+  }
+
+  .vehicle-card--landscape .vehicle-plate {
+    font-size: 0.85rem;
+  }
+
+  .vehicle-card--landscape .driver-name {
+    font-size: 0.7rem;
+  }
+
+  .vehicle-card--landscape .route-tag {
+    font-size: 0.8rem;
+    padding: 0.35rem 0.7rem;
+  }
+
+  .vehicle-card--landscape .times-grid {
+    gap: 0.4rem;
+  }
+
+  .vehicle-card--landscape .time-item {
+    padding: 0.35rem;
+  }
+
+  .vehicle-card--landscape .time-label {
+    font-size: 0.6rem;
+  }
+
+  .vehicle-card--landscape .time-value {
+    font-size: 0.75rem;
+  }
+
+  .vehicle-card--landscape .countdown-label {
+    font-size: 0.75rem;
+  }
+
+  .vehicle-card--landscape .countdown-timer span,
+  .vehicle-card--landscape .queued-badge,
+  .vehicle-card--landscape .departed-badge {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
   }
 }
 
