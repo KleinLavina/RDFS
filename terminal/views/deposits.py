@@ -408,6 +408,9 @@ def deposits(request):
     else:
         next_month_date = datetime(selected_year, selected_month + 1, 1)
     
+    # Make next_month_date timezone-aware for comparison
+    next_month_date_aware = timezone.make_aware(next_month_date)
+    
     # Check if prev/next months have data
     has_prev_month = Deposit.objects.filter(
         created_at__year=prev_month_date.year,
@@ -417,7 +420,7 @@ def deposits(request):
     has_next_month = Deposit.objects.filter(
         created_at__year=next_month_date.year,
         created_at__month=next_month_date.month
-    ).exists() and next_month_date <= now
+    ).exists() and next_month_date_aware <= now
     
     # HANDLE POST (Add Deposit)
     if request.method == "POST":
