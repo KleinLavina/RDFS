@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Profit Report | RDFS{% endblock %}
+{% block title %}Terminal Fee Analytics | RDFS{% endblock %}
 
 {% block content %}
 <style>
-  .profit-header {
+  .analytics-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -13,125 +13,78 @@
     margin-bottom: 1.5rem;
   }
 
-  .profit-title {
+  .analytics-title {
     font-weight: 800;
     font-size: 1.75rem;
     color: #0f172a;
     margin-bottom: 0.25rem;
   }
 
-  .profit-subtitle {
+  .analytics-subtitle {
     color: #64748b;
     font-size: 0.95rem;
   }
 
-  .filter-card {
-    background: white;
-    border-radius: 16px;
-    padding: 1.25rem;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-    margin-bottom: 2rem;
+  .period-selector {
+    display: flex;
+    gap: 0.5rem;
   }
 
-  .highlight-grid {
+  .period-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 2px solid #e2e8f0;
+    background: white;
+    color: #64748b;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .period-btn:hover {
+    border-color: #10b981;
+    color: #10b981;
+  }
+
+  .period-btn.active {
+    background: #10b981;
+    border-color: #10b981;
+    color: white;
+  }
+
+  .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
     margin-bottom: 2rem;
   }
 
-  .highlight-card {
+  .stat-box {
     background: white;
     border-radius: 16px;
     padding: 1.5rem;
     box-shadow: 0 4px 20px rgba(0,0,0,0.06);
     text-align: center;
-    position: relative;
-    overflow: hidden;
+    border-top: 4px solid;
   }
 
-  .highlight-card.total {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white;
-  }
+  .stat-box.primary { border-top-color: #10b981; }
+  .stat-box.success { border-top-color: #3b82f6; }
+  .stat-box.warning { border-top-color: #f59e0b; }
+  .stat-box.info { border-top-color: #06b6d4; }
 
-  .highlight-card.today {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    color: white;
-  }
-
-  .highlight-card.best::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: #f59e0b;
-  }
-
-  .highlight-card.avg::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: #8b5cf6;
-  }
-
-  .highlight-card.entries::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: #06b6d4;
-  }
-
-  .highlight-card__icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1rem;
-    font-size: 1.25rem;
-  }
-
-  .highlight-card.total .highlight-card__icon,
-  .highlight-card.today .highlight-card__icon {
-    background: rgba(255,255,255,0.2);
-  }
-
-  .highlight-card.best .highlight-card__icon { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
-  .highlight-card.avg .highlight-card__icon { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
-  .highlight-card.entries .highlight-card__icon { background: rgba(6, 182, 212, 0.1); color: #06b6d4; }
-
-  .highlight-card__value {
-    font-size: 1.75rem;
+  .stat-box__value {
+    font-size: 2rem;
     font-weight: 800;
+    color: #0f172a;
     margin-bottom: 0.25rem;
   }
 
-  .highlight-card.total .highlight-card__value,
-  .highlight-card.today .highlight-card__value {
-    color: white;
-  }
-
-  .highlight-card__label {
+  .stat-box__label {
     font-size: 0.8rem;
+    color: #64748b;
     text-transform: uppercase;
     letter-spacing: 0.03em;
-    opacity: 0.9;
-  }
-
-  .highlight-card__sub {
-    font-size: 0.75rem;
-    opacity: 0.7;
-    margin-top: 0.5rem;
   }
 
   .chart-card {
@@ -156,6 +109,59 @@
     color: #10b981;
   }
 
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .data-table thead th {
+    background: #f8fafc;
+    padding: 1rem;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    border-bottom: 2px solid #e2e8f0;
+  }
+
+  .data-table tbody td {
+    padding: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+  }
+
+  .rank-badge {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  .rank-badge.gold { background: #fef3c7; color: #d97706; }
+  .rank-badge.silver { background: #f1f5f9; color: #64748b; }
+  .rank-badge.bronze { background: #ffedd5; color: #c2410c; }
+  .rank-badge.default { background: #f1f5f9; color: #94a3b8; }
+
+  .plate-badge {
+    background: #f1f5f9;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .amount-highlight {
+    color: #10b981;
+    font-weight: 700;
+  }
+
   .back-link {
     display: inline-flex;
     align-items: center;
@@ -170,159 +176,252 @@
 
   .back-link:hover {
     background: #f1f5f9;
-    color: #3b82f6;
-  }
-
-  .performance-note {
-    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-    border-radius: 12px;
-    padding: 1rem 1.25rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    color: #92400e;
-    font-weight: 500;
-    margin-bottom: 1.5rem;
-  }
-
-  .performance-note i {
-    font-size: 1.25rem;
+    color: #10b981;
   }
 </style>
 
 <div class="container-fluid p-4">
   <!-- Header -->
-  <div class="profit-header">
+  <div class="analytics-header">
     <div>
-      <h2 class="profit-title">
+      <h2 class="analytics-title">
         <i class="bi bi-graph-up-arrow text-success me-2"></i>
-        Profit Report
+        Terminal Fee Analytics
       </h2>
-      <p class="profit-subtitle">
-        Analyze revenue performance and daily profit trends.
+      <p class="analytics-subtitle">
+        Revenue performance for {{ selected_month_name }}
       </p>
     </div>
-    <a href="{% url 'reports:reports_home' %}" class="back-link">
-      <i class="bi bi-arrow-left-circle"></i> Back to Reports
-    </a>
-  </div>
-
-  <!-- Date Filter -->
-  <div class="filter-card">
-    <form method="GET" class="row g-3 align-items-end">
-      <div class="col-md-4">
-        <label class="form-label fw-semibold small text-muted">
-          <i class="bi bi-calendar-event me-1"></i> START DATE
-        </label>
-        <input type="date" name="start_date" value="{{ start_date }}" class="form-control">
-      </div>
-      <div class="col-md-4">
-        <label class="form-label fw-semibold small text-muted">
-          <i class="bi bi-calendar-event me-1"></i> END DATE
-        </label>
-        <input type="date" name="end_date" value="{{ end_date }}" class="form-control">
-      </div>
-      <div class="col-md-4 d-flex gap-2">
-        <button type="submit" class="btn btn-primary flex-grow-1">
-          <i class="bi bi-funnel-fill me-1"></i> Apply Filter
-        </button>
-        <a href="?start_date=&end_date=" class="btn btn-outline-secondary">
-          <i class="bi bi-arrow-counterclockwise"></i>
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+      <!-- Month Navigation -->
+      <div class="period-selector">
+        <a href="?month={{ prev_month }}" 
+           class="period-btn {% if not has_prev_month %}disabled{% endif %}"
+           {% if not has_prev_month %}style="pointer-events:none;opacity:0.5;"{% endif %}>
+          <i class="bi bi-chevron-left"></i> Previous
+        </a>
+        <select class="form-select" style="width:auto;display:inline-block;" onchange="window.location.href='?month='+this.value">
+          {% for month_data in available_months %}
+            <option value="{{ month_data.transaction_year }}-{{ month_data.transaction_month|stringformat:'02d' }}" 
+                    {% if month_data.transaction_year == selected_year and month_data.transaction_month == selected_month_num %}selected{% endif %}>
+              {{ month_data.month_name }}
+            </option>
+          {% endfor %}
+        </select>
+        <a href="?month={{ next_month }}" 
+           class="period-btn {% if not has_next_month %}disabled{% endif %}"
+           {% if not has_next_month %}style="pointer-events:none;opacity:0.5;"{% endif %}>
+          Next <i class="bi bi-chevron-right"></i>
         </a>
       </div>
-    </form>
+      <a href="{% url 'terminal:past_transactions' %}?month={{ selected_month }}" class="btn btn-outline-success btn-sm">
+        <i class="bi bi-list-ul"></i> View Transaction Records
+      </a>
+      <a href="?month={{ selected_month }}&export=csv" class="btn btn-success btn-sm">
+        <i class="bi bi-file-earmark-spreadsheet"></i> Export CSV
+      </a>
+      <a href="{% url 'reports:reports_home' %}" class="back-link">
+        <i class="bi bi-arrow-left-circle"></i> Back
+      </a>
+    </div>
   </div>
 
-  <!-- Performance Note -->
-  {% if best_day_amount > 0 %}
-  <div class="performance-note">
-    <i class="bi bi-trophy-fill"></i>
-    <span>Best performing day: <strong>{{ best_day }}</strong> with <strong>₱{{ best_day_amount|floatformat:2 }}</strong> in revenue!</span>
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    <div class="stat-box primary">
+      <div class="stat-box__value">₱{{ total_revenue|floatformat:2 }}</div>
+      <div class="stat-box__label">Total Terminal Fees</div>
+    </div>
+    <div class="stat-box success">
+      <div class="stat-box__value">{{ total_transactions }}</div>
+      <div class="stat-box__label">Total Transactions</div>
+    </div>
+    <div class="stat-box warning">
+      <div class="stat-box__value">₱{{ avg_fee|floatformat:2 }}</div>
+      <div class="stat-box__label">Average Fee</div>
+    </div>
+    {% if peak_day_date %}
+    <div class="stat-box info">
+      <div class="stat-box__value">{{ peak_day_date|date:"M d" }}</div>
+      <div class="stat-box__label">Peak Revenue Day (₱{{ peak_day_amount|floatformat:0 }})</div>
+    </div>
+    {% else %}
+    <div class="stat-box info">
+      <div class="stat-box__value">—</div>
+      <div class="stat-box__label">Peak Revenue Day</div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Additional Insights -->
+  {% if busiest_day_date %}
+  <div class="alert alert-light border shadow-sm mb-3">
+    <i class="bi bi-lightning-fill text-warning me-2"></i>
+    <strong>Busiest Day:</strong> {{ busiest_day_date|date:"F d, Y" }} with {{ busiest_day_count }} transactions
   </div>
   {% endif %}
-
-  <!-- Highlight Cards -->
-  <div class="highlight-grid">
-    <div class="highlight-card total">
-      <div class="highlight-card__icon">
-        <i class="bi bi-currency-exchange"></i>
-      </div>
-      <div class="highlight-card__value">₱{{ total|floatformat:2 }}</div>
-      <div class="highlight-card__label">Total Profit</div>
-      <div class="highlight-card__sub">For selected period</div>
-    </div>
-
-    <div class="highlight-card today">
-      <div class="highlight-card__icon">
-        <i class="bi bi-calendar-check"></i>
-      </div>
-      <div class="highlight-card__value">₱{{ today_profit|floatformat:2 }}</div>
-      <div class="highlight-card__label">Today's Profit</div>
-      <div class="highlight-card__sub">Real-time</div>
-    </div>
-
-    <div class="highlight-card avg">
-      <div class="highlight-card__icon">
-        <i class="bi bi-calculator"></i>
-      </div>
-      <div class="highlight-card__value">₱{{ avg_daily_profit|floatformat:2 }}</div>
-      <div class="highlight-card__label">Daily Average</div>
-      <div class="highlight-card__sub">Mean profit per day</div>
-    </div>
-
-    <div class="highlight-card entries">
-      <div class="highlight-card__icon">
-        <i class="bi bi-receipt"></i>
-      </div>
-      <div class="highlight-card__value">{{ total_entries }}</div>
-      <div class="highlight-card__label">Total Entries</div>
-      <div class="highlight-card__sub">Terminal transactions</div>
-    </div>
-
-    <div class="highlight-card best">
-      <div class="highlight-card__icon">
-        <i class="bi bi-star-fill"></i>
-      </div>
-      <div class="highlight-card__value">₱{{ best_day_amount|floatformat:2 }}</div>
-      <div class="highlight-card__label">Best Day</div>
-      <div class="highlight-card__sub">{{ best_day }}</div>
-    </div>
-  </div>
 
   <!-- Chart -->
   <div class="chart-card">
     <h3 class="chart-card__title">
-      <i class="bi bi-graph-up"></i>
-      Daily Profit Trend
+      <i class="bi bi-graph-up-arrow"></i>
+      Daily Terminal Fee Trend
     </h3>
-    <canvas id="profitChart" height="100"></canvas>
+    <canvas id="revenueChart" height="100"></canvas>
   </div>
 
-  <!-- Info -->
+  <!-- Top Vehicles -->
+  <div class="chart-card">
+    <h3 class="chart-card__title">
+      <i class="bi bi-trophy-fill" style="color:#f59e0b;"></i>
+      Top 10 Vehicles by Total Terminal Fees ({{ selected_month_name }})
+    </h3>
+
+    {% if top_vehicles %}
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Vehicle Plate</th>
+            <th>Driver Name</th>
+            <th>Transactions</th>
+            <th>Total Fees</th>
+            <th>Avg Fee</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for v in top_vehicles %}
+          <tr>
+            <td>
+              {% if forloop.counter == 1 %}
+                <span class="rank-badge gold">1</span>
+              {% elif forloop.counter == 2 %}
+                <span class="rank-badge silver">2</span>
+              {% elif forloop.counter == 3 %}
+                <span class="rank-badge bronze">3</span>
+              {% else %}
+                <span class="rank-badge default">{{ forloop.counter }}</span>
+              {% endif %}
+            </td>
+            <td><span class="plate-badge">{{ v.vehicle_plate }}</span></td>
+            <td>{{ v.driver_name }}</td>
+            <td><span class="badge bg-secondary">{{ v.transaction_count }}</span></td>
+            <td class="amount-highlight">₱{{ v.total_fees|floatformat:2 }}</td>
+            <td>₱{{ v.avg_fee|floatformat:2 }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-center text-muted py-4">
+      <i class="bi bi-inbox fs-1 d-block mb-2 opacity-50"></i>
+      No transaction data found for this period.
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Route Performance -->
+  <div class="chart-card">
+    <h3 class="chart-card__title">
+      <i class="bi bi-signpost-2-fill" style="color:#06b6d4;"></i>
+      Route Performance ({{ selected_month_name }})
+    </h3>
+
+    {% if route_performance %}
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Route</th>
+            <th>Transactions</th>
+            <th>Total Revenue</th>
+            <th>Avg Fee</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for route in route_performance %}
+          <tr>
+            <td>
+              {% if forloop.counter == 1 %}
+                <span class="rank-badge gold">1</span>
+              {% elif forloop.counter == 2 %}
+                <span class="rank-badge silver">2</span>
+              {% elif forloop.counter == 3 %}
+                <span class="rank-badge bronze">3</span>
+              {% else %}
+                <span class="rank-badge default">{{ forloop.counter }}</span>
+              {% endif %}
+            </td>
+            <td><strong>{{ route.route_name }}</strong></td>
+            <td><span class="badge bg-secondary">{{ route.transaction_count }}</span></td>
+            <td class="amount-highlight">₱{{ route.total_revenue|floatformat:2 }}</td>
+            <td>₱{{ route.avg_fee|floatformat:2 }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-center text-muted py-4">
+      <i class="bi bi-inbox fs-1 d-block mb-2 opacity-50"></i>
+      No route data found for this period.
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Info Note -->
   <div class="alert alert-success border-0 shadow-sm">
     <i class="bi bi-info-circle-fill me-2"></i>
-    <strong>Note:</strong> Profit is calculated from terminal fees (revenue) collected from each vehicle entry.
-    Higher traffic days directly correlate with higher profits.
+    This report tracks terminal fees collected from vehicle entries. All data is based on archived transaction records with accurate snapshots.
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2"></script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  const ctx = document.getElementById('profitChart');
+  const ctx = document.getElementById('revenueChart');
   if (!ctx) return;
 
   const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 300);
   gradient.addColorStop(0, 'rgba(16, 185, 129, 0.3)');
   gradient.addColorStop(1, 'rgba(16, 185, 129, 0)');
 
+  const todayIndex = {{ today_index }};
+  const isCurrentMonth = {{ is_current_month|yesno:"true,false" }};
+  
+  // Build annotation for today's vertical line
+  const annotations = {};
+  if (isCurrentMonth && todayIndex >= 0) {
+    annotations.todayLine = {
+      type: 'line',
+      xMin: todayIndex,
+      xMax: todayIndex,
+      borderColor: 'rgba(239, 68, 68, 0.8)',
+      borderWidth: 2,
+      borderDash: [5, 5],
+      label: {
+        display: true,
+        content: 'Today',
+        position: 'start',
+        backgroundColor: 'rgba(239, 68, 68, 0.9)',
+        color: '#fff',
+        font: { size: 11, weight: 'bold' },
+        padding: 4
+      }
+    };
+  }
+
   new Chart(ctx, {
     type: 'line',
     data: {
-      labels: {{ profit_labels|safe }},
+      labels: {{ labels|safe }},
       datasets: [{
-        label: 'Daily Profit (₱)',
-        data: {{ profit_values|safe }},
+        label: 'Daily Terminal Fees (₱)',
+        data: {{ daily_revenues|safe }},
         borderColor: '#10b981',
         backgroundColor: gradient,
         fill: true,
@@ -350,6 +449,9 @@ document.addEventListener("DOMContentLoaded", () => {
           callbacks: {
             label: ctx => '₱' + ctx.parsed.y.toLocaleString()
           }
+        },
+        annotation: {
+          annotations: annotations
         }
       },
       scales: {
@@ -357,11 +459,14 @@ document.addEventListener("DOMContentLoaded", () => {
           grid: { display: false },
           ticks: { 
             font: { size: 12, weight: '500' },
-            color: '#64748b'
+            color: '#64748b',
+            maxRotation: 45,
+            minRotation: 0
           }
         },
         y: {
           beginAtZero: true,
+          max: 10000,
           grid: { color: '#f1f5f9' },
           ticks: {
             callback: val => '₱' + val.toLocaleString(),

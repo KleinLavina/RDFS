@@ -190,27 +190,27 @@
   <!-- Quick Stats -->
   <div class="quick-stats">
     <div class="quick-stat blue">
+      <div class="quick-stat__label">This Month's Deposits</div>
+      <div class="quick-stat__value">₱{{ month_deposits|floatformat:2 }}</div>
+      <div class="quick-stat__sub">{{ month_deposit_count }} transaction{{ month_deposit_count|pluralize }} ({{ current_month_name }})</div>
+    </div>
+    
+    <div class="quick-stat green">
+      <div class="quick-stat__label">This Month's Terminal Fees</div>
+      <div class="quick-stat__value">₱{{ month_revenue|floatformat:2 }}</div>
+      <div class="quick-stat__sub">{{ month_transactions }} transaction{{ month_transactions|pluralize }} ({{ current_month_name }})</div>
+    </div>
+    
+    <div class="quick-stat amber">
       <div class="quick-stat__label">Today's Deposits</div>
       <div class="quick-stat__value">₱{{ today_deposits|floatformat:2 }}</div>
       <div class="quick-stat__sub">{{ today_deposit_count }} transaction{{ today_deposit_count|pluralize }}</div>
     </div>
     
-    <div class="quick-stat green">
-      <div class="quick-stat__label">Today's Revenue</div>
-      <div class="quick-stat__value">₱{{ today_revenue|floatformat:2 }}</div>
-      <div class="quick-stat__sub">Terminal fees collected</div>
-    </div>
-    
-    <div class="quick-stat amber">
-      <div class="quick-stat__label">7-Day Deposits</div>
-      <div class="quick-stat__value">₱{{ week_deposits|floatformat:2 }}</div>
-      <div class="quick-stat__sub">Total this week</div>
-    </div>
-    
     <div class="quick-stat purple">
-      <div class="quick-stat__label">Today's Entry Logs</div>
-      <div class="quick-stat__value">{{ today_entry_logs }}</div>
-      <div class="quick-stat__sub">Total entries today</div>
+      <div class="quick-stat__label">Today's Terminal Fees</div>
+      <div class="quick-stat__value">₱{{ today_revenue|floatformat:2 }}</div>
+      <div class="quick-stat__sub">Fees collected today</div>
     </div>
   </div>
 
@@ -252,15 +252,15 @@
       </div>
     </div>
 
-    <!-- Profit Trend -->
+    <!-- Terminal Fee Analytics -->
     <div class="report-card">
       <div class="report-card__header">
         <div class="report-card__icon red">
           <i class="bi bi-graph-up"></i>
         </div>
-        <h3 class="report-card__title">Profit Report</h3>
+        <h3 class="report-card__title">Terminal Fee Analytics</h3>
         <p class="report-card__desc">
-          Visualize daily profit trends, track revenue performance, and identify your best earning days.
+          Track terminal fees collected monthly, analyze revenue performance by vehicle and route, and identify peak earning days.
         </p>
       </div>
       <div class="report-card__footer">

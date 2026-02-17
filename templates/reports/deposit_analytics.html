@@ -189,15 +189,34 @@
         Deposit Analytics
       </h2>
       <p class="analytics-subtitle">
-        Visual overview of driver deposits from {{ start_date|date:"M d" }} to {{ end_date|date:"M d, Y" }}
+        Daily deposit trends for {{ selected_month_name }}
       </p>
     </div>
     <div class="d-flex flex-wrap gap-2 align-items-center">
+      <!-- Month Navigation -->
       <div class="period-selector">
-        <a href="?days=7" class="period-btn {% if days == 7 %}active{% endif %}">7 Days</a>
-        <a href="?days=14" class="period-btn {% if days == 14 %}active{% endif %}">14 Days</a>
-        <a href="?days=30" class="period-btn {% if days == 30 %}active{% endif %}">30 Days</a>
+        <a href="?month={{ prev_month }}" 
+           class="period-btn {% if not has_prev_month %}disabled{% endif %}"
+           {% if not has_prev_month %}style="pointer-events:none;opacity:0.5;"{% endif %}>
+          <i class="bi bi-chevron-left"></i> Previous
+        </a>
+        <select class="form-select" style="width:auto;display:inline-block;" onchange="window.location.href='?month='+this.value">
+          {% for month_data in available_months %}
+            <option value="{{ month_data.month|date:'Y-m' }}" 
+                    {% if month_data.month|date:'Y-m' == selected_month %}selected{% endif %}>
+              {{ month_data.month|date:"F Y" }}
+            </option>
+          {% endfor %}
+        </select>
+        <a href="?month={{ next_month }}" 
+           class="period-btn {% if not has_next_month %}disabled{% endif %}"
+           {% if not has_next_month %}style="pointer-events:none;opacity:0.5;"{% endif %}>
+          Next <i class="bi bi-chevron-right"></i>
+        </a>
       </div>
+      <a href="{% url 'terminal:deposits' %}?tab=history&month={{ selected_month }}" class="btn btn-outline-primary btn-sm">
+        <i class="bi bi-list-ul"></i> View Deposit Records
+      </a>
       <a href="{% url 'reports:reports_home' %}" class="back-link">
         <i class="bi bi-arrow-left-circle"></i> Back
       </a>
@@ -218,11 +237,26 @@
       <div class="stat-box__value">₱{{ avg_deposit|floatformat:2 }}</div>
       <div class="stat-box__label">Average Deposit</div>
     </div>
+    {% if peak_day_date %}
     <div class="stat-box info">
-      <div class="stat-box__value">{{ days }}</div>
-      <div class="stat-box__label">Days Period</div>
+      <div class="stat-box__value">{{ peak_day_date|date:"M d" }}</div>
+      <div class="stat-box__label">Peak Day (₱{{ peak_day_amount|floatformat:0 }})</div>
     </div>
+    {% else %}
+    <div class="stat-box info">
+      <div class="stat-box__value">—</div>
+      <div class="stat-box__label">Peak Day</div>
+    </div>
+    {% endif %}
   </div>
+  
+  <!-- Additional Insights -->
+  {% if busiest_day_date %}
+  <div class="alert alert-light border shadow-sm mb-3">
+    <i class="bi bi-lightning-fill text-warning me-2"></i>
+    <strong>Busiest Day:</strong> {{ busiest_day_date|date:"F d, Y" }} with {{ busiest_day_count }} transactions
+  </div>
+  {% endif %}
 
   <!-- Chart -->
   <div class="chart-card">
@@ -237,7 +271,7 @@
   <div class="chart-card">
     <h3 class="chart-card__title">
       <i class="bi bi-trophy-fill" style="color:#f59e0b;"></i>
-      Top 5 Vehicles by Total Deposit
+      Top 5 Vehicles by Total Deposit ({{ selected_month_name }})
     </h3>
 
     {% if top_vehicles %}
@@ -291,6 +325,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2"></script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const ctx = document.getElementById('depositChart');
@@ -299,6 +334,31 @@ document.addEventListener("DOMContentLoaded", () => {
   const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 300);
   gradient.addColorStop(0, 'rgba(59, 130, 246, 0.3)');
   gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
+
+  const todayIndex = {{ today_index }};
+  const isCurrentMonth = {{ is_current_month|yesno:"true,false" }};
+  
+  // Build annotation for today's vertical line
+  const annotations = {};
+  if (isCurrentMonth && todayIndex >= 0) {
+    annotations.todayLine = {
+      type: 'line',
+      xMin: todayIndex,
+      xMax: todayIndex,
+      borderColor: 'rgba(239, 68, 68, 0.8)',
+      borderWidth: 2,
+      borderDash: [5, 5],
+      label: {
+        display: true,
+        content: 'Today',
+        position: 'start',
+        backgroundColor: 'rgba(239, 68, 68, 0.9)',
+        color: '#fff',
+        font: { size: 11, weight: 'bold' },
+        padding: 4
+      }
+    };
+  }
 
   new Chart(ctx, {
     type: 'line',
@@ -334,6 +394,9 @@ document.addEventListener("DOMContentLoaded", () => {
           callbacks: {
             label: ctx => '₱' + ctx.parsed.y.toLocaleString()
           }
+        },
+        annotation: {
+          annotations: annotations
         }
       },
       scales: {
@@ -341,11 +404,14 @@ document.addEventListener("DOMContentLoaded", () => {
           grid: { display: false },
           ticks: { 
             font: { size: 12, weight: '500' },
-            color: '#64748b'
+            color: '#64748b',
+            maxRotation: 45,
+            minRotation: 0
           }
         },
         y: {
           beginAtZero: true,
+          max: 10000,
           grid: { color: '#f1f5f9' },
           ticks: {
             callback: val => '₱' + val.toLocaleString(),

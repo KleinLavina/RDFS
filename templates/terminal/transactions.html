@@ -103,28 +103,16 @@
 
   <!-- Metrics Row -->
   <div class="row g-3 mb-4">
-    <div class="col-md-3">
+    <div class="col-md-6">
       <div class="metric-card primary">
         <p class="small mb-1 opacity-75">Today's Revenue</p>
         <h3 class="mb-0">₱{{ today_revenue|floatformat:2 }}</h3>
       </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-6">
       <div class="metric-card success">
         <p class="small mb-1 opacity-75">Today's Entries</p>
         <h3 class="mb-0">{{ today_entries }}</h3>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="metric-card info">
-        <p class="small mb-1 opacity-75">Today's Entry Logs</p>
-        <h3 class="mb-0">{{ today_entry_logs }}</h3>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="metric-card warning">
-        <p class="small mb-1 opacity-75">Queue Events</p>
-        <h3 class="mb-0">{{ today_queue_events }}</h3>
       </div>
     </div>
   </div>
@@ -147,13 +135,13 @@
           <thead class="table-light">
             <tr>
               <th>#</th>
-              <th>Time</th>
-              <th>Driver</th>
-              <th>Plate</th>
+              <th>Entry Time</th>
+              <th>Driver Name</th>
+              <th>Vehicle Plate</th>
               <th>Route</th>
-              <th>Event</th>
-              <th>Fee</th>
-              <th>Balance</th>
+              <th>Event Type</th>
+              <th>Terminal Fee</th>
+              <th>Wallet Balance</th>
             </tr>
           </thead>
           <tbody>

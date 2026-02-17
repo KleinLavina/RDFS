@@ -907,6 +907,7 @@ def past_transactions_view(request):
     """
     from terminal.models import Transaction
     from terminal.services import TransactionService
+    import calendar
 
     tz = timezone.get_current_timezone()
     today = timezone.localtime(timezone.now(), tz).date()
@@ -918,88 +919,155 @@ def past_transactions_view(request):
     _archive_past_activities(yesterday, tz)
 
     # Get filter parameters
-    start_date_str = request.GET.get("start_date", "")
-    end_date_str = request.GET.get("end_date", "")
+    selected_month_str = request.GET.get("month", "")
+    selected_day_str = request.GET.get("day", "")
     export_action = request.GET.get("export", "")
 
-    # Parse dates
-    start_date = None
-    end_date = None
-
-    if start_date_str:
+    # Parse month (YYYY-MM format)
+    selected_year = None
+    selected_month = None
+    
+    if selected_month_str:
         try:
-            start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
+            month_date = datetime.strptime(selected_month_str, "%Y-%m")
+            selected_year = month_date.year
+            selected_month = month_date.month
         except ValueError:
-            start_date = None
-
-    if end_date_str:
+            selected_year = None
+            selected_month = None
+    
+    # If no month selected, get the most recent month with data
+    if not selected_year or not selected_month:
+        recent_tx = Transaction.objects.filter(
+            transaction_date__lt=today
+        ).order_by('-transaction_year', '-transaction_month').first()
+        
+        if recent_tx:
+            selected_year = recent_tx.transaction_year
+            selected_month = recent_tx.transaction_month
+        else:
+            # No data, default to last month
+            selected_year = yesterday.year
+            selected_month = yesterday.month
+    
+    # Parse day (optional)
+    selected_day = None
+    if selected_day_str:
         try:
-            end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
+            selected_day = int(selected_day_str)
         except ValueError:
-            end_date = None
+            selected_day = None
 
     # --------------------------------------------------
-    # QUERY PAST TRANSACTIONS ONLY (before today)
+    # QUERY PAST TRANSACTIONS (filtered by month/day)
     # --------------------------------------------------
     transactions_qs = (
         Transaction.objects
-        .filter(transaction_date__lt=today)  # ONLY records BEFORE today
+        .filter(
+            transaction_year=selected_year,
+            transaction_month=selected_month,
+            transaction_date__lt=today  # Ensure before today
+        )
         .order_by("-entry_timestamp")
     )
-
-    # Apply date filters if provided
-    if start_date:
-        transactions_qs = transactions_qs.filter(transaction_date__gte=start_date)
-    if end_date:
-        # Ensure end_date is still before today
-        if end_date >= today:
-            end_date = yesterday
-        transactions_qs = transactions_qs.filter(transaction_date__lte=end_date)
+    
+    # Apply day filter if provided
+    if selected_day:
+        transactions_qs = transactions_qs.filter(transaction_day=selected_day)
 
     # CSV Export
     if export_action == "csv":
         csv_content = TransactionService.export_transactions_csv(transactions_qs)
 
-        label = "past"
-        if start_date and end_date:
-            label = f"{start_date}_to_{end_date}"
-        elif start_date:
-            label = f"from_{start_date}"
-        elif end_date:
-            label = f"until_{end_date}"
+        if selected_day:
+            filename = f"terminal_past_transactions_{selected_year}-{selected_month:02d}-{selected_day:02d}.csv"
+        else:
+            filename = f"terminal_past_transactions_{selected_year}-{selected_month:02d}.csv"
 
         response = HttpResponse(content_type="text/csv; charset=utf-8")
-        response["Content-Disposition"] = f'attachment; filename="past_transactions_{label}.csv"'
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
         response.write(csv_content)
         return response
 
-    # Calculate summary metrics for filtered past records
+    # Calculate summary metrics for filtered records
     total_revenue = transactions_qs.filter(is_revenue_counted=True).aggregate(
         total=Sum("fee_charged")
     )["total"] or 0
     total_transactions = transactions_qs.count()
+    avg_fee = total_revenue / total_transactions if total_transactions > 0 else 0
 
-    # Yesterday's revenue specifically
-    yesterday_revenue = (
+    # Daily breakdown for peak analysis
+    daily_data = (
+        transactions_qs
+        .values("transaction_day")
+        .annotate(
+            daily_revenue=Sum("fee_charged"),
+            daily_count=Count("id")
+        )
+        .order_by("-daily_revenue")
+    )
+    
+    peak_revenue_day = None
+    peak_revenue_amount = 0
+    peak_count_day = None
+    peak_count_number = 0
+    
+    if daily_data:
+        # Highest revenue day
+        peak_revenue_day = daily_data[0]["transaction_day"]
+        peak_revenue_amount = daily_data[0]["daily_revenue"]
+        
+        # Highest transaction count day
+        sorted_by_count = sorted(daily_data, key=lambda x: x["daily_count"], reverse=True)
+        peak_count_day = sorted_by_count[0]["transaction_day"]
+        peak_count_number = sorted_by_count[0]["daily_count"]
+
+    # Get available months with data (before today)
+    available_months = (
         Transaction.objects
-        .filter(transaction_date=yesterday, is_revenue_counted=True)
-        .aggregate(total=Sum("fee_charged"))["total"]
-        or 0
+        .filter(transaction_date__lt=today)
+        .values("transaction_year", "transaction_month")
+        .distinct()
+        .order_by("-transaction_year", "-transaction_month")
+    )
+    
+    # Get available days in selected month
+    available_days = (
+        Transaction.objects
+        .filter(
+            transaction_year=selected_year,
+            transaction_month=selected_month,
+            transaction_date__lt=today
+        )
+        .values_list("transaction_day", flat=True)
+        .distinct()
+        .order_by("transaction_day")
     )
 
-    # Paginate for display (limit to 200)
-    transactions = list(transactions_qs[:200])
+    # Paginate for display (limit to 500)
+    transactions = list(transactions_qs[:500])
+    
+    # Format selected month name
+    selected_month_name = calendar.month_name[selected_month] + f" {selected_year}"
 
     context = {
         "transactions": transactions,
         "total_revenue": total_revenue,
         "total_transactions": total_transactions,
-        "yesterday_revenue": yesterday_revenue,
-        "start_date": start_date_str,
-        "end_date": end_date_str,
+        "avg_fee": avg_fee,
+        "peak_revenue_day": peak_revenue_day,
+        "peak_revenue_amount": peak_revenue_amount,
+        "peak_count_day": peak_count_day,
+        "peak_count_number": peak_count_number,
+        "selected_year": selected_year,
+        "selected_month": selected_month,
+        "selected_month_str": f"{selected_year}-{selected_month:02d}",
+        "selected_month_name": selected_month_name,
+        "selected_day": selected_day,
+        "available_months": available_months,
+        "available_days": list(available_days),
         "today": today.strftime("%Y-%m-%d"),
         "yesterday": yesterday.strftime("%Y-%m-%d"),
-        "yesterday_display": yesterday.strftime("%B %d, %Y"),
     }
 
     return render(request, "terminal/past_transactions.html", context)

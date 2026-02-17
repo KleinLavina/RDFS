@@ -54,6 +54,9 @@
 .metric-card.tertiary {
   background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
 }
+.metric-card.info {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
 .nav-link-custom {
   display: inline-flex;
   align-items: center;
@@ -96,10 +99,6 @@
         </p>
       </div>
       <div class="d-flex align-items-center gap-3">
-        <div class="archive-badge">
-          <i class="bi bi-calendar-range"></i>
-          Historical Records
-        </div>
         <a href="{% url 'terminal:transactions' %}" class="nav-link-custom">
           <i class="bi bi-clock-history"></i>
           Today's Activity
@@ -110,22 +109,34 @@
 
   <!-- Metrics Row -->
   <div class="row g-3 mb-4">
-    <div class="col-md-4">
+    <div class="col-md-3">
       <div class="metric-card primary">
-        <p class="small mb-1 opacity-75">Yesterday's Revenue ({{ yesterday_display }})</p>
-        <h3 class="mb-0">₱{{ yesterday_revenue|floatformat:2 }}</h3>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="metric-card secondary">
-        <p class="small mb-1 opacity-75">Total Revenue (Filtered)</p>
+        <p class="small mb-1 opacity-75">Total Revenue ({{ selected_month_name }})</p>
         <h3 class="mb-0">₱{{ total_revenue|floatformat:2 }}</h3>
       </div>
     </div>
-    <div class="col-md-4">
-      <div class="metric-card tertiary">
-        <p class="small mb-1 opacity-75">Archived Records</p>
+    <div class="col-md-3">
+      <div class="metric-card secondary">
+        <p class="small mb-1 opacity-75">Total Transactions</p>
         <h3 class="mb-0">{{ total_transactions }}</h3>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="metric-card tertiary">
+        <p class="small mb-1 opacity-75">Average Terminal Fee</p>
+        <h3 class="mb-0">₱{{ avg_fee|floatformat:2 }}</h3>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="metric-card info">
+        <p class="small mb-1 opacity-75">Peak Revenue Day</p>
+        <h3 class="mb-0">
+          {% if peak_revenue_day %}
+            Day {{ peak_revenue_day }}
+          {% else %}
+            —
+          {% endif %}
+        </h3>
       </div>
     </div>
   </div>
@@ -135,21 +146,41 @@
     <div class="card-body">
       <form method="get" class="filter-form">
         <div class="row g-3 align-items-end">
-          <div class="col-md-4">
-            <label class="form-label small fw-semibold">Start Date</label>
-            <input type="date" name="start_date" class="form-control" 
-                   value="{{ start_date }}" max="{{ yesterday }}">
+          <div class="col-md-5">
+            <label class="form-label small fw-semibold">
+              <i class="bi bi-calendar-month me-1"></i>
+              Select Month
+            </label>
+            <select name="month" class="form-select" id="monthSelect" onchange="this.form.submit()">
+              {% for month_data in available_months %}
+                {% with month_num=month_data.transaction_month|stringformat:"d" %}
+                <option value="{{ month_data.transaction_year }}-{{ month_data.transaction_month|stringformat:'02d' }}" 
+                        {% if month_data.transaction_year == selected_year and month_data.transaction_month == selected_month %}selected{% endif %}>
+                  {% if month_num == "1" %}January{% elif month_num == "2" %}February{% elif month_num == "3" %}March{% elif month_num == "4" %}April{% elif month_num == "5" %}May{% elif month_num == "6" %}June{% elif month_num == "7" %}July{% elif month_num == "8" %}August{% elif month_num == "9" %}September{% elif month_num == "10" %}October{% elif month_num == "11" %}November{% else %}December{% endif %} {{ month_data.transaction_year }}
+                </option>
+                {% endwith %}
+              {% endfor %}
+            </select>
           </div>
           <div class="col-md-4">
-            <label class="form-label small fw-semibold">End Date</label>
-            <input type="date" name="end_date" class="form-control" 
-                   value="{{ end_date }}" max="{{ yesterday }}">
+            <label class="form-label small fw-semibold">
+              <i class="bi bi-calendar-day me-1"></i>
+              Filter by Day (Optional)
+            </label>
+            <select name="day" class="form-select" id="daySelect">
+              <option value="">All Days</option>
+              {% for day in available_days %}
+                <option value="{{ day }}" {% if day == selected_day %}selected{% endif %}>
+                  Day {{ day }}
+                </option>
+              {% endfor %}
+            </select>
           </div>
-          <div class="col-md-4">
+          <div class="col-md-3">
             <div class="d-flex gap-2">
               <button type="submit" class="btn btn-primary flex-grow-1">
                 <i class="bi bi-funnel me-1"></i>
-                Filter
+                Apply
               </button>
               <button type="submit" name="export" value="csv" class="btn btn-success">
                 <i class="bi bi-file-earmark-spreadsheet me-1"></i>
@@ -159,12 +190,13 @@
           </div>
         </div>
         
-        <!-- Quick Date Filters -->
+        <!-- Info Text -->
         <div class="mt-3 pt-3 border-top">
-          <span class="small text-muted me-2">Quick filters:</span>
-          <a href="?start_date={{ yesterday }}&end_date={{ yesterday }}" 
-             class="btn btn-sm btn-outline-secondary me-1">Yesterday</a>
-          <a href="?" class="btn btn-sm btn-outline-secondary">All Past Records</a>
+          <span class="small text-muted">
+            <i class="bi bi-info-circle me-1"></i>
+            Showing records for <strong>{{ selected_month_name }}</strong>
+            {% if selected_day %} - Day {{ selected_day }}{% endif %}
+          </span>
         </div>
       </form>
     </div>
@@ -187,13 +219,13 @@
           <thead>
             <tr>
               <th>#</th>
-              <th>Date</th>
-              <th>Time</th>
-              <th>Vehicle</th>
-              <th>Driver</th>
+              <th>Transaction Date</th>
+              <th>Entry Time</th>
+              <th>Vehicle Plate</th>
+              <th>Driver Name</th>
               <th>Route</th>
-              <th>Fee</th>
-              <th>Balance</th>
+              <th>Terminal Fee Charged</th>
+              <th>Wallet Balance at Entry</th>
               <th>Exit Time</th>
             </tr>
           </thead>
@@ -261,9 +293,9 @@
       <a href="{% url 'terminal:transactions' %}">Today's Transactions</a>.
     </p>
     <p class="small text-muted mb-0">
-      <strong>CSV Export:</strong> Includes full date breakdown (year, month, day), 
-      entry/exit timestamps, fee charged, and wallet balance snapshot. 
-      Files are Excel-compatible with UTF-8 encoding for analytics and data mining.
+      <strong>CSV Export:</strong> Downloads all filtered records with complete snapshot data including 
+      entry/exit timestamps, terminal fee charged, wallet balance at entry, vehicle plate, driver name, and route. 
+      Files are Excel-compatible with UTF-8 encoding.
     </p>
   </div>
 </div>

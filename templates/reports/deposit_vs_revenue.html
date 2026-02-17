@@ -158,6 +158,33 @@
     background: #f1f5f9;
     color: #3b82f6;
   }
+
+  .period-selector {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .period-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 2px solid #e2e8f0;
+    background: white;
+    color: #64748b;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .period-btn:hover {
+    border-color: #10b981;
+    color: #10b981;
+  }
+
+  .period-btn.active {
+    background: #10b981;
+    border-color: #10b981;
+    color: white;
+  }
 </style>
 
 <div class="container-fluid p-4">
@@ -166,87 +193,45 @@
     <div>
       <h2 class="report-title">
         <i class="bi bi-cash-coin text-success me-2"></i>
-        Deposit vs Revenue
+        Deposit vs Terminal Fee
       </h2>
       <p class="report-subtitle">
-        Compare driver deposits against terminal fees collected over time.
+        Compare driver deposits against terminal fees collected for {{ selected_month_name }}.
       </p>
     </div>
-    <a href="{% url 'reports:reports_home' %}" class="back-link">
-      <i class="bi bi-arrow-left-circle"></i> Back to Reports
-    </a>
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+      <!-- Month Navigation -->
+      <div class="period-selector">
+        <a href="?month={{ prev_month }}" 
+           class="period-btn {% if not has_prev_month %}disabled{% endif %}"
+           {% if not has_prev_month %}style="pointer-events:none;opacity:0.5;"{% endif %}>
+          <i class="bi bi-chevron-left"></i> Previous
+        </a>
+        <select class="form-select" style="width:auto;display:inline-block;" onchange="window.location.href='?month='+this.value">
+          {% for month_data in available_months %}
+            <option value="{{ month_data.transaction_year }}-{{ month_data.transaction_month|stringformat:'02d' }}" 
+                    {% if month_data.transaction_year == selected_year and month_data.transaction_month == selected_month_num %}selected{% endif %}>
+              {{ month_data.month_name }}
+            </option>
+          {% endfor %}
+        </select>
+        <a href="?month={{ next_month }}" 
+           class="period-btn {% if not has_next_month %}disabled{% endif %}"
+           {% if not has_next_month %}style="pointer-events:none;opacity:0.5;"{% endif %}>
+          Next <i class="bi bi-chevron-right"></i>
+        </a>
+      </div>
+      <a href="?month={{ selected_month }}&export=csv" class="btn btn-success btn-sm">
+        <i class="bi bi-file-earmark-spreadsheet"></i> Export CSV
+      </a>
+      <a href="{% url 'reports:reports_home' %}" class="back-link">
+        <i class="bi bi-arrow-left-circle"></i> Back
+      </a>
+    </div>
   </div>
 
   <!-- Date Filter -->
-  <div class="filter-card">
-    <form method="GET" class="row g-3 align-items-end">
-      <div class="col-md-4">
-        <label class="form-label fw-semibold small text-muted">
-          <i class="bi bi-calendar-event me-1"></i> START DATE
-        </label>
-        <input type="date" name="start_date" value="{{ start_date }}" class="form-control">
-      </div>
-      <div class="col-md-4">
-        <label class="form-label fw-semibold small text-muted">
-          <i class="bi bi-calendar-event me-1"></i> END DATE
-        </label>
-        <input type="date" name="end_date" value="{{ end_date }}" class="form-control">
-      </div>
-      <div class="col-md-4 d-flex gap-2">
-        <button type="submit" class="btn btn-primary flex-grow-1">
-          <i class="bi bi-funnel-fill me-1"></i> Apply Filter
-        </button>
-        <a href="?start_date=&end_date=" class="btn btn-outline-secondary">
-          <i class="bi bi-arrow-counterclockwise"></i>
-        </a>
-      </div>
-    </form>
-  </div>
-
-  <!-- Summary Cards -->
-  <div class="summary-grid">
-    <div class="summary-card deposits">
-      <div class="summary-card__icon">
-        <i class="bi bi-wallet-fill"></i>
-      </div>
-      <div class="summary-card__value">₱{{ total_deposit|floatformat:2 }}</div>
-      <div class="summary-card__label">Total Deposits</div>
-      <div class="summary-card__sub">Money added to wallets</div>
-    </div>
-
-    <div class="summary-card revenue">
-      <div class="summary-card__icon">
-        <i class="bi bi-currency-exchange"></i>
-      </div>
-      <div class="summary-card__value">₱{{ total_revenue|floatformat:2 }}</div>
-      <div class="summary-card__label">Total Revenue</div>
-      <div class="summary-card__sub">Terminal fees collected</div>
-    </div>
-
-    <div class="summary-card ratio">
-      <div class="summary-card__icon">
-        <i class="bi bi-percent"></i>
-      </div>
-      <div class="summary-card__value">
-        {% if has_deposits %}
-          {{ ratio|floatformat:1 }}%
-        {% else %}
-          —
-        {% endif %}
-      </div>
-      <div class="summary-card__label">Usage Ratio</div>
-      <div class="summary-card__sub">{{ ratio_label }}</div>
-    </div>
-
-    <div class="summary-card balance">
-      <div class="summary-card__icon">
-        <i class="bi bi-piggy-bank-fill"></i>
-      </div>
-      <div class="summary-card__value">₱{{ net_balance|floatformat:2 }}</div>
-      <div class="summary-card__label">Net Balance</div>
-      <div class="summary-card__sub">Unused wallet funds</div>
-    </div>
-  </div>
+  <!-- Removed: Now using month navigation in header -->
 
   <!-- Chart -->
   <div class="chart-card">
@@ -262,7 +247,7 @@
       </div>
       <div class="legend-item">
         <span class="legend-dot revenue"></span>
-        <span>Revenue (Fees)</span>
+        <span>Terminal Fees</span>
       </div>
     </div>
   </div>
@@ -271,15 +256,41 @@
   <div class="alert alert-info border-0 shadow-sm">
     <i class="bi bi-lightbulb-fill me-2"></i>
     <strong>Insight:</strong> The usage ratio shows how much of deposited funds are being used for terminal fees.
-    A ratio under 100% means wallets still have balance remaining.
+    A ratio under 100% means wallets still have balance remaining. Net balance represents unused wallet funds.
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2"></script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const ctx = document.getElementById('compareChart');
   if (!ctx) return;
+
+  const todayIndex = {{ today_index }};
+  const isCurrentMonth = {{ is_current_month|yesno:"true,false" }};
+  
+  // Build annotation for today's vertical line
+  const annotations = {};
+  if (isCurrentMonth && todayIndex >= 0) {
+    annotations.todayLine = {
+      type: 'line',
+      xMin: todayIndex,
+      xMax: todayIndex,
+      borderColor: 'rgba(239, 68, 68, 0.8)',
+      borderWidth: 2,
+      borderDash: [5, 5],
+      label: {
+        display: true,
+        content: 'Today',
+        position: 'start',
+        backgroundColor: 'rgba(239, 68, 68, 0.9)',
+        color: '#fff',
+        font: { size: 11, weight: 'bold' },
+        padding: 4
+      }
+    };
+  }
 
   new Chart(ctx, {
     type: 'line',
@@ -300,7 +311,7 @@ document.addEventListener("DOMContentLoaded", () => {
           pointBorderWidth: 2,
         },
         {
-          label: 'Revenue (₱)',
+          label: 'Terminal Fees (₱)',
           data: {{ revenue_data|safe }},
           borderColor: '#10b981',
           backgroundColor: 'rgba(16, 185, 129, 0.1)',
@@ -332,6 +343,9 @@ document.addEventListener("DOMContentLoaded", () => {
           callbacks: {
             label: ctx => ctx.dataset.label + ': ₱' + ctx.parsed.y.toLocaleString()
           }
+        },
+        annotation: {
+          annotations: annotations
         }
       },
       scales: {
@@ -339,11 +353,14 @@ document.addEventListener("DOMContentLoaded", () => {
           grid: { display: false },
           ticks: { 
             font: { size: 12, weight: '500' },
-            color: '#64748b'
+            color: '#64748b',
+            maxRotation: 45,
+            minRotation: 0
           }
         },
         y: {
           beginAtZero: true,
+          max: 10000,
           grid: { color: '#f1f5f9' },
           ticks: {
             callback: val => '₱' + val.toLocaleString(),
