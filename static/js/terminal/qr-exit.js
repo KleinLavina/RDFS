@@ -90,8 +90,8 @@ async function processQRCode(qrCode) {
     // Get CSRF token
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
     
-    // Send request
-    const response = await fetch(window.location.href, {
+    // Send request to the correct API endpoint
+    const response = await fetch("/terminal/qr-exit/", {
       method: "POST",
       headers: {
         "X-CSRFToken": csrfToken,

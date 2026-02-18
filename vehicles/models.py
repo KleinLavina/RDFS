@@ -90,7 +90,6 @@ class Driver(models.Model):
     # -----------------------------
     # DRIVER PHOTO (REQUIRED)
     # -----------------------------
-    # Cloudinary field for production
     driver_photo = CloudinaryField(
         'driver_photo',
         blank=False,
@@ -181,7 +180,7 @@ class Vehicle(models.Model):
 
     seat_capacity = models.PositiveIntegerField(blank=True, null=True)
 
-    # QR IMAGE (Cloudinary for production)
+    # QR CODE IMAGE (Cloudinary)
     qr_code = CloudinaryField(
         'qr_code',
         blank=True,
@@ -256,14 +255,13 @@ class Vehicle(models.Model):
                 overwrite=True,
                 resource_type="image"
             )
-
             # Store the Cloudinary URL
             self.qr_code = upload_result['secure_url']
             super().save(update_fields=["qr_code", "qr_value"])
 
     @property
     def qr_code_url(self):
-        """Return a usable QR image URL from Cloudinary."""
+        """Return QR code image URL from Cloudinary."""
         if self.qr_code:
             return self.qr_code.url if hasattr(self.qr_code, 'url') else str(self.qr_code)
         return None

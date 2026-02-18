@@ -28,7 +28,7 @@ DEBUG = env.bool('DEBUG', default=False)
 # ======================================================
 # ALLOWED HOSTS
 # ======================================================
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['127.0.0.1', 'localhost'])
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['127.0.0.1', 'localhost', '192.168.254.115'])
 
 # Add wildcard for development only
 if DEBUG:
@@ -154,7 +154,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 # ======================================================
 # MEDIA FILE STORAGE
 # ======================================================
-# Cloudinary Configuration for production
+# Cloudinary Configuration
 CLOUDINARY_URL = env('CLOUDINARY_URL', default='')
 if CLOUDINARY_URL:
     import re
