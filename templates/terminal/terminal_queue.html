@@ -222,18 +222,21 @@ async function markDeparted(entryId) {
         "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
       }
     });
+    
     const data = await response.json();
 
-    if (data.success) {
+    if (response.ok && data.success) {
       const row = document.getElementById(`row-${entryId}`);
       if (row) row.remove();
       alert(data.message);
       fetchQueueData();
     } else {
+      // Display the specific error message from backend
       alert(data.message || "Failed to mark as departed.");
     }
   } catch (err) {
-    alert("Network error while marking as departed.");
+    console.error("Network error:", err);
+    alert("⚠️ Network error. Please check your connection and try again.");
   }
 }
 

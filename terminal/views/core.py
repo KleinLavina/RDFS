@@ -697,24 +697,34 @@ def qr_scan_entry(request):
 def qr_exit_validation(request):
     """Handles QR scan for exit validation only."""
     if request.method != "POST":
-        return JsonResponse({"status": "error", "message": "Invalid request method."})
+        return JsonResponse({
+            "status": "error", 
+            "message": "Invalid request method."
+        }, status=405)
 
     qr_code = request.POST.get("qr_code", "").strip()
     if not qr_code:
-        return JsonResponse({"status": "error", "message": "QR missing."})
+        return JsonResponse({
+            "status": "error", 
+            "message": "❌ QR code is empty."
+        }, status=400)
 
     try:
+        # Validate vehicle exists
         vehicle = Vehicle.objects.filter(qr_value__iexact=qr_code).first()
         if not vehicle:
-            return JsonResponse({"status": "error", "message": "❌ No vehicle found."})
+            return JsonResponse({
+                "status": "error", 
+                "message": "❌ Invalid QR code. No vehicle found."
+            }, status=404)
 
-        # Validate that vehicle has an active entry record
+        # Validate that vehicle has an active entry record (is currently queued)
         active_log = EntryLog.objects.filter(vehicle=vehicle, is_active=True).first()
         if not active_log:
             return JsonResponse({
                 "status": "error", 
-                "message": f"⚠️ {vehicle.license_plate} not inside terminal. No active entry found."
-            })
+                "message": f"❌ This vehicle is not currently queued. {vehicle.license_plate} is not inside the terminal."
+            }, status=400)
 
         # Mark as exited
         active_log.is_active = False
@@ -722,7 +732,6 @@ def qr_exit_validation(request):
         active_log.save(update_fields=["is_active", "departed_at"])
         
         # Create exit queue history
-        vehicle = active_log.vehicle
         if vehicle:
             QueueHistory.objects.create(
                 vehicle=vehicle,
@@ -736,13 +745,18 @@ def qr_exit_validation(request):
         return JsonResponse({
             "status": "success",
             "message": f"✅ {vehicle.license_plate} successfully exited terminal."
-        })
+        }, status=200)
 
     except Exception as e:
+        # Log unexpected errors for debugging
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Unexpected error in qr_exit_validation: {str(e)}")
+        
         return JsonResponse({
             "status": "error",
-            "message": f"Unexpected error: {str(e)}"
-        })
+            "message": f"⚠️ System error: {str(e)}"
+        }, status=500)
 
 
 @login_required(login_url='accounts:login')
@@ -1078,18 +1092,56 @@ def past_transactions_view(request):
 # ===============================
 @login_required(login_url='accounts:login')
 @user_passes_test(is_staff_admin_or_admin)
+@login_required(login_url='accounts:login')
+@user_passes_test(is_staff_admin_or_admin)
 @never_cache
 def mark_departed(request, entry_id):
+    """Manual exit for vehicles in terminal queue."""
     if request.method != "POST":
-        return JsonResponse({"success": False, "message": "Invalid request."})
+        return JsonResponse({"success": False, "message": "Invalid request method."}, status=405)
+    
     try:
-        log = get_object_or_404(EntryLog, id=entry_id, is_active=True)
+        # Validate that entry log exists and is active
+        log = EntryLog.objects.filter(id=entry_id, is_active=True).first()
+        
+        if not log:
+            return JsonResponse({
+                "success": False, 
+                "message": "❌ This vehicle is not currently queued."
+            }, status=404)
+        
+        # Mark as departed
         log.is_active = False
         log.departed_at = timezone.now()
         log.save(update_fields=["is_active", "departed_at"])
-        return JsonResponse({"success": True, "message": f"✅ {log.vehicle.license_plate} marked departed."})
+        
+        # Create exit queue history
+        vehicle = log.vehicle
+        if vehicle:
+            QueueHistory.objects.create(
+                vehicle=vehicle,
+                driver=getattr(vehicle, "assigned_driver", None),
+                action="exit",
+                departure_time_snapshot=log.departed_at,
+                wallet_balance_snapshot=getattr(getattr(vehicle, "wallet", None), "balance", None),
+                fee_charged=Decimal("0.00"),
+            )
+        
+        return JsonResponse({
+            "success": True, 
+            "message": f"✅ {log.vehicle.license_plate} marked departed."
+        }, status=200)
+        
     except Exception as e:
-        return JsonResponse({"success": False, "message": str(e)})
+        # Log unexpected errors for debugging
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Unexpected error in mark_departed: {str(e)}")
+        
+        return JsonResponse({
+            "success": False, 
+            "message": f"⚠️ System error: {str(e)}"
+        }, status=500)
 
 
 @login_required(login_url='accounts:login')

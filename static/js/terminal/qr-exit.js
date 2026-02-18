@@ -102,18 +102,19 @@ async function processQRCode(qrCode) {
     
     const data = await response.json();
     
-    // Handle response
-    if (data.status === "success") {
+    // Handle response based on HTTP status and data.status
+    if (response.ok && data.status === "success") {
       showFeedback(data.message, "success");
       pauseScanning(4000);
     } else {
-      showFeedback(data.message, "error");
+      // Display specific error message from backend
+      showFeedback(data.message || "Unknown error occurred", "error");
       pauseScanning(3000);
     }
     
   } catch (error) {
     console.error("QR processing error:", error);
-    showFeedback("Network error. Please try again.", "error");
+    showFeedback("⚠️ Network error. Please check your connection and try again.", "error");
     pauseScanning(3000);
   }
 }
