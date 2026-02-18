@@ -1329,36 +1329,12 @@ def system_and_routes(request):
     else:
         form = SettingsForm(instance=settings)
 
-    # Route Analytics
+    # Route Management
     routes = Route.objects.all().order_by('origin', 'destination')
-    route_stats = (
-        EntryLog.objects
-        .filter(vehicle__route__isnull=False)
-        .values('vehicle__route__id', 'vehicle__route__origin', 'vehicle__route__destination')
-        .annotate(
-            total_trips=Count('id'),
-            total_fees=Sum('fee_charged')
-        )
-        .order_by('-total_trips')
-    )
-
-    total_trips = sum(item['total_trips'] for item in route_stats)
-    total_fees = sum(item['total_fees'] or 0 for item in route_stats)
-    active_routes = routes.filter(active=True).count()
-    top_route = route_stats[0] if route_stats else None
-
-    chart_labels = json.dumps([f"{r['vehicle__route__origin']} → {r['vehicle__route__destination']}" for r in route_stats])
-    chart_data = json.dumps([r['total_trips'] for r in route_stats])
 
     context = {
         "form": form,
         "routes": routes,
-        "total_trips": total_trips,
-        "total_fees": total_fees,
-        "active_routes": active_routes,
-        "top_route": top_route,
-        "chart_labels": chart_labels,
-        "chart_data": chart_data,
     }
 
     return render(request, "terminal/system_and_routes.html", context)

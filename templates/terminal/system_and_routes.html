@@ -209,65 +209,6 @@
   <!-- TAB CONTENT: ROUTES -->
   <div class="tab-content" id="routes-tab">
     
-    <!-- ROUTE STATS -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon active-icon">
-          <i class="fas fa-check-circle"></i>
-        </div>
-        <div class="stat-info">
-          <div class="stat-value">{{ active_routes }}</div>
-          <div class="stat-label">Active Routes</div>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon trips-icon">
-          <i class="fas fa-road"></i>
-        </div>
-        <div class="stat-info">
-          <div class="stat-value">{{ total_trips }}</div>
-          <div class="stat-label">Total Trips</div>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon fees-icon">
-          <i class="fas fa-money-bill-wave"></i>
-        </div>
-        <div class="stat-info">
-          <div class="stat-value">₱{{ total_fees|floatformat:2 }}</div>
-          <div class="stat-label">Total Fees</div>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon top-icon">
-          <i class="fas fa-trophy"></i>
-        </div>
-        <div class="stat-info">
-          {% if top_route %}
-            <div class="stat-value small-text">
-              {{ top_route.vehicle__route__origin }} → {{ top_route.vehicle__route__destination }}
-            </div>
-            <div class="stat-label">Top Route ({{ top_route.total_trips }} trips)</div>
-          {% else %}
-            <div class="stat-value">—</div>
-            <div class="stat-label">No Data</div>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-
-    <!-- CHART -->
-    <div class="content-card">
-      <h2 class="section-title">
-        <i class="fas fa-chart-bar me-2"></i>
-        Route Activity Overview
-      </h2>
-      <canvas id="routesChart" height="80"></canvas>
-    </div>
-
     <!-- ADD ROUTE FORM -->
     <div class="content-card">
       <h2 class="section-title">
@@ -454,7 +395,6 @@
 </div>
 
 <!-- SCRIPTS -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
@@ -495,31 +435,6 @@ document.addEventListener("DOMContentLoaded", function() {
     confirmBtn.addEventListener("click", () => {
       confirmModal.hide();
       settingsForm.submit();
-    });
-  }
-  
-  // ROUTE CHART
-  const chartLabels = JSON.parse('{{ chart_labels|escapejs }}');
-  const chartData = JSON.parse('{{ chart_data|escapejs }}');
-  
-  const ctx = document.getElementById('routesChart');
-  if (ctx) {
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: chartLabels,
-        datasets: [{
-          data: chartData,
-          backgroundColor: 'rgba(37,99,235,.8)',
-          borderRadius: 8
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true } }
-      }
     });
   }
   
