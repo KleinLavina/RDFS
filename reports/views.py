@@ -237,9 +237,10 @@ def deposit_analytics(request):
     )
     
     # Get all months with deposits for navigation
+    from django.db.models.functions import TruncMonth
     available_months = (
         Deposit.objects
-        .annotate(month=TruncDate("created_at", kind="month"))
+        .annotate(month=TruncMonth("created_at"))
         .values("month")
         .distinct()
         .order_by("-month")

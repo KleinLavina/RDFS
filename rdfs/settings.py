@@ -28,7 +28,7 @@ DEBUG = env.bool('DEBUG', default=False)
 # ======================================================
 # ALLOWED HOSTS
 # ======================================================
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['127.0.0.1', 'localhost', '192.168.254.115'])
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['127.0.0.1', 'localhost'])
 
 # Add wildcard for development only
 if DEBUG:
