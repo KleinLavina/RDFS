@@ -12,7 +12,7 @@ from django.db.models import Sum, Count
 from django.utils import timezone
 from django.http import JsonResponse
 from datetime import timedelta
-from accounts.utils import is_admin, is_staff_admin, is_staff_admin_or_admin
+from accounts.utils import is_admin, is_staff_admin, is_staff_admin_or_admin, is_treasurer
 
 
 # ===============================
@@ -26,6 +26,8 @@ def login_view(request):
             return redirect('accounts:admin_dashboard')
         elif is_staff_admin(request.user):
             return redirect('accounts:staff_dashboard')
+        elif is_treasurer(request.user):
+            return redirect('accounts:treasurer_dashboard')
 
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
@@ -45,6 +47,8 @@ def login_view(request):
                 return redirect('accounts:admin_dashboard')
             elif is_staff_admin(user):
                 return redirect('accounts:staff_dashboard')
+            elif is_treasurer(user):
+                return redirect('accounts:treasurer_dashboard')
             else:
                 messages.error(request, "Access denied: unauthorized role.")
                 logout(request)
@@ -68,7 +72,7 @@ def logout_view(request):
 # ===============================
 # ✅ MANAGE USERS
 # ===============================
-@login_required(login_url='login')
+@login_required(login_url='accounts:login')
 @user_passes_test(lambda u: is_admin(u) or is_staff_admin(u))
 @never_cache
 def manage_users(request):
@@ -76,16 +80,18 @@ def manage_users(request):
     if is_admin(request.user):
         users = CustomUser.objects.exclude(username=request.user.username).order_by('username')
     else:
-        users = CustomUser.objects.filter(role='staff_admin').exclude(username=request.user.username)
+        users = CustomUser.objects.filter(role__in=['staff_admin', 'treasurer']).exclude(username=request.user.username)
     
     # Calculate stats
     admin_count = users.filter(role='admin').count()
     staff_admin_count = users.filter(role='staff_admin').count()
+    treasurer_count = users.filter(role='treasurer').count()
     
     context = {
         'users': users,
         'admin_count': admin_count,
         'staff_admin_count': staff_admin_count,
+        'treasurer_count': treasurer_count,
     }
     
     return render(request, 'accounts/manage_users.html', context)
@@ -94,7 +100,7 @@ def manage_users(request):
 # ===============================
 # ✅ CREATE USER
 # ===============================
-@login_required(login_url='login')
+@login_required(login_url='accounts:login')
 @user_passes_test(lambda u: is_admin(u) or is_staff_admin(u))
 @never_cache
 def create_user(request):
@@ -115,7 +121,7 @@ def create_user(request):
 # ===============================
 # ✅ EDIT USER
 # ===============================
-@login_required(login_url='login')
+@login_required(login_url='accounts:login')
 @user_passes_test(lambda u: is_admin(u) or is_staff_admin(u))
 @never_cache
 def edit_user(request, user_id):
@@ -164,7 +170,7 @@ def edit_user(request, user_id):
 # ===============================
 # ✅ DELETE USER
 # ===============================
-@login_required(login_url='login')
+@login_required(login_url='accounts:login')
 @user_passes_test(is_admin)
 @never_cache
 def delete_user(request, user_id):
@@ -254,7 +260,7 @@ def staff_dashboard_view(request):
 
 
 
-@login_required(login_url='login')
+@login_required(login_url='accounts:login')
 @user_passes_test(is_admin)
 def admin_dashboard_data(request):
     """AJAX endpoint for admin dashboard live data."""
@@ -300,3 +306,95 @@ def admin_dashboard_data(request):
         "chart_data": chart_data,
         "recent_queues": recent_queues,
     })
+
+
+# ===============================
+# ✅ TREASURER DASHBOARD
+# ===============================
+@login_required(login_url='/accounts/terminal-access/')
+@user_passes_test(is_treasurer)
+@never_cache
+def treasurer_dashboard_view(request):
+    """Treasurer workspace showing dashboard and deposit history."""
+    from django.db.models import Count, Q
+    from datetime import datetime
+    from django.utils import timezone
+    
+    # Count pending, approved, rejected deposits created by this treasurer
+    my_pending = Deposit.objects.filter(
+        created_by=request.user,
+        status=Deposit.STATUS_PENDING
+    ).count()
+    
+    my_approved = Deposit.objects.filter(
+        created_by=request.user,
+        status=Deposit.STATUS_APPROVED
+    ).count()
+    
+    my_rejected = Deposit.objects.filter(
+        created_by=request.user,
+        status=Deposit.STATUS_REJECTED
+    ).count()
+    
+    # Recent deposits created by this treasurer (last 10)
+    recent_deposits = Deposit.objects.filter(
+        created_by=request.user
+    ).select_related('wallet__vehicle__assigned_driver', 'approved_by').order_by('-created_at')[:10]
+    
+    # Monthly navigation for deposit history
+    # Get selected month and year from query params, default to current month
+    now = timezone.now()
+    selected_year = int(request.GET.get('year', now.year))
+    selected_month = int(request.GET.get('month', now.month))
+    
+    # Create date range for selected month
+    from calendar import monthrange
+    _, last_day = monthrange(selected_year, selected_month)
+    month_start = datetime(selected_year, selected_month, 1)
+    month_end = datetime(selected_year, selected_month, last_day, 23, 59, 59)
+    
+    # Make timezone-aware
+    month_start = timezone.make_aware(month_start)
+    month_end = timezone.make_aware(month_end)
+    
+    # Filter deposits by selected month
+    all_deposits = Deposit.objects.filter(
+        created_by=request.user,
+        created_at__gte=month_start,
+        created_at__lte=month_end
+    ).select_related('wallet__vehicle__assigned_driver', 'approved_by').order_by('-created_at')
+    
+    # Calculate previous and next month
+    if selected_month == 1:
+        prev_month = 12
+        prev_year = selected_year - 1
+    else:
+        prev_month = selected_month - 1
+        prev_year = selected_year
+    
+    if selected_month == 12:
+        next_month = 1
+        next_year = selected_year + 1
+    else:
+        next_month = selected_month + 1
+        next_year = selected_year
+    
+    # Format month name for display
+    from calendar import month_name
+    selected_month_name = month_name[selected_month]
+    
+    context = {
+        'my_pending': my_pending,
+        'my_approved': my_approved,
+        'my_rejected': my_rejected,
+        'recent_deposits': recent_deposits,
+        'all_deposits': all_deposits,
+        'selected_month': selected_month,
+        'selected_year': selected_year,
+        'selected_month_name': selected_month_name,
+        'prev_month': prev_month,
+        'prev_year': prev_year,
+        'next_month': next_month,
+        'next_year': next_year,
+    }
+    return render(request, 'accounts/treasurer_workspace.html', context)

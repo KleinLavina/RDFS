@@ -1,0 +1,726 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Request Deposit | RDFS{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root {
+  --primary-color: #112666;
+  --primary-dark: #0c1c4a;
+  --success-color: #28a745;
+  --danger-color: #dc3545;
+  --warning-color: #ffc107;
+  --border-color: #dee2e6;
+  --input-focus: rgba(17, 38, 102, 0.1);
+}
+
+.request-deposit-page {
+  padding: 0;
+  min-height: auto;
+  background: white;
+}
+
+.request-deposit-container {
+  max-width: 100%;
+  margin: 0;
+  padding: 1.5rem;
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.page-header h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.page-header p {
+  color: #6c757d;
+  font-size: 0.95rem;
+}
+
+.form-card {
+  background: white;
+  border-radius: 0;
+  padding: 1.5rem;
+  box-shadow: none;
+}
+
+.form-section {
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.form-section:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.form-group label .required {
+  color: var(--danger-color);
+  margin-left: 2px;
+}
+
+.form-group label i {
+  margin-right: 0.5rem;
+  color: var(--primary-color);
+  width: 18px;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.input-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6c757d;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.85rem 1rem 0.85rem 3rem;
+  border: 2px solid var(--border-color);
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: #fafafa;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  background: white;
+  box-shadow: 0 0 0 4px var(--input-focus);
+}
+
+.form-control.is-invalid {
+  border-color: var(--danger-color);
+  background: #fff5f5;
+}
+
+.form-control.is-valid {
+  border-color: var(--success-color);
+  background: #f0fff4;
+}
+
+.validation-message {
+  display: none;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+}
+
+.validation-message.error {
+  display: block;
+  color: var(--danger-color);
+  background: #fff5f5;
+  border-left: 3px solid var(--danger-color);
+}
+
+.validation-message.success {
+  display: block;
+  color: var(--success-color);
+  background: #f0fff4;
+  border-left: 3px solid var(--success-color);
+}
+
+.help-text {
+  font-size: 0.875rem;
+  color: #6c757d;
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.help-text i {
+  font-size: 0.75rem;
+}
+
+/* Search Dropdown */
+.search-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid var(--primary-color);
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  display: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.search-dropdown.show {
+  display: block;
+}
+
+.search-result-item {
+  padding: 1rem;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background 0.2s ease;
+}
+
+.search-result-item:hover {
+  background: #f8f9fa;
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.result-driver-name {
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 0.25rem;
+}
+
+.result-details {
+  font-size: 0.875rem;
+  color: #6c757d;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.result-detail {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.no-results {
+  padding: 1rem;
+  text-align: center;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.loading-spinner {
+  padding: 1rem;
+  text-align: center;
+  color: var(--primary-color);
+}
+
+/* Selected Driver Info */
+.selected-info {
+  background: #f8f9fa;
+  padding: 1.25rem;
+  border-radius: 10px;
+  margin-top: 1rem;
+  display: none;
+  border-left: 4px solid var(--primary-color);
+}
+
+.selected-info.show {
+  display: block;
+}
+
+.selected-info-title {
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.info-label {
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin-bottom: 0.25rem;
+}
+
+.info-value {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 2px solid #f0f0f0;
+}
+
+.btn {
+  padding: 0.85rem 2rem;
+  border-radius: 10px;
+  font-weight: 600;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--primary-color);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(17, 38, 102, 0.3);
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #5a6268;
+}
+
+@media print {
+  .request-deposit-page {
+    display: none;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="request-deposit-page">
+  <div class="request-deposit-container">
+    
+    <div class="page-header">
+      <h1>
+        <i class="fas fa-money-bill-wave"></i>
+        Request Deposit
+      </h1>
+      <p>Record a deposit request after receiving payment from a driver</p>
+    </div>
+
+    <div class="form-card">
+      <form method="POST" id="depositRequestForm">
+        {% csrf_token %}
+        
+        <!-- Driver Search Section -->
+        <div class="form-section">
+          <h3 class="section-title">
+            <i class="fas fa-user-circle"></i>
+            Driver Information
+          </h3>
+          
+          <div class="form-group">
+            <label for="driverSearch">
+              <i class="fas fa-search"></i>
+              Search Driver <span class="required">*</span>
+            </label>
+            <div class="input-wrapper">
+              <i class="fas fa-user input-icon"></i>
+              <input 
+                type="text" 
+                id="driverSearch" 
+                class="form-control" 
+                placeholder="Type driver name, vehicle, or plate number..."
+                autocomplete="off"
+                required
+              >
+              <input type="hidden" name="driver" id="driverId" required>
+              <div class="search-dropdown" id="searchDropdown"></div>
+            </div>
+            <div class="help-text">
+              <i class="fas fa-info-circle"></i>
+              Start typing to search for a driver
+            </div>
+          </div>
+
+          <div class="selected-info" id="selectedInfo">
+            <div class="selected-info-title">Selected Driver Details</div>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">Driver Name</span>
+                <span class="info-value" id="infoDriverName">—</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Vehicle</span>
+                <span class="info-value" id="infoVehicleName">—</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">License Plate</span>
+                <span class="info-value" id="infoLicensePlate">—</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">License Number</span>
+                <span class="info-value" id="infoLicenseNumber">—</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Current Balance</span>
+                <span class="info-value" id="infoBalance">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Deposit Details Section -->
+        <div class="form-section">
+          <h3 class="section-title">
+            <i class="fas fa-wallet"></i>
+            Deposit Details
+          </h3>
+
+          <div class="form-group">
+            <label for="amount">
+              <i class="fas fa-peso-sign"></i>
+              Deposit Amount <span class="required">*</span>
+            </label>
+            <div class="input-wrapper">
+              <i class="fas fa-peso-sign input-icon"></i>
+              <input 
+                type="number" 
+                name="amount" 
+                id="amount" 
+                class="form-control" 
+                step="0.01" 
+                min="0.01" 
+                placeholder="0.00"
+                required
+              >
+            </div>
+            <div class="validation-message" id="amountError"></div>
+            <div class="help-text">
+              <i class="fas fa-info-circle"></i>
+              Minimum deposit: ₱<span id="minDepositDisplay">{{ min_deposit_amount }}</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="or_code">
+              <i class="fas fa-receipt"></i>
+              Official Receipt (OR) Code <span class="required">*</span>
+            </label>
+            <div class="input-wrapper">
+              <i class="fas fa-barcode input-icon"></i>
+              <input 
+                type="text" 
+                name="or_code" 
+                id="or_code" 
+                class="form-control" 
+                placeholder="Enter OR Code"
+                required
+              >
+            </div>
+            <div class="validation-message" id="orCodeError"></div>
+            <div class="help-text">
+              <i class="fas fa-info-circle"></i>
+              Enter the unique OR code from the physical receipt
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="notes">
+              <i class="fas fa-sticky-note"></i>
+              Notes (Optional)
+            </label>
+            <div class="input-wrapper">
+              <i class="fas fa-comment input-icon"></i>
+              <textarea 
+                name="notes" 
+                id="notes" 
+                class="form-control" 
+                rows="3"
+                placeholder="Additional notes or remarks"
+                style="padding-left: 3rem;"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <a href="{% url 'accounts:treasurer_dashboard' %}" class="btn btn-secondary">
+            <i class="fas fa-times-circle"></i>
+            Cancel
+          </a>
+          <button type="submit" class="btn btn-primary" id="submitBtn">
+            <i class="fas fa-check-circle"></i>
+            Submit Request
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// Configuration
+const MIN_DEPOSIT = parseFloat('{{ min_deposit_amount }}');
+const CSRF_TOKEN = '{{ csrf_token }}';
+
+// State
+let selectedDriver = null;
+let searchTimeout = null;
+
+// DOM Elements
+const driverSearch = document.getElementById('driverSearch');
+const driverId = document.getElementById('driverId');
+const searchDropdown = document.getElementById('searchDropdown');
+const selectedInfo = document.getElementById('selectedInfo');
+const amountInput = document.getElementById('amount');
+const orCodeInput = document.getElementById('or_code');
+const submitBtn = document.getElementById('submitBtn');
+const form = document.getElementById('depositRequestForm');
+
+// Driver Search
+driverSearch.addEventListener('input', function() {
+  const query = this.value.trim();
+  
+  clearTimeout(searchTimeout);
+  
+  if (query.length < 2) {
+    searchDropdown.classList.remove('show');
+    return;
+  }
+  
+  searchTimeout = setTimeout(() => {
+    searchDrivers(query);
+  }, 300);
+});
+
+function searchDrivers(query) {
+  searchDropdown.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
+  searchDropdown.classList.add('show');
+  
+  fetch(`/terminal/ajax/search-drivers/?q=${encodeURIComponent(query)}`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.results.length === 0) {
+        searchDropdown.innerHTML = '<div class="no-results">No drivers found</div>';
+      } else {
+        searchDropdown.innerHTML = data.results.map(driver => `
+          <div class="search-result-item" data-driver='${JSON.stringify(driver)}'>
+            <div class="result-driver-name">${driver.driver_name}</div>
+            <div class="result-details">
+              <span class="result-detail"><i class="fas fa-car"></i> ${driver.vehicle_name}</span>
+              <span class="result-detail"><i class="fas fa-id-card"></i> ${driver.license_plate}</span>
+              <span class="result-detail"><i class="fas fa-wallet"></i> ₱${driver.wallet_balance.toFixed(2)}</span>
+            </div>
+          </div>
+        `).join('');
+        
+        // Add click handlers
+        document.querySelectorAll('.search-result-item').forEach(item => {
+          item.addEventListener('click', function() {
+            selectDriver(JSON.parse(this.dataset.driver));
+          });
+        });
+      }
+    })
+    .catch(error => {
+      searchDropdown.innerHTML = '<div class="no-results">Error searching drivers</div>';
+      console.error('Search error:', error);
+    });
+}
+
+function selectDriver(driver) {
+  selectedDriver = driver;
+  driverId.value = driver.id;
+  driverSearch.value = driver.driver_name;
+  searchDropdown.classList.remove('show');
+  
+  // Update info display
+  document.getElementById('infoDriverName').textContent = driver.driver_name;
+  document.getElementById('infoVehicleName').textContent = driver.vehicle_name;
+  document.getElementById('infoLicensePlate').textContent = driver.license_plate;
+  document.getElementById('infoLicenseNumber').textContent = driver.license_number;
+  document.getElementById('infoBalance').textContent = '₱' + driver.wallet_balance.toFixed(2);
+  
+  selectedInfo.classList.add('show');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+  if (!driverSearch.contains(e.target) && !searchDropdown.contains(e.target)) {
+    searchDropdown.classList.remove('show');
+  }
+});
+
+// Amount Validation
+amountInput.addEventListener('input', function() {
+  validateAmount();
+});
+
+amountInput.addEventListener('blur', function() {
+  validateAmount();
+});
+
+function validateAmount() {
+  const amount = parseFloat(amountInput.value);
+  const errorDiv = document.getElementById('amountError');
+  
+  if (isNaN(amount) || amount <= 0) {
+    amountInput.classList.add('is-invalid');
+    amountInput.classList.remove('is-valid');
+    errorDiv.textContent = 'Please enter a valid amount';
+    errorDiv.className = 'validation-message error';
+    return false;
+  }
+  
+  if (amount < MIN_DEPOSIT) {
+    amountInput.classList.add('is-invalid');
+    amountInput.classList.remove('is-valid');
+    errorDiv.textContent = `Deposit amount cannot be lower than the minimum required deposit of ₱${MIN_DEPOSIT.toFixed(2)}`;
+    errorDiv.className = 'validation-message error';
+    return false;
+  }
+  
+  amountInput.classList.remove('is-invalid');
+  amountInput.classList.add('is-valid');
+  errorDiv.textContent = 'Amount is valid';
+  errorDiv.className = 'validation-message success';
+  return true;
+}
+
+// OR Code Validation
+let orCodeTimeout = null;
+
+orCodeInput.addEventListener('input', function() {
+  clearTimeout(orCodeTimeout);
+  orCodeTimeout = setTimeout(() => {
+    validateORCode();
+  }, 500);
+});
+
+orCodeInput.addEventListener('blur', function() {
+  validateORCode();
+});
+
+function validateORCode() {
+  const orCode = orCodeInput.value.trim();
+  const errorDiv = document.getElementById('orCodeError');
+  
+  if (!orCode) {
+    orCodeInput.classList.remove('is-invalid', 'is-valid');
+    errorDiv.style.display = 'none';
+    return false;
+  }
+  
+  fetch(`/terminal/ajax/validate-or-code/?or_code=${encodeURIComponent(orCode)}`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.valid) {
+        orCodeInput.classList.remove('is-invalid');
+        orCodeInput.classList.add('is-valid');
+        errorDiv.textContent = data.message;
+        errorDiv.className = 'validation-message success';
+      } else {
+        orCodeInput.classList.add('is-invalid');
+        orCodeInput.classList.remove('is-valid');
+        errorDiv.textContent = data.message;
+        errorDiv.className = 'validation-message error';
+      }
+    })
+    .catch(error => {
+      console.error('OR validation error:', error);
+    });
+}
+
+// Form Submission Validation
+form.addEventListener('submit', function(e) {
+  let isValid = true;
+  
+  // Check driver selected
+  if (!driverId.value) {
+    alert('Please select a driver');
+    driverSearch.focus();
+    e.preventDefault();
+    return false;
+  }
+  
+  // Check amount
+  if (!validateAmount()) {
+    alert('Please enter a valid deposit amount');
+    amountInput.focus();
+    e.preventDefault();
+    return false;
+  }
+  
+  // Check OR code
+  if (!orCodeInput.value.trim()) {
+    alert('Please enter an OR Code');
+    orCodeInput.focus();
+    e.preventDefault();
+    return false;
+  }
+  
+  if (orCodeInput.classList.contains('is-invalid')) {
+    alert('Please fix the OR Code error before submitting');
+    orCodeInput.focus();
+    e.preventDefault();
+    return false;
+  }
+  
+  // Disable submit button to prevent double submission
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+});
+</script>
+{% endblock %}

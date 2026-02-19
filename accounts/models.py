@@ -37,9 +37,16 @@ class CustomUser(AbstractUser):
     ROLE_CHOICES = [
         ('admin', 'Admin'),
         ('staff_admin', 'Staff Admin'),
+        ('treasurer', 'Treasurer'),
     ]
 
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
+    
+    # Additional user information
+    first_name = models.CharField(max_length=150, blank=True)
+    last_name = models.CharField(max_length=150, blank=True)
+    email_address = models.EmailField(blank=True, null=True)
+    contact_number = models.CharField(max_length=20, blank=True, null=True)
 
     # Prevents conflicts with default Django group and permission relations
     groups = models.ManyToManyField(
@@ -58,3 +65,8 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.username
+    
+    def get_full_name(self):
+        """Return the first_name plus the last_name, with a space in between."""
+        full_name = f"{self.first_name} {self.last_name}".strip()
+        return full_name or self.username

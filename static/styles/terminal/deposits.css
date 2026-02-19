@@ -132,6 +132,23 @@
   border-bottom-color: var(--rdfs-blue);
 }
 
+/* Badge Count on Tab */
+.badge-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background: var(--danger);
+  color: white;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-left: 0.5rem;
+  line-height: 1;
+}
+
 /* TAB CONTENT */
 .tab-content {
   display: none;
@@ -495,6 +512,88 @@
 .btn-receipt:hover {
   background: var(--rdfs-accent);
   color: #fff;
+  text-decoration: none;
+}
+
+/* ICON-ONLY ACTION BUTTONS */
+.action-buttons-icon {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.btn-action-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-view-icon {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.btn-view-icon:hover {
+  background: #1976d2;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(25, 118, 210, 0.3);
+}
+
+.btn-approve-icon {
+  background: #d4edda;
+  color: #28a745;
+}
+
+.btn-approve-icon:hover {
+  background: #28a745;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.btn-reject-icon {
+  background: #f8d7da;
+  color: #dc3545;
+}
+
+.btn-reject-icon:hover {
+  background: #dc3545;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+}
+
+.btn-view-details {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: #e3f2fd;
+  color: #1976d2;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.btn-view-details:hover {
+  background: #1976d2;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(25, 118, 210, 0.3);
   text-decoration: none;
 }
 

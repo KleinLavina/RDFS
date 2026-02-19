@@ -318,10 +318,25 @@ class Wallet(VehicleBalanceBase):
 # DEPOSIT MODEL
 # ======================================================
 class Deposit(models.Model):
+    STATUS_PENDING = 'pending'
+    STATUS_APPROVED = 'approved'
+    STATUS_REJECTED = 'rejected'
+    STATUS_SUCCESSFUL = 'successful'  # Legacy status for old deposits
+
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'Pending'),
+        (STATUS_APPROVED, 'Approved'),
+        (STATUS_REJECTED, 'Rejected'),
+        (STATUS_SUCCESSFUL, 'Successful'),  # Legacy
+    ]
+
     wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE, related_name='deposits')
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     reference_number = models.CharField(max_length=50, unique=True, blank=True)
-    
+
+    # Official Receipt Code (unique, can be auto-generated or manual)
+    or_code = models.CharField(max_length=50, unique=True, blank=True, null=True)
+
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -330,14 +345,36 @@ class Deposit(models.Model):
         related_name='deposits_created'
     )
 
-    status = models.CharField(max_length=15, default='successful')
+    # Approval tracking
+    approved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='deposits_approved'
+    )
+    approved_at = models.DateTimeField(null=True, blank=True)
+
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default=STATUS_SUCCESSFUL)
     payment_method = models.CharField(max_length=20, default='cash')
+
+    # Additional fields for treasurer requests
+    notes = models.TextField(blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
+        old_status = None
+        
+        # Get old status before saving (if updating)
+        if not is_new:
+            try:
+                old_deposit = Deposit.objects.get(pk=self.pk)
+                old_status = old_deposit.status
+            except Deposit.DoesNotExist:
+                pass
 
         if not self.reference_number:
             self.reference_number = f"DEP-{timezone.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
@@ -345,11 +382,16 @@ class Deposit(models.Model):
         with transaction.atomic():
             super().save(*args, **kwargs)
 
-            if is_new:
+            # Only credit wallet if status is APPROVED or SUCCESSFUL (legacy)
+            if is_new and self.status in [self.STATUS_APPROVED, self.STATUS_SUCCESSFUL]:
+                self.wallet.deposit(self.amount)
+            # If status changes from PENDING to APPROVED, credit wallet
+            elif not is_new and old_status == self.STATUS_PENDING and self.status == self.STATUS_APPROVED:
                 self.wallet.deposit(self.amount)
 
     def __str__(self):
         return f"Deposit {self.reference_number} – {self.amount}"
+
 
 
 # ======================================================

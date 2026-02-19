@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Treasurer Dashboard | RDFS{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'styles/accounts/treasurer-dashboard.css' %}?v=1.0">
+{% endblock %}
+
+{% block content %}
+<div class="treasurer-dashboard">
+  <div class="container">
+    
+    <!-- HEADER -->
+    <div class="treasurer-dashboard__header">
+      <h1 class="treasurer-dashboard__title">
+        <i class="bi bi-wallet2"></i>
+        Treasurer Dashboard
+      </h1>
+      <p class="treasurer-dashboard__subtitle">
+        Welcome, <strong>{{ user.get_full_name }}</strong>. Manage deposit requests and receipts.
+      </p>
+    </div>
+
+    <!-- STATS CARDS -->
+    <div class="treasurer-stats">
+      <div class="treasurer-stat-card pending">
+        <div class="stat-icon">
+          <i class="bi bi-clock-history"></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{ my_pending }}</h3>
+          <p>Pending Requests</p>
+        </div>
+      </div>
+
+      <div class="treasurer-stat-card approved">
+        <div class="stat-icon">
+          <i class="bi bi-check-circle"></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{ my_approved }}</h3>
+          <p>Approved</p>
+        </div>
+      </div>
+
+      <div class="treasurer-stat-card rejected">
+        <div class="stat-icon">
+          <i class="bi bi-x-circle"></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{ my_rejected }}</h3>
+          <p>Rejected</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div class="quick-actions">
+      <h2><i class="bi bi-lightning-fill"></i> Quick Actions</h2>
+      <div class="action-buttons">
+        <a href="{% url 'terminal:treasurer_request_deposit' %}" class="action-btn primary">
+          <i class="bi bi-plus-circle"></i>
+          <span>New Deposit Request</span>
+        </a>
+        <a href="{% url 'terminal:treasurer_receipts' %}" class="action-btn secondary">
+          <i class="bi bi-receipt"></i>
+          <span>View My Receipts</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- RECENT DEPOSITS -->
+    <div class="recent-deposits">
+      <h2><i class="bi bi-clock-history"></i> Recent Deposit Requests</h2>
+      {% if recent_deposits %}
+      <div class="table-responsive">
+        <table class="deposits-table">
+          <thead>
+            <tr>
+              <th>OR Code</th>
+              <th>Vehicle</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th>Approved By</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for deposit in recent_deposits %}
+            <tr>
+              <td><strong>{{ deposit.or_code }}</strong></td>
+              <td>{{ deposit.wallet.vehicle.vehicle_name }} ({{ deposit.wallet.vehicle.license_plate }})</td>
+              <td>₱{{ deposit.amount|floatformat:2 }}</td>
+              <td>
+                <span class="status-badge status-{{ deposit.status }}">
+                  {{ deposit.get_status_display }}
+                </span>
+              </td>
+              <td>{{ deposit.created_at|date:"M d, Y g:i A" }}</td>
+              <td>
+                {% if deposit.approved_by %}
+                  {{ deposit.approved_by.get_full_name }}
+                {% else %}
+                  <span class="text-muted">—</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="no-data">No deposit requests yet. Create your first request above.</p>
+      {% endif %}
+    </div>
+
+    <!-- FOOTER -->
+    <div class="dashboard-footer">
+      <p>RDFS Terminal Management System · Treasurer Portal</p>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

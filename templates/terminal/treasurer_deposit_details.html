@@ -1,0 +1,362 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Deposit Details | RDFS{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root {
+  --primary-color: #112666;
+  --primary-dark: #0c1c4a;
+  --success-color: #28a745;
+  --danger-color: #dc3545;
+  --warning-color: #ffc107;
+  --border-color: #dee2e6;
+}
+
+.details-page {
+  padding: 2rem 0;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.details-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.btn-primary {
+  background: var(--primary-color);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(17, 38, 102, 0.3);
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #5a6268;
+}
+
+.details-card {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+}
+
+.card-section {
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.card-section:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.section-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-label {
+  font-size: 0.85rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.5px;
+}
+
+.detail-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.detail-value.large {
+  font-size: 2rem;
+  color: var(--primary-color);
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-badge.status-pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-badge.status-approved,
+.status-badge.status-successful {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-badge.status-rejected {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.notes-box {
+  background: #f8f9fa;
+  padding: 1.25rem;
+  border-radius: 8px;
+  border-left: 4px solid var(--primary-color);
+}
+
+.notes-text {
+  color: #2c3e50;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.empty-notes {
+  color: #6c757d;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .page-title {
+    font-size: 1.5rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .details-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="details-page">
+  <div class="details-container">
+    
+    <div class="page-header">
+      <h1 class="page-title">
+        <i class="fas fa-file-invoice"></i>
+        Deposit Request Details
+      </h1>
+      <div class="action-buttons">
+        <a href="{% url 'terminal:treasurer_deposit_receipt' deposit.id %}" class="btn btn-primary" target="_blank">
+          <i class="fas fa-print"></i>
+          View Receipt
+        </a>
+        <button onclick="window.history.back()" class="btn btn-secondary">
+          <i class="fas fa-arrow-left"></i>
+          Back
+        </button>
+      </div>
+    </div>
+
+    <div class="details-card">
+      
+      <!-- Receipt Information -->
+      <div class="card-section">
+        <h2 class="section-title">
+          <i class="fas fa-receipt"></i>
+          Receipt Information
+        </h2>
+        <div class="details-grid">
+          <div class="detail-item">
+            <span class="detail-label">OR Code</span>
+            <span class="detail-value">{{ deposit.or_code }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Status</span>
+            <span class="status-badge status-{{ deposit.status }}">
+              {{ deposit.get_status_display }}
+            </span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Deposit Amount</span>
+            <span class="detail-value large">₱{{ deposit.amount|floatformat:2 }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Driver & Vehicle Information -->
+      <div class="card-section">
+        <h2 class="section-title">
+          <i class="fas fa-car"></i>
+          Driver & Vehicle Information
+        </h2>
+        <div class="details-grid">
+          <div class="detail-item">
+            <span class="detail-label">Driver Name</span>
+            <span class="detail-value">{{ driver.first_name }} {{ driver.last_name }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">License Number</span>
+            <span class="detail-value">{{ driver.license_number|default:"N/A" }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Vehicle Name</span>
+            <span class="detail-value">{{ vehicle.vehicle_name }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">License Plate</span>
+            <span class="detail-value">{{ vehicle.license_plate }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Transaction Details -->
+      <div class="card-section">
+        <h2 class="section-title">
+          <i class="fas fa-clock"></i>
+          Transaction Details
+        </h2>
+        <div class="details-grid">
+          <div class="detail-item">
+            <span class="detail-label">Date Created</span>
+            <span class="detail-value">{{ deposit.created_at|date:"F d, Y" }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Time Created</span>
+            <span class="detail-value">{{ deposit.created_at|date:"g:i A" }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Created By</span>
+            <span class="detail-value">{{ deposit.created_by.get_full_name }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Payment Method</span>
+            <span class="detail-value">{{ deposit.payment_method|upper }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Approval Information -->
+      {% if deposit.approved_by or deposit.approved_at %}
+      <div class="card-section">
+        <h2 class="section-title">
+          <i class="fas fa-check-circle"></i>
+          Approval Information
+        </h2>
+        <div class="details-grid">
+          <div class="detail-item">
+            <span class="detail-label">Approved By</span>
+            <span class="detail-value">{{ deposit.approved_by.get_full_name|default:"—" }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Approved At</span>
+            <span class="detail-value">
+              {% if deposit.approved_at %}
+                {{ deposit.approved_at|date:"M d, Y g:i A" }}
+              {% else %}
+                —
+              {% endif %}
+            </span>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Notes -->
+      <div class="card-section">
+        <h2 class="section-title">
+          <i class="fas fa-sticky-note"></i>
+          Notes
+        </h2>
+        <div class="notes-box">
+          {% if deposit.notes %}
+            <p class="notes-text">{{ deposit.notes }}</p>
+          {% else %}
+            <p class="empty-notes">No notes provided</p>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+{% endblock %}

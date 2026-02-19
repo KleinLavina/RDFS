@@ -99,7 +99,7 @@
         </p>
       </div>
       <div class="d-flex align-items-center gap-3">
-        <a href="{% url 'terminal:transactions' %}" class="nav-link-custom">
+        <a href="{% url 'terminal:entry_fees' %}" class="nav-link-custom">
           <i class="bi bi-clock-history"></i>
           Today's Activity
         </a>
@@ -288,9 +288,9 @@
       About Past Transactions
     </h6>
     <p class="small text-muted mb-2">
-      This page shows archived transaction records from <strong>before today</strong>.
-      Today's live transactions are shown in 
-      <a href="{% url 'terminal:transactions' %}">Today's Transactions</a>.
+      This page shows archived entry fee records from <strong>before today</strong>.
+      Today's live entry fees are shown in 
+      <a href="{% url 'terminal:entry_fees' %}">Today's Entry Fees</a>.
     </p>
     <p class="small text-muted mb-0">
       <strong>CSV Export:</strong> Downloads all filtered records with complete snapshot data including 

@@ -1,0 +1,414 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Treasurer Workspace | RDFS{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="{% static 'styles/accounts/treasurer-workspace.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="treasurer-workspace">
+  <div class="workspace-container">
+    
+    <!-- Toast Container for Messages -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 11000;">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="toast show align-items-center text-white bg-{{ message.tags }} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+              <div class="toast-body">
+                {{ message }}
+              </div>
+              <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+          </div>
+        {% endfor %}
+      {% endif %}
+      <div id="dynamicToastContainer"></div>
+    </div>
+
+    <div class="workspace-header">
+      <h1 class="workspace-title">
+        <i class="fas fa-briefcase"></i>
+        Treasurer Workspace
+      </h1>
+      <button class="btn-new-deposit" id="openModalBtn">
+        <i class="fas fa-plus-circle"></i>
+        New Deposit Request
+      </button>
+    </div>
+
+    <div class="workspace-tabs">
+      <button class="tab-btn active" data-tab="dashboard">
+        <i class="fas fa-chart-line"></i>
+        Dashboard
+      </button>
+      <button class="tab-btn" data-tab="deposit-history">
+        <i class="fas fa-history"></i>
+        Deposit History
+      </button>
+    </div>
+
+    <!-- Dashboard Tab -->
+    <div class="tab-content active" id="dashboard-tab">
+      <div class="stats-grid">
+        <div class="stat-card pending">
+          <div class="stat-icon">
+            <i class="bi bi-clock-history"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{ my_pending }}</h3>
+            <p>Pending Requests</p>
+          </div>
+        </div>
+
+        <div class="stat-card approved">
+          <div class="stat-icon">
+            <i class="bi bi-check-circle"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{ my_approved }}</h3>
+            <p>Approved</p>
+          </div>
+        </div>
+
+        <div class="stat-card rejected">
+          <div class="stat-icon">
+            <i class="bi bi-x-circle"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{ my_rejected }}</h3>
+            <p>Rejected</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="deposits-card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <i class="fas fa-clock"></i>
+            Recent Deposits
+          </h2>
+        </div>
+        {% if recent_deposits %}
+        <div class="table-responsive">
+          <table class="deposits-table">
+            <thead>
+              <tr>
+                <th>OR Code</th>
+                <th>Vehicle</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Approved By</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for deposit in recent_deposits %}
+              <tr>
+                <td><strong>{{ deposit.or_code }}</strong></td>
+                <td>{{ deposit.wallet.vehicle.vehicle_name }} ({{ deposit.wallet.vehicle.license_plate }})</td>
+                <td>₱{{ deposit.amount|floatformat:2 }}</td>
+                <td>
+                  <span class="status-badge status-{{ deposit.status }}">
+                    {{ deposit.get_status_display }}
+                  </span>
+                </td>
+                <td>{{ deposit.created_at|date:"M d, Y g:i A" }}</td>
+                <td>
+                  {% if deposit.approved_by %}
+                    {{ deposit.approved_by.get_full_name }}
+                  {% else %}
+                    <span class="text-muted">—</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="action-buttons-cell">
+                    <a href="{% url 'terminal:treasurer_deposit_details' deposit.id %}" class="btn-action btn-view" title="View Details">
+                      <i class="fas fa-eye"></i>
+                    </a>
+                    <a href="{% url 'terminal:treasurer_deposit_receipt' deposit.id %}" class="btn-action btn-print" title="Print Receipt" target="_blank">
+                      <i class="fas fa-print"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p class="no-data">No deposit requests yet. Create your first request above.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Deposit History Tab -->
+    <div class="tab-content" id="deposit-history-tab">
+      <div class="deposits-card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <i class="fas fa-history"></i>
+            All Deposit Requests
+          </h2>
+          <div class="month-navigation">
+            <a href="?year={{ prev_year }}&month={{ prev_month }}#deposit-history" class="month-nav-btn" onclick="switchToHistoryTab()">
+              <i class="fas fa-chevron-left"></i>
+              Previous
+            </a>
+            <span class="current-month">
+              <i class="fas fa-calendar-alt"></i>
+              {{ selected_month_name }} {{ selected_year }}
+            </span>
+            <a href="?year={{ next_year }}&month={{ next_month }}#deposit-history" class="month-nav-btn" onclick="switchToHistoryTab()">
+              Next
+              <i class="fas fa-chevron-right"></i>
+            </a>
+          </div>
+        </div>
+        <div class="filter-row">
+          <div class="filter-group">
+            <label for="statusFilter">Filter by Status:</label>
+            <select id="statusFilter" onchange="filterDeposits(this.value)">
+              <option value="">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </div>
+          <div class="deposit-count">
+            <i class="fas fa-list"></i>
+            <span id="visibleCount">{{ all_deposits.count }}</span> record(s) in {{ selected_month_name }} {{ selected_year }}
+          </div>
+        </div>
+        {% if all_deposits %}
+        <div class="table-responsive">
+          <table class="deposits-table">
+            <thead>
+              <tr>
+                <th>OR Code</th>
+                <th>Driver Name</th>
+                <th>Plate Number</th>
+                <th>Deposit Amount</th>
+                <th>Status</th>
+                <th>Date Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="depositsTableBody">
+              {% for deposit in all_deposits %}
+              <tr data-status="{{ deposit.status }}">
+                <td><strong>{{ deposit.or_code }}</strong></td>
+                <td>{{ deposit.wallet.vehicle.assigned_driver.first_name }} {{ deposit.wallet.vehicle.assigned_driver.last_name }}</td>
+                <td>{{ deposit.wallet.vehicle.license_plate }}</td>
+                <td><strong>₱{{ deposit.amount|floatformat:2 }}</strong></td>
+                <td>
+                  <span class="status-badge status-{{ deposit.status }}">
+                    {{ deposit.get_status_display }}
+                  </span>
+                </td>
+                <td>{{ deposit.created_at|date:"M d, Y g:i A" }}</td>
+                <td>
+                  <div class="action-buttons-cell">
+                    <a href="{% url 'terminal:treasurer_deposit_details' deposit.id %}" class="btn-action btn-details" title="View Details">
+                      <i class="fas fa-eye"></i>
+                    </a>
+                    <a href="{% url 'terminal:treasurer_deposit_receipt' deposit.id %}" class="btn-action btn-receipt" title="View Receipt" target="_blank">
+                      <i class="fas fa-print"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p class="no-data">
+          <i class="fas fa-inbox"></i>
+          No deposit requests found for {{ selected_month_name }} {{ selected_year }}.
+        </p>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal Overlay -->
+<div class="modal-overlay" id="modalOverlay"></div>
+
+<!-- Modal Container -->
+<div class="modal-container" id="depositModal">
+  <div class="modal-header">
+    <h2 class="modal-title">
+      <i class="fas fa-money-bill-wave"></i>
+      New Deposit Request
+    </h2>
+    <button class="modal-close" id="closeModalBtn">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="modal-body">
+    <iframe id="depositFormFrame" src="{% url 'terminal:treasurer_request_deposit' %}?modal=1" style="width:100%; height:500px; border:none;"></iframe>
+  </div>
+</div>
+
+<script>
+// Tab Switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    // Remove active class from all tabs and contents
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    
+    // Add active class to clicked tab
+    this.classList.add('active');
+    
+    // Show corresponding content
+    const tabName = this.dataset.tab;
+    document.getElementById(tabName + '-tab').classList.add('active');
+  });
+});
+
+// Modal Controls
+const modal = document.getElementById('depositModal');
+const overlay = document.getElementById('modalOverlay');
+const openBtn = document.getElementById('openModalBtn');
+const closeBtn = document.getElementById('closeModalBtn');
+
+function openModal() {
+  modal.classList.add('show');
+  overlay.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  modal.classList.remove('show');
+  overlay.classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+openBtn.addEventListener('click', openModal);
+closeBtn.addEventListener('click', closeModal);
+overlay.addEventListener('click', closeModal);
+
+// Close modal on Escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && modal.classList.contains('show')) {
+    closeModal();
+  }
+});
+
+// Listen for form submission success from iframe
+window.addEventListener('message', function(e) {
+  if (e.data === 'deposit_success') {
+    closeModal();
+    // Show success toast
+    showToast('✅ Deposit request created successfully! Awaiting approval.', 'success');
+    // Reload page to show new deposit
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500);
+  } else if (e.data && e.data.type === 'redirect_receipt') {
+    // Close modal and open receipt in new tab
+    closeModal();
+    // Show success toast
+    showToast('✅ Deposit request created successfully! Opening receipt...', 'success');
+    window.open(e.data.url, '_blank');
+    // Reload to show new deposit
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500);
+  } else if (e.data && e.data.type === 'deposit_created') {
+    // New message type with deposit details
+    closeModal();
+    showToast(e.data.message || '✅ Deposit request created successfully!', 'success');
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500);
+  }
+});
+
+// Function to show toast notification
+function showToast(message, type = 'success') {
+  const toastContainer = document.getElementById('dynamicToastContainer');
+  const bgClass = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-info';
+  
+  const toastHTML = `
+    <div class="toast show align-items-center text-white ${bgClass} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body">
+          ${message}
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  `;
+  
+  toastContainer.innerHTML = toastHTML;
+  
+  // Auto-hide after 5 seconds
+  setTimeout(() => {
+    toastContainer.innerHTML = '';
+  }, 5000);
+}
+
+// Auto-hide existing toasts after 5 seconds
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(() => {
+    document.querySelectorAll('.toast').forEach(toast => {
+      toast.classList.remove('show');
+      setTimeout(() => toast.remove(), 300);
+    });
+  }, 5000);
+});
+
+// Filter deposits
+function filterDeposits(status) {
+  const rows = document.querySelectorAll('#depositsTableBody tr');
+  let visibleCount = 0;
+  
+  rows.forEach(row => {
+    if (!status || row.dataset.status === status) {
+      row.style.display = '';
+      visibleCount++;
+    } else {
+      row.style.display = 'none';
+    }
+  });
+  
+  // Update visible count
+  const countElement = document.getElementById('visibleCount');
+  if (countElement) {
+    countElement.textContent = visibleCount;
+  }
+}
+
+// Switch to history tab (used when navigating months)
+function switchToHistoryTab() {
+  // This will be called before page reload
+  sessionStorage.setItem('activeTab', 'deposit-history');
+}
+
+// Restore active tab after page reload
+document.addEventListener('DOMContentLoaded', function() {
+  const activeTab = sessionStorage.getItem('activeTab');
+  const urlHash = window.location.hash;
+  
+  if (activeTab === 'deposit-history' || urlHash === '#deposit-history') {
+    // Switch to deposit history tab
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    
+    document.querySelector('[data-tab="deposit-history"]').classList.add('active');
+    document.getElementById('deposit-history-tab').classList.add('active');
+    
+    // Clear the session storage
+    sessionStorage.removeItem('activeTab');
+  }
+});
+</script>
+{% endblock %}

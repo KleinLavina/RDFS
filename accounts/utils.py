@@ -11,3 +11,7 @@ def is_admin(user):
 # ✅ Strictly staff_admin only
 def is_staff_admin(user):
     return user.is_authenticated and user.role == 'staff_admin'
+
+# ✅ Strictly treasurer only
+def is_treasurer(user):
+    return user.is_authenticated and user.role == 'treasurer'

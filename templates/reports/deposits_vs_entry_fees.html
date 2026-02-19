@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Deposit vs Revenue | RDFS{% endblock %}
+{% block title %}Deposits vs Terminal Entry Fees | RDFS{% endblock %}
 
 {% block content %}
 <style>
@@ -193,10 +193,10 @@
     <div>
       <h2 class="report-title">
         <i class="bi bi-cash-coin text-success me-2"></i>
-        Deposit vs Terminal Fee
+        Deposits vs Revenue
       </h2>
       <p class="report-subtitle">
-        Compare driver deposits against terminal fees collected for {{ selected_month_name }}.
+        Compare driver deposits against terminal entry fees collected for {{ selected_month_name }}.
       </p>
     </div>
     <div class="d-flex flex-wrap gap-2 align-items-center">
@@ -247,7 +247,7 @@
       </div>
       <div class="legend-item">
         <span class="legend-dot revenue"></span>
-        <span>Terminal Fees</span>
+        <span>Terminal Entry Fees</span>
       </div>
     </div>
   </div>
@@ -255,7 +255,7 @@
   <!-- Info -->
   <div class="alert alert-info border-0 shadow-sm">
     <i class="bi bi-lightbulb-fill me-2"></i>
-    <strong>Insight:</strong> The usage ratio shows how much of deposited funds are being used for terminal fees.
+    <strong>Insight:</strong> The usage ratio shows how much of deposited funds are being used for terminal entry fees.
     A ratio under 100% means wallets still have balance remaining. Net balance represents unused wallet funds.
   </div>
 </div>
@@ -311,7 +311,7 @@ document.addEventListener("DOMContentLoaded", () => {
           pointBorderWidth: 2,
         },
         {
-          label: 'Terminal Fees (₱)',
+          label: 'Terminal Entry Fees (₱)',
           data: {{ revenue_data|safe }},
           borderColor: '#10b981',
           backgroundColor: 'rgba(16, 185, 129, 0.1)',

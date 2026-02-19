@@ -127,16 +127,40 @@ class DriverRegistrationForm(forms.Form):
     )
 
 
-# ✅ UPDATED ROLE-AWARE CUSTOM USER CREATION FORM (Admin + Staff)
+# ✅ UPDATED ROLE-AWARE CUSTOM USER CREATION FORM (Admin + Staff + Treasurer)
 class CustomUserCreationForm(UserCreationForm):
     ROLE_CHOICES = [
         ('admin', 'Admin'),
         ('staff_admin', 'Staff Admin'),
+        ('treasurer', 'Treasurer'),
     ]
     role = forms.ChoiceField(
         choices=ROLE_CHOICES,
         label="Account Role",
         widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    
+    first_name = forms.CharField(
+        max_length=150,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'First Name'})
+    )
+    
+    last_name = forms.CharField(
+        max_length=150,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Last Name'})
+    )
+    
+    email_address = forms.EmailField(
+        required=False,
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email Address'})
+    )
+    
+    contact_number = forms.CharField(
+        max_length=20,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Contact Number'})
     )
 
     password1 = forms.CharField(
@@ -150,7 +174,7 @@ class CustomUserCreationForm(UserCreationForm):
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'role', 'password1', 'password2']
+        fields = ['username', 'first_name', 'last_name', 'email_address', 'contact_number', 'role', 'password1', 'password2']
 
     def __init__(self, *args, **kwargs):
         """Hide the Admin role if a staff_admin is creating a user."""
@@ -162,23 +186,10 @@ class CustomUserCreationForm(UserCreationForm):
             'class': 'form-control',
             'placeholder': 'Username'
         })
-        self.fields['email'].widget.attrs.update({
-            'class': 'form-control',
-            'placeholder': 'Email Address'
-        })
-        self.fields['role'].widget.attrs.update({
-            'class': 'form-select'
-        })
-        self.fields['password1'].widget.attrs.update({
-            'class': 'form-control'
-        })
-        self.fields['password2'].widget.attrs.update({
-            'class': 'form-control'
-        })
 
         # Restrict role if staff_admin is creating the account
         if user and getattr(user, 'role', '') == 'staff_admin':
-            self.fields['role'].choices = [('staff_admin', 'Staff Admin')]
+            self.fields['role'].choices = [('staff_admin', 'Staff Admin'), ('treasurer', 'Treasurer')]
 
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -189,6 +200,9 @@ class CustomUserCreationForm(UserCreationForm):
             user.is_staff = True
             user.is_superuser = True
         elif role == 'staff_admin':
+            user.is_staff = True
+            user.is_superuser = False
+        elif role == 'treasurer':
             user.is_staff = True
             user.is_superuser = False
         else:
@@ -204,6 +218,29 @@ class CustomUserCreationForm(UserCreationForm):
 # ✅ USER EDIT FORM
 class CustomUserEditForm(UserChangeForm):
     password = None  # hide the default password field
+    
+    first_name = forms.CharField(
+        max_length=150,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'First Name'})
+    )
+    
+    last_name = forms.CharField(
+        max_length=150,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Last Name'})
+    )
+    
+    email_address = forms.EmailField(
+        required=False,
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email Address'})
+    )
+    
+    contact_number = forms.CharField(
+        max_length=20,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Contact Number'})
+    )
 
     new_password1 = forms.CharField(
         label="New Password",
@@ -225,16 +262,12 @@ class CustomUserEditForm(UserChangeForm):
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'role']
+        fields = ['username', 'first_name', 'last_name', 'email_address', 'contact_number', 'role']
 
         widgets = {
             'username': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Username'
-            }),
-            'email': forms.EmailInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Email Address'
             }),
             'role': forms.Select(attrs={
                 'class': 'form-select'

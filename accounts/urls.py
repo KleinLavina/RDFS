@@ -26,6 +26,7 @@ urlpatterns = [
     # ✅ Dashboards
     path("dashboard/admin/", views.admin_dashboard_view, name="admin_dashboard"),
     path("dashboard/staff/", views.staff_dashboard_view, name="staff_dashboard"),
+    path("dashboard/treasurer/", views.treasurer_dashboard_view, name="treasurer_dashboard"),
     path("admin_dashboard_data/", views.admin_dashboard_data, name="admin_dashboard_data"),
 
 

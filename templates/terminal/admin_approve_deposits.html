@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Approve Deposits | RDFS{% endblock %}
+
+{% block extra_css %}
+<style>
+.approve-deposits-page {
+  padding: 2rem 0;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.approve-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.page-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #112666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.page-header p {
+  color: #6c757d;
+  margin-top: 0.5rem;
+}
+
+.deposits-card {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.deposits-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.deposits-table thead {
+  background: #f8f9fa;
+}
+
+.deposits-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #112666;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.deposits-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #dee2e6;
+  vertical-align: middle;
+}
+
+.deposits-table tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.btn-approve {
+  background: #28a745;
+  color: white;
+}
+
+.btn-approve:hover {
+  background: #218838;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.btn-reject {
+  background: #dc3545;
+  color: white;
+}
+
+.btn-reject:hover {
+  background: #c82333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.no-data {
+  text-align: center;
+  padding: 3rem;
+  color: #6c757d;
+}
+
+.no-data i {
+  font-size: 3rem;
+  color: #dee2e6;
+  margin-bottom: 1rem;
+}
+
+.alert {
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.alert-info {
+  background: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+}
+
+.or-code-highlight {
+  background: #fff3cd;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 700;
+  color: #856404;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="approve-deposits-page">
+  <div class="approve-container">
+    
+    <div class="page-header">
+      <h1>
+        <i class="bi bi-check-square"></i>
+        Approve Deposit Requests
+      </h1>
+      <p>Review and approve or reject pending deposit requests from treasurers</p>
+    </div>
+
+    <div class="alert alert-info">
+      <i class="bi bi-info-circle"></i>
+      <strong>Important:</strong> Verify the printed OR proof before approving. Check that OR Code, Amount, and Driver match the physical receipt.
+    </div>
+
+    <div class="deposits-card">
+      {% if pending_deposits %}
+      <div class="table-responsive">
+        <table class="deposits-table">
+          <thead>
+            <tr>
+              <th>OR Code</th>
+              <th>Driver</th>
+              <th>Vehicle</th>
+              <th>License Plate</th>
+              <th>Amount</th>
+              <th>Created By</th>
+              <th>Date & Time</th>
+              <th>Notes</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for deposit in pending_deposits %}
+            <tr>
+              <td>
+                <span class="or-code-highlight">{{ deposit.or_code }}</span>
+              </td>
+              <td>
+                <strong>{{ deposit.wallet.vehicle.assigned_driver.first_name }} {{ deposit.wallet.vehicle.assigned_driver.last_name }}</strong>
+              </td>
+              <td>{{ deposit.wallet.vehicle.vehicle_name }}</td>
+              <td>{{ deposit.wallet.vehicle.license_plate }}</td>
+              <td><strong style="color: #28a745;">₱{{ deposit.amount|floatformat:2 }}</strong></td>
+              <td>{{ deposit.created_by.get_full_name }}</td>
+              <td>{{ deposit.created_at|date:"M d, Y g:i A" }}</td>
+              <td>
+                {% if deposit.notes %}
+                  {{ deposit.notes|truncatewords:8 }}
+                {% else %}
+                  <span style="color: #6c757d;">—</span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <form method="POST" style="display: inline;" onsubmit="return confirm('Approve this deposit? Wallet will be credited.');">
+                    {% csrf_token %}
+                    <input type="hidden" name="deposit_id" value="{{ deposit.id }}">
+                    <input type="hidden" name="action" value="approve">
+                    <button type="submit" class="btn btn-approve">
+                      <i class="bi bi-check-circle"></i>
+                      Approve
+                    </button>
+                  </form>
+                  <form method="POST" style="display: inline;" onsubmit="return confirm('Reject this deposit? No wallet update will occur.');">
+                    {% csrf_token %}
+                    <input type="hidden" name="deposit_id" value="{{ deposit.id }}">
+                    <input type="hidden" name="action" value="reject">
+                    <button type="submit" class="btn btn-reject">
+                      <i class="bi bi-x-circle"></i>
+                      Reject
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="no-data">
+        <i class="bi bi-check-circle"></i>
+        <p>No pending deposit requests at this time.</p>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}

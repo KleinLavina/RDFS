@@ -298,21 +298,78 @@
           {% endif %}
         </div>
 
-        <!-- EMAIL -->
+        <!-- FIRST NAME -->
+        <div class="rdfs-form-group">
+          <label class="rdfs-form-label">
+            <i class="fas fa-id-card"></i>
+            First Name
+          </label>
+          <input type="text" 
+                 name="first_name" 
+                 class="rdfs-form-control {% if form.first_name.errors %}rdfs-error{% endif %}"
+                 value="{{ form.first_name.value|default:'' }}"
+                 placeholder="Enter first name">
+          {% if form.first_name.errors %}
+            <div class="rdfs-error-text">
+              <i class="fas fa-exclamation-circle"></i>
+              {{ form.first_name.errors.0 }}
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- LAST NAME -->
+        <div class="rdfs-form-group">
+          <label class="rdfs-form-label">
+            <i class="fas fa-id-card"></i>
+            Last Name
+          </label>
+          <input type="text" 
+                 name="last_name" 
+                 class="rdfs-form-control {% if form.last_name.errors %}rdfs-error{% endif %}"
+                 value="{{ form.last_name.value|default:'' }}"
+                 placeholder="Enter last name">
+          {% if form.last_name.errors %}
+            <div class="rdfs-error-text">
+              <i class="fas fa-exclamation-circle"></i>
+              {{ form.last_name.errors.0 }}
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- EMAIL ADDRESS -->
         <div class="rdfs-form-group">
           <label class="rdfs-form-label">
             <i class="fas fa-envelope"></i>
             Email Address
           </label>
           <input type="email" 
-                 name="email" 
-                 class="rdfs-form-control {% if form.email.errors %}rdfs-error{% endif %}"
-                 value="{{ form.email.value|default:'' }}"
+                 name="email_address" 
+                 class="rdfs-form-control {% if form.email_address.errors %}rdfs-error{% endif %}"
+                 value="{{ form.email_address.value|default:'' }}"
                  placeholder="user@example.com">
-          {% if form.email.errors %}
+          {% if form.email_address.errors %}
             <div class="rdfs-error-text">
               <i class="fas fa-exclamation-circle"></i>
-              {{ form.email.errors.0 }}
+              {{ form.email_address.errors.0 }}
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- CONTACT NUMBER -->
+        <div class="rdfs-form-group">
+          <label class="rdfs-form-label">
+            <i class="fas fa-phone"></i>
+            Contact Number
+          </label>
+          <input type="text" 
+                 name="contact_number" 
+                 class="rdfs-form-control {% if form.contact_number.errors %}rdfs-error{% endif %}"
+                 value="{{ form.contact_number.value|default:'' }}"
+                 placeholder="Enter contact number">
+          {% if form.contact_number.errors %}
+            <div class="rdfs-error-text">
+              <i class="fas fa-exclamation-circle"></i>
+              {{ form.contact_number.errors.0 }}
             </div>
           {% endif %}
         </div>

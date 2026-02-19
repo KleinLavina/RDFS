@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}My Receipts | RDFS{% endblock %}
+
+{% block extra_css %}
+<style>
+.receipts-page {
+  padding: 2rem 0;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.receipts-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.page-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #112666;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-section {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.filter-group {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.filter-group label {
+  font-weight: 600;
+  color: #112666;
+}
+
+.filter-group select {
+  padding: 0.5rem 1rem;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.receipts-table-card {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.receipts-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.receipts-table thead {
+  background: #f8f9fa;
+}
+
+.receipts-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #112666;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.receipts-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.receipts-table tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.status-badge.status-pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-badge.status-approved {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-badge.status-rejected {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.no-data {
+  text-align: center;
+  padding: 3rem;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background: #112666;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #0c1c4a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(17, 38, 102, 0.3);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="receipts-page">
+  <div class="receipts-container">
+    
+    <div class="page-header">
+      <h1>
+        <i class="bi bi-receipt"></i>
+        My Deposit Receipts
+      </h1>
+      <a href="{% url 'terminal:treasurer_request_deposit' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i>
+        New Request
+      </a>
+    </div>
+
+    <div class="filter-section">
+      <form method="GET" class="filter-group">
+        <label for="status">Filter by Status:</label>
+        <select name="status" id="status" onchange="this.form.submit()">
+          <option value="">All Statuses</option>
+          <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+          <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Approved</option>
+          <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
+        </select>
+      </form>
+    </div>
+
+    <div class="receipts-table-card">
+      {% if deposits %}
+      <div class="table-responsive">
+        <table class="receipts-table">
+          <thead>
+            <tr>
+              <th>OR Code</th>
+              <th>Driver</th>
+              <th>Vehicle</th>
+              <th>License Plate</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Date Created</th>
+              <th>Approved By</th>
+              <th>Approved At</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for deposit in deposits %}
+            <tr>
+              <td><strong>{{ deposit.or_code }}</strong></td>
+              <td>{{ deposit.wallet.vehicle.assigned_driver.first_name }} {{ deposit.wallet.vehicle.assigned_driver.last_name }}</td>
+              <td>{{ deposit.wallet.vehicle.vehicle_name }}</td>
+              <td>{{ deposit.wallet.vehicle.license_plate }}</td>
+              <td><strong>₱{{ deposit.amount|floatformat:2 }}</strong></td>
+              <td>
+                <span class="status-badge status-{{ deposit.status }}">
+                  {{ deposit.get_status_display }}
+                </span>
+              </td>
+              <td>{{ deposit.created_at|date:"M d, Y g:i A" }}</td>
+              <td>
+                {% if deposit.approved_by %}
+                  {{ deposit.approved_by.get_full_name }}
+                {% else %}
+                  <span style="color: #6c757d;">—</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if deposit.approved_at %}
+                  {{ deposit.approved_at|date:"M d, Y g:i A" }}
+                {% else %}
+                  <span style="color: #6c757d;">—</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if deposit.notes %}
+                  {{ deposit.notes|truncatewords:10 }}
+                {% else %}
+                  <span style="color: #6c757d;">—</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="no-data">
+        <i class="bi bi-inbox" style="font-size: 3rem; color: #dee2e6;"></i>
+        <p>No deposit receipts found.</p>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}

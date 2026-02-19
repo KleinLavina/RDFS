@@ -113,12 +113,12 @@ def build_export_filters(
 @login_required(login_url="accounts:login")
 @user_passes_test(is_staff_admin_or_admin)
 @never_cache
-def transactions_view(request):
+def entry_fees_view(request):
     """
-    Present Day Transactions View
-    -----------------------------
-    Shows ONLY transactions from TODAY (current date).
-    Past transactions are archived and shown in past_transactions_view.
+    Terminal Entry Fee Collection - Today's View
+    ---------------------------------------------
+    Shows ONLY entry fees collected TODAY (current date).
+    Past entry fees are archived and shown in past_entry_fees_view.
     """
     tz = timezone.get_current_timezone()
     today = timezone.localtime(timezone.now(), tz).date()
@@ -219,7 +219,7 @@ def transactions_view(request):
         "today_date_short": today.strftime("%Y-%m-%d"),
     }
 
-    return render(request, "terminal/transactions.html", context)
+    return render(request, "terminal/entry_fees.html", context)
 
 # ===============================
 #   DEPOSIT ANALYTICS (Admin)
@@ -910,12 +910,12 @@ def _archive_past_activities(archive_date, tz):
 @login_required(login_url='accounts:login')
 @user_passes_test(is_staff_admin_or_admin)
 @never_cache
-def past_transactions_view(request):
+def past_entry_fees_view(request):
     """
-    Past Transactions View (Archived Records)
-    -----------------------------------------
-    Shows ONLY transactions from BEFORE today (yesterday and earlier).
-    Today's transactions are shown in transactions_view.
+    Past Entry Fee Collection View (Archived Records)
+    --------------------------------------------------
+    Shows ONLY entry fees from BEFORE today (yesterday and earlier).
+    Today's entry fees are shown in entry_fees_view.
     
     Also archives yesterday's TerminalActivity records into Transaction model.
     """
@@ -994,9 +994,9 @@ def past_transactions_view(request):
         csv_content = TransactionService.export_transactions_csv(transactions_qs)
 
         if selected_day:
-            filename = f"terminal_past_transactions_{selected_year}-{selected_month:02d}-{selected_day:02d}.csv"
+            filename = f"terminal_past_entry_fees_{selected_year}-{selected_month:02d}-{selected_day:02d}.csv"
         else:
-            filename = f"terminal_past_transactions_{selected_year}-{selected_month:02d}.csv"
+            filename = f"terminal_past_entry_fees_{selected_year}-{selected_month:02d}.csv"
 
         response = HttpResponse(content_type="text/csv; charset=utf-8")
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
@@ -1084,7 +1084,7 @@ def past_transactions_view(request):
         "yesterday": yesterday.strftime("%Y-%m-%d"),
     }
 
-    return render(request, "terminal/past_transactions.html", context)
+    return render(request, "terminal/past_entry_fees.html", context)
 
 
 # ===============================

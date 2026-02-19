@@ -363,16 +363,58 @@
         {% endif %}
       </div>
 
-      <!-- EMAIL -->
+      <!-- FIRST NAME -->
+      <div class="rdfs-acct-create__field">
+        <label class="form-label">
+          <i class="fas fa-id-card"></i>First Name
+        </label>
+        {{ form.first_name }}
+        {% if form.first_name.errors %}
+          <div class="rdfs-acct-create__error">
+            <i class="fas fa-exclamation-circle"></i>
+            {{ form.first_name.errors.0 }}
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- LAST NAME -->
+      <div class="rdfs-acct-create__field">
+        <label class="form-label">
+          <i class="fas fa-id-card"></i>Last Name
+        </label>
+        {{ form.last_name }}
+        {% if form.last_name.errors %}
+          <div class="rdfs-acct-create__error">
+            <i class="fas fa-exclamation-circle"></i>
+            {{ form.last_name.errors.0 }}
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- EMAIL ADDRESS -->
       <div class="rdfs-acct-create__field">
         <label class="form-label">
           <i class="fas fa-envelope"></i>Email Address
         </label>
-        {{ form.email }}
-        {% if form.email.errors %}
+        {{ form.email_address }}
+        {% if form.email_address.errors %}
           <div class="rdfs-acct-create__error">
             <i class="fas fa-exclamation-circle"></i>
-            {{ form.email.errors.0 }}
+            {{ form.email_address.errors.0 }}
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- CONTACT NUMBER -->
+      <div class="rdfs-acct-create__field">
+        <label class="form-label">
+          <i class="fas fa-phone"></i>Contact Number
+        </label>
+        {{ form.contact_number }}
+        {% if form.contact_number.errors %}
+          <div class="rdfs-acct-create__error">
+            <i class="fas fa-exclamation-circle"></i>
+            {{ form.contact_number.errors.0 }}
           </div>
         {% endif %}
       </div>
@@ -399,15 +441,27 @@
             </label>
           {% endif %}
           
-          <label class="rdfs-role-option {% if form.role.value == 'staff_admin' or user.role != 'admin' %}selected{% endif %}">
+          <label class="rdfs-role-option {% if form.role.value == 'staff_admin' %}selected{% endif %}">
             <input type="radio" name="role" value="staff_admin" 
-                   {% if form.role.value == 'staff_admin' or user.role != 'admin' %}checked{% endif %}>
+                   {% if form.role.value == 'staff_admin' %}checked{% endif %}>
             <div class="rdfs-role-icon">
               <i class="fas fa-user-shield"></i>
             </div>
             <div>
               <div class="rdfs-role-label">Staff Admin</div>
               <small class="form-text">Limited administrative access</small>
+            </div>
+          </label>
+          
+          <label class="rdfs-role-option {% if form.role.value == 'treasurer' %}selected{% endif %}">
+            <input type="radio" name="role" value="treasurer" 
+                   {% if form.role.value == 'treasurer' %}checked{% endif %}>
+            <div class="rdfs-role-icon">
+              <i class="fas fa-coins"></i>
+            </div>
+            <div>
+              <div class="rdfs-role-label">Treasurer</div>
+              <small class="form-text">Financial management access</small>
             </div>
           </label>
         </div>
@@ -417,7 +471,8 @@
           {% if user.role == 'admin' %}
             <option value="admin" {% if form.role.value == 'admin' %}selected{% endif %}>Admin</option>
           {% endif %}
-          <option value="staff_admin" {% if form.role.value == 'staff_admin' or user.role != 'admin' %}selected{% endif %}>Staff Admin</option>
+          <option value="staff_admin" {% if form.role.value == 'staff_admin' %}selected{% endif %}>Staff Admin</option>
+          <option value="treasurer" {% if form.role.value == 'treasurer' %}selected{% endif %}>Treasurer</option>
         </select>
 
         {% if form.role.errors %}

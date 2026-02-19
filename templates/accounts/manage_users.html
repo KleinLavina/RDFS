@@ -58,6 +58,16 @@
         <div class="stat-label">Staff Admins</div>
       </div>
     </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon treasurer-icon">
+        <i class="fas fa-coins"></i>
+      </div>
+      <div class="stat-info">
+        <div class="stat-value">{{ treasurer_count }}</div>
+        <div class="stat-label">Treasurers</div>
+      </div>
+    </div>
   </div>
 
   <!-- USERS TABLE -->
@@ -81,8 +91,16 @@
               User
             </th>
             <th>
+              <i class="fas fa-id-card me-1"></i>
+              Name
+            </th>
+            <th>
               <i class="fas fa-envelope me-1"></i>
               Email
+            </th>
+            <th>
+              <i class="fas fa-phone me-1"></i>
+              Contact
             </th>
             <th>
               <i class="fas fa-id-badge me-1"></i>
@@ -109,11 +127,28 @@
                 </div>
               </div>
             </td>
+            
+            <td>
+              <div class="user-fullname">
+                {% if user.first_name or user.last_name %}
+                  {{ user.first_name }} {{ user.last_name }}
+                {% else %}
+                  <span class="text-muted">—</span>
+                {% endif %}
+              </div>
+            </td>
 
             <td>
               <div class="user-email">
                 <i class="fas fa-envelope me-2 text-muted"></i>
-                {{ user.email|default:"No email" }}
+                {{ user.email_address|default:"—" }}
+              </div>
+            </td>
+            
+            <td>
+              <div class="user-contact">
+                <i class="fas fa-phone me-2 text-muted"></i>
+                {{ user.contact_number|default:"—" }}
               </div>
             </td>
 
@@ -127,6 +162,11 @@
                 <span class="role-badge role-staff">
                   <i class="fas fa-user-tie me-1"></i>
                   Staff Admin
+                </span>
+              {% elif user.role == 'treasurer' %}
+                <span class="role-badge role-treasurer">
+                  <i class="fas fa-coins me-1"></i>
+                  Treasurer
                 </span>
               {% else %}
                 <span class="role-badge role-unknown">
@@ -148,8 +188,7 @@
                 {% if request.user.role == 'admin' %}
                 <a href="{% url 'accounts:delete_user' user.id %}" 
                    class="btn-action btn-delete"
-                   title="Delete user"
-                   onclick="return confirm('Are you sure you want to delete {{ user.username }}?');">
+                   title="Delete user">
                   <i class="fas fa-trash-alt"></i>
                   <span>Delete</span>
                 </a>
@@ -159,7 +198,7 @@
           </tr>
           {% empty %}
           <tr>
-            <td colspan="4" class="empty-state">
+            <td colspan="6" class="empty-state">
               <div class="empty-icon">
                 <i class="fas fa-users-slash"></i>
               </div>

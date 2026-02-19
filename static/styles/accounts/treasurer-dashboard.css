@@ -1,0 +1,240 @@
+.treasurer-dashboard {
+  padding: 2rem 0;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.treasurer-dashboard .container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.treasurer-dashboard__header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.treasurer-dashboard__title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #112666;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.treasurer-dashboard__subtitle {
+  font-size: 1.1rem;
+  color: #6c757d;
+}
+
+.treasurer-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.treasurer-stat-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.treasurer-stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.treasurer-stat-card .stat-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+}
+
+.treasurer-stat-card.pending .stat-icon {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.treasurer-stat-card.approved .stat-icon {
+  background: #d4edda;
+  color: #155724;
+}
+
+.treasurer-stat-card.rejected .stat-icon {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.treasurer-stat-card .stat-content h3 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+  color: #112666;
+}
+
+.treasurer-stat-card .stat-content p {
+  margin: 0;
+  color: #6c757d;
+  font-size: 0.95rem;
+}
+
+.quick-actions {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.quick-actions h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #112666;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.action-btn.primary {
+  background: #112666;
+  color: white;
+}
+
+.action-btn.primary:hover {
+  background: #0c1c4a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(17, 38, 102, 0.3);
+}
+
+.action-btn.secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.action-btn.secondary:hover {
+  background: #5a6268;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+}
+
+.recent-deposits {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.recent-deposits h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #112666;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.deposits-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.deposits-table thead {
+  background: #f8f9fa;
+}
+
+.deposits-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #112666;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.deposits-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.deposits-table tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.status-badge.status-pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-badge.status-approved,
+.status-badge.status-successful {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-badge.status-rejected {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.no-data {
+  text-align: center;
+  padding: 2rem;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.text-muted {
+  color: #6c757d;
+}
+
+.dashboard-footer {
+  text-align: center;
+  padding: 1.5rem 0;
+  color: #6c757d;
+  font-size: 0.9rem;
+}

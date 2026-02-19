@@ -29,6 +29,8 @@
       <aside class="app-sidebar" id="app-sidebar">
         {% if user.role == 'admin' %}
           {% include 'includes/sidebar_admin.html' %}
+        {% elif user.role == 'treasurer' %}
+          {% include 'includes/sidebar_treasurer.html' %}
         {% else %}
           {% include 'includes/sidebar_staff.html' %}
         {% endif %}

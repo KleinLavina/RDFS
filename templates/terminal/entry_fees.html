@@ -93,9 +93,9 @@
           <i class="bi bi-calendar-check"></i>
           {{ today_date }}
         </div>
-        <a href="{% url 'terminal:past_transactions' %}" class="nav-link-custom">
+        <a href="{% url 'terminal:past_entry_fees' %}" class="nav-link-custom">
           <i class="bi bi-archive"></i>
-          Past Transactions
+          Past Entry Fees
         </a>
       </div>
     </div>
@@ -208,9 +208,9 @@
       About Today's Transactions
     </h6>
     <p class="small text-muted mb-0">
-      This page shows only transactions from today ({{ today_date }}).
+      This page shows only entry fees collected today ({{ today_date }}).
       At midnight, today's records will be automatically archived to 
-      <a href="{% url 'terminal:past_transactions' %}">Past Transactions</a>
+      <a href="{% url 'terminal:past_entry_fees' %}">Past Entry Fees</a>
       for historical reference and CSV export.
     </p>
   </div>

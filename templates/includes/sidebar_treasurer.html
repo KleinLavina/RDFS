@@ -1,0 +1,161 @@
+{% load static %}
+<div class="rdfs-treasurer-sb">
+
+  <!-- TOP (LOGO) -->
+  <div class="rdfs-treasurer-sb__top">
+    <a href="{% url 'accounts:treasurer_dashboard' %}" style="display: flex; align-items: center;">
+      <img
+        src="{% static 'img/RDFS-Logo-White.png' %}"
+        alt="RDFS Logo"
+        class="rdfs-treasurer-sb__logo"
+      >
+    </a>
+  </div>
+
+  <!-- MIDDLE (SCROLLABLE NAV) -->
+  <nav class="rdfs-treasurer-sb__middle">
+    <ul class="rdfs-treasurer-sb__nav">
+
+      <!-- DASHBOARD -->
+      <li class="rdfs-treasurer-sb__item">
+        <a href="{% url 'accounts:treasurer_dashboard' %}" class="rdfs-treasurer-sb__link" data-title="Workspace">
+          <i class="bi bi-house-door-fill"></i>
+          <span>Workspace</span>
+        </a>
+      </li>
+
+      <!-- REQUEST DEPOSIT (Hidden - now in modal) -->
+      <li class="rdfs-treasurer-sb__item" style="display:none;">
+        <a href="{% url 'terminal:treasurer_request_deposit' %}" class="rdfs-treasurer-sb__link" data-title="Request Deposit">
+          <i class="bi bi-cash-stack"></i>
+          <span>Request Deposit</span>
+        </a>
+      </li>
+
+      <!-- DEPOSIT HISTORY (Hidden - now in workspace tabs) -->
+      <li class="rdfs-treasurer-sb__item" style="display:none;">
+        <a href="{% url 'terminal:treasurer_deposit_history' %}" class="rdfs-treasurer-sb__link" data-title="Deposit History">
+          <i class="bi bi-receipt"></i>
+          <span>Deposit History</span>
+        </a>
+      </li>
+
+    </ul>
+  </nav>
+
+  <!-- BOTTOM (LOGOUT) -->
+  <div class="rdfs-treasurer-sb__bottom">
+    <a href="{% url 'accounts:logout' %}" class="rdfs-treasurer-sb__link rdfs-treasurer-sb__logout" data-title="Logout">
+      <i class="bi bi-door-closed-fill"></i>
+      <span>Logout</span>
+    </a>
+  </div>
+
+</div>
+
+<!-- TREASURER SIDEBAR STYLES -->
+<style>
+:root{
+  --rdfs-treasurer-sb-blue:#112666;
+  --rdfs-treasurer-sb-blue-dark:#0c1c4a;
+  --rdfs-treasurer-sb-hover:rgba(255,255,255,.08);
+  --rdfs-treasurer-sb-text:#ffffff;
+  --rdfs-treasurer-sb-muted:rgba(255,255,255,.6);
+  --rdfs-treasurer-sb-transition:.2s ease;
+}
+
+.rdfs-treasurer-sb{
+  position:sticky;
+  top:0;
+  height:100vh;
+  width:250px;
+  background:linear-gradient(
+    180deg,
+    var(--rdfs-treasurer-sb-blue),
+    var(--rdfs-treasurer-sb-blue-dark)
+  );
+  display:flex;
+  flex-direction:column;
+  transition: width .25s ease;
+}
+
+.rdfs-treasurer-sb__top{
+  padding:12px;
+  display:flex;
+  justify-content:center;
+  align-items: center;
+  min-height: 60px;
+}
+
+.rdfs-treasurer-sb__logo{
+  width:175px;
+  transition: width .25s ease;
+}
+
+.rdfs-treasurer-sb__middle{
+  flex:1;
+  overflow-y:auto;
+  padding:4px 10px;
+  scrollbar-width:none;
+  -ms-overflow-style:none;
+}
+.rdfs-treasurer-sb__middle::-webkit-scrollbar{
+  width:0;
+  height:0;
+}
+
+.rdfs-treasurer-sb__nav{
+  list-style:none;
+  padding:0;
+  margin:0;
+}
+
+.rdfs-treasurer-sb__item{
+  margin-bottom:2px;
+}
+
+.rdfs-treasurer-sb__link{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:7px 10px;
+  border-radius:8px;
+  text-decoration:none;
+  font-size:12.5px;
+  font-weight:600;
+  color:var(--rdfs-treasurer-sb-text);
+  transition:var(--rdfs-treasurer-sb-transition);
+  white-space: nowrap;
+  overflow: hidden;
+  position: relative;
+}
+
+.rdfs-treasurer-sb__link i{
+  font-size:14px;
+  min-width:18px;
+  flex-shrink: 0;
+}
+
+.rdfs-treasurer-sb__link span{
+  transition: opacity .2s ease;
+}
+
+.rdfs-treasurer-sb__link:hover,
+.rdfs-treasurer-sb__link.active{
+  background:var(--rdfs-treasurer-sb-hover);
+  transform:translateX(2px);
+}
+
+.rdfs-treasurer-sb__bottom{
+  padding:10px;
+  border-top:1px solid rgba(255,255,255,.08);
+}
+
+.rdfs-treasurer-sb__logout{
+  background:rgba(255,255,255,.06);
+}
+
+.rdfs-treasurer-sb__logout:hover{
+  background:rgba(255,255,255,.14);
+}
+</style>

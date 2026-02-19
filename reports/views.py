@@ -17,7 +17,7 @@ from .models import Profit
 # ============================================================
 # 📊 REPORTS HOME
 # ============================================================
-@login_required(login_url='login')
+@login_required(login_url='accounts:login')
 @user_passes_test(is_admin)
 def reports_home(request):
     """Display overview links to all reports with month-based summary stats."""
@@ -83,7 +83,7 @@ def reports_home(request):
 # ============================================================
 # 💰 DEPOSIT ANALYTICS
 # ============================================================
-@login_required(login_url='login')
+@login_required(login_url='accounts:login')
 @user_passes_test(is_admin)
 def deposit_analytics(request):
     """
@@ -273,11 +273,11 @@ def deposit_analytics(request):
 
 
 # ============================================================
-# 💵 DEPOSIT VS REVENUE
+# 💵 DEPOSITS VS TERMINAL ENTRY FEES
 # ============================================================
-@login_required(login_url='login')
+@login_required(login_url='accounts:login')
 @user_passes_test(is_admin)
-def deposit_vs_revenue(request):
+def deposits_vs_entry_fees(request):
     """
     Compare deposits vs terminal fees with month-based filtering.
     Combines analytics from deposit-analytics and profit-report.
@@ -329,7 +329,7 @@ def deposit_vs_revenue(request):
         revenue_map = {item['transaction_day']: float(item['total'] or 0) for item in transactions}
         
         # Generate filename
-        filename = f"deposit_vs_revenue_{selected_year}-{selected_month:02d}.csv"
+        filename = f"deposits_vs_entry_fees_{selected_year}-{selected_month:02d}.csv"
         
         response = HttpResponse(content_type='text/csv; charset=utf-8')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
@@ -540,13 +540,13 @@ def deposit_vs_revenue(request):
         "today_index": today_index,
         "is_current_month": is_current_month,
     }
-    return render(request, "reports/deposit_vs_revenue.html", context)
+    return render(request, "reports/deposits_vs_entry_fees.html", context)
 
 
 # ============================================================
 # 📈 TERMINAL FEE ANALYTICS (Profit Report)
 # ============================================================
-@login_required(login_url='login')
+@login_required(login_url='accounts:login')
 @user_passes_test(is_admin)
 def profit_report_view(request):
     """

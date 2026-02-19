@@ -50,25 +50,28 @@
       Driver Wallets
     </button>
     <button class="tab-btn" data-tab="history">
-      <i class="fas fa-history me-2"></i>
-      Deposit History
+      <i class="fas fa-check-circle me-2"></i>
+      Approved Deposits
+    </button>
+    <button class="tab-btn" data-tab="pending">
+      <i class="fas fa-clock me-2"></i>
+      Pending Approvals
+      {% if pending_count > 0 %}
+        <span class="badge-count">{{ pending_count }}</span>
+      {% endif %}
     </button>
   </div>
 
   <!-- TAB CONTENT: WALLETS -->
   <div class="tab-content active" id="wallets-tab">
     
-    <!-- INFO BANNER -->
+    <!-- INFO BANNER (READ-ONLY) -->
     <div class="info-banner">
       <div class="banner-content">
-        <i class="fas fa-coins me-2"></i>
-        <strong>Minimum Required Balance:</strong>
-        <span class="fee-amount">₱{{ min_deposit }}</span>
+        <i class="fas fa-info-circle me-2"></i>
+        <strong>Read-Only View:</strong>
+        <span>Showing approved deposits only. Minimum Balance: ₱{{ min_deposit }}</span>
       </div>
-      <button type="button" class="btn-add-deposit" data-bs-toggle="modal" data-bs-target="#addDepositModal">
-        <i class="fas fa-plus-circle me-2"></i>
-        Add Deposit
-      </button>
     </div>
 
     <!-- STATS GRID -->
@@ -167,10 +170,9 @@
               <th>Driver</th>
               <th>License Plate</th>
               <th>Current Balance</th>
-              <th>Last Deposit</th>
+              <th>Last Approved Deposit</th>
               <th>Last Deposit Date</th>
-              <th>Total Deposits</th>
-              <th class="text-center">Actions</th>
+              <th>Total Approved</th>
             </tr>
           </thead>
           <tbody id="walletsTableBody">
@@ -210,19 +212,11 @@
                   <td>
                     <span class="count-badge">{{ wallet.deposit_count }}</span>
                   </td>
-                  <td class="text-center">
-                    <button type="button"
-                            class="btn-action btn-deposit"
-                            data-vehicle="{{ wallet.vehicle.id }}"
-                            data-display="{{ wallet.vehicle.assigned_driver.first_name }} {{ wallet.vehicle.assigned_driver.last_name }} · {{ wallet.vehicle.license_plate }}">
-                      <i class="fas fa-plus"></i>
-                    </button>
-                  </td>
                 </tr>
               {% endfor %}
             {% else %}
               <tr id="emptyRow">
-                <td colspan="8" class="text-center text-muted py-4">
+                <td colspan="7" class="text-center text-muted py-4">
                   <i class="fas fa-inbox fs-1 d-block mb-2 opacity-50"></i>
                   No wallets found
                 </td>
@@ -234,18 +228,18 @@
     </div>
   </div>
 
-  <!-- TAB CONTENT: HISTORY -->
+  <!-- TAB CONTENT: APPROVED DEPOSITS -->
   <div class="tab-content" id="history-tab">
     
     <!-- HISTORY STATS -->
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon history-icon">
-          <i class="fas fa-receipt"></i>
+          <i class="fas fa-check-circle"></i>
         </div>
         <div class="stat-info">
           <div class="stat-value">{{ history_count }}</div>
-          <div class="stat-label">Total Records ({{ selected_month_name }})</div>
+          <div class="stat-label">Approved Deposits ({{ selected_month_name }})</div>
         </div>
       </div>
 
@@ -255,7 +249,7 @@
         </div>
         <div class="stat-info">
           <div class="stat-value">₱{{ history_total|floatformat:2 }}</div>
-          <div class="stat-label">Total Deposited ({{ selected_month_name }})</div>
+          <div class="stat-label">Total Approved Amount ({{ selected_month_name }})</div>
         </div>
       </div>
     </div>
@@ -312,8 +306,8 @@
     <!-- HISTORY TABLE -->
     <div class="content-card">
       <h2 class="section-title">
-        <i class="fas fa-clock-rotate-left me-2"></i>
-        Deposit Records
+        <i class="fas fa-check-double me-2"></i>
+        Approved Deposit Records
       </h2>
 
       <div class="table-container">
@@ -321,13 +315,13 @@
           <thead>
             <tr>
               <th>#</th>
-              <th>Reference</th>
+              <th>OR Code</th>
               <th>Driver</th>
               <th>Vehicle</th>
               <th>Amount</th>
-              <th>Status</th>
+              <th>Approved By</th>
               <th>Date & Time</th>
-              <th class="text-center">Receipt</th>
+              <th class="text-center">View</th>
             </tr>
           </thead>
           <tbody id="historyTableBody">
@@ -339,7 +333,11 @@
                     data-amount="{{ deposit.amount }}"
                     data-date="{{ deposit.created_at|date:'Y-m-d H:i:s' }}">
                   <td class="history-row-number">{{ forloop.counter }}</td>
-                  <td><code class="ref-code">{{ deposit.reference_number }}</code></td>
+                  <td>
+                    <span class="or-code-highlight" style="background: #fff3cd; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 700; color: #856404;">
+                      {{ deposit.or_code|default:"—" }}
+                    </span>
+                  </td>
                   <td class="fw-semibold">
                     {{ deposit.wallet.vehicle.assigned_driver.first_name }}
                     {{ deposit.wallet.vehicle.assigned_driver.last_name }}
@@ -351,17 +349,18 @@
                     <span class="amount-badge">₱{{ deposit.amount|floatformat:2 }}</span>
                   </td>
                   <td>
-                    <span class="status-badge status-{{ deposit.status|lower }}">
-                      {{ deposit.status|capfirst }}
-                    </span>
+                    {% if deposit.approved_by %}
+                      {{ deposit.approved_by.get_full_name }}
+                    {% else %}
+                      <span class="text-muted">System</span>
+                    {% endif %}
                   </td>
                   <td>{{ deposit.created_at|date:"M d, Y h:i A" }}</td>
                   <td class="text-center">
-                    <a href="{% url 'terminal:deposit_receipt' deposit.id %}" 
-                       class="btn-action btn-receipt" 
-                       title="View Receipt"
-                       target="_blank">
-                      <i class="fas fa-receipt"></i>
+                    <a href="{% url 'terminal:treasurer_deposit_details' deposit.id %}" 
+                       class="btn-action btn-view-details" 
+                       title="View Details">
+                      <i class="fas fa-eye"></i>
                     </a>
                   </td>
                 </tr>
@@ -370,7 +369,7 @@
               <tr id="historyEmptyRow">
                 <td colspan="8" class="text-center text-muted py-4">
                   <i class="fas fa-inbox fs-1 d-block mb-2 opacity-50"></i>
-                  No deposit records found
+                  No approved deposits found for this month
                 </td>
               </tr>
             {% endif %}
@@ -380,76 +379,195 @@
     </div>
   </div>
 
+  <!-- TAB CONTENT: PENDING APPROVALS -->
+  <div class="tab-content" id="pending-tab">
+    
+    <div class="alert alert-info" style="background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; padding: 1rem 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+      <i class="fas fa-info-circle"></i>
+      <strong>Important:</strong> Verify the printed OR proof before approving. Check that OR Code, Amount, and Driver match the physical receipt.
+    </div>
+
+    <div class="content-card">
+      <h2 class="section-title">
+        <i class="fas fa-clock me-2"></i>
+        Pending Deposit Approvals
+      </h2>
+      
+      {% if pending_deposits %}
+      <div class="table-container">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>OR Number</th>
+              <th>Driver Name</th>
+              <th>Plate Number</th>
+              <th>Deposit Amount</th>
+              <th>Date Created</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for deposit in pending_deposits %}
+            <tr>
+              <td>
+                <span class="or-code-highlight" style="background: #fff3cd; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 700; color: #856404;">
+                  {{ deposit.or_code }}
+                </span>
+              </td>
+              <td>
+                <strong>{{ deposit.wallet.vehicle.assigned_driver.first_name }} {{ deposit.wallet.vehicle.assigned_driver.last_name }}</strong>
+              </td>
+              <td>
+                <span class="plate-badge">{{ deposit.wallet.vehicle.license_plate }}</span>
+              </td>
+              <td>
+                <span class="amount-badge">₱{{ deposit.amount|floatformat:2 }}</span>
+              </td>
+              <td>{{ deposit.created_at|date:"M d, Y g:i A" }}</td>
+              <td>
+                <div class="action-buttons-icon" style="display: flex; gap: 0.5rem; justify-content: center; align-items: center; flex-wrap: nowrap;">
+                  <a href="{% url 'terminal:treasurer_deposit_details' deposit.id %}" 
+                     class="btn-action-icon btn-view-icon" 
+                     title="View Details"
+                     style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: #e3f2fd; color: #1976d2; border-radius: 6px; text-decoration: none; transition: all 0.2s ease;">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                  <button type="button"
+                          class="btn-action-icon btn-approve-icon" 
+                          title="Approve"
+                          onclick="showApproveModal('{{ deposit.id }}', '{{ deposit.or_code }}', '{{ deposit.amount|floatformat:2 }}', '{{ deposit.wallet.vehicle.assigned_driver.first_name }} {{ deposit.wallet.vehicle.assigned_driver.last_name }}')"
+                          style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: #d4edda; color: #28a745; border-radius: 6px; border: none; cursor: pointer; transition: all 0.2s ease;">
+                    <i class="fas fa-check"></i>
+                  </button>
+                  <button type="button"
+                          class="btn-action-icon btn-reject-icon" 
+                          title="Reject"
+                          onclick="showRejectModal('{{ deposit.id }}', '{{ deposit.or_code }}', '{{ deposit.amount|floatformat:2 }}', '{{ deposit.wallet.vehicle.assigned_driver.first_name }} {{ deposit.wallet.vehicle.assigned_driver.last_name }}')"
+                          style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: #f8d7da; color: #dc3545; border-radius: 6px; border: none; cursor: pointer; transition: all 0.2s ease;">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="no-data">
+        <i class="fas fa-check-circle fs-1 d-block mb-2 opacity-50"></i>
+        <p>No pending deposit requests at this time.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
 </div>
 
-<!-- ADD DEPOSIT MODAL -->
-<div class="modal fade" id="addDepositModal" tabindex="-1">
+<!-- Approve Confirmation Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content deposit-modal">
-      <div class="modal-header">
-        <h5 class="modal-title">
-          <i class="fas fa-hand-holding-dollar me-2"></i>
-          Add Deposit
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title" id="approveModalLabel">
+          <i class="fas fa-check-circle me-2"></i>
+          Approve Deposit
         </h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form method="POST" id="addDepositForm">
+        <div class="alert alert-success mb-3">
+          <i class="fas fa-info-circle me-2"></i>
+          <strong>Confirmation Required</strong>
+        </div>
+        <p class="mb-3">Are you sure you want to approve this deposit?</p>
+        <div class="deposit-details p-3 bg-light rounded">
+          <div class="row mb-2">
+            <div class="col-5 fw-bold">OR Code:</div>
+            <div class="col-7" id="approveORCode"></div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-5 fw-bold">Driver:</div>
+            <div class="col-7" id="approveDriver"></div>
+          </div>
+          <div class="row">
+            <div class="col-5 fw-bold">Amount:</div>
+            <div class="col-7 text-success fw-bold" id="approveAmount"></div>
+          </div>
+        </div>
+        <p class="mt-3 mb-0 text-muted small">
+          <i class="fas fa-exclamation-triangle me-1"></i>
+          The wallet will be credited with this amount.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times me-1"></i>
+          Cancel
+        </button>
+        <form method="POST" id="approveForm" style="display: inline; margin: 0;">
           {% csrf_token %}
-          <input type="hidden" name="vehicle_id" id="vehicleId">
+          <input type="hidden" name="deposit_id" id="approveDepositId">
+          <input type="hidden" name="action" value="approve">
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-check me-1"></i>
+            Approve Deposit
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 
-          <div class="modal-form-group">
-            <label class="modal-label">
-              <i class="fas fa-user me-2"></i>
-              Select Driver / Vehicle
-            </label>
-            <div class="search-wrapper">
-              <input type="text"
-                     id="driverSearch"
-                     class="modal-input"
-                     placeholder="Search by name, license, or plate..."
-                     autocomplete="off">
-              <div id="driverSuggestions" class="suggestions-dropdown"></div>
-            </div>
-            <small class="modal-hint">Start typing to search for a driver</small>
+<!-- Reject Confirmation Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="rejectModalLabel">
+          <i class="fas fa-times-circle me-2"></i>
+          Reject Deposit
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-danger mb-3">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          <strong>Warning: This action cannot be undone</strong>
+        </div>
+        <p class="mb-3">Are you sure you want to reject this deposit?</p>
+        <div class="deposit-details p-3 bg-light rounded">
+          <div class="row mb-2">
+            <div class="col-5 fw-bold">OR Code:</div>
+            <div class="col-7" id="rejectORCode"></div>
           </div>
-
-          <div class="modal-form-group">
-            <label class="modal-label">
-              <i class="fas fa-money-bill-wave me-2"></i>
-              Deposit Amount (₱)
-            </label>
-            <input type="number"
-                   name="amount"
-                   id="depositAmount"
-                   min="1"
-                   step="0.01"
-                   class="modal-input modal-input-amount"
-                   placeholder="0.00"
-                   required>
-            <small class="modal-hint">Enter amount to deposit</small>
+          <div class="row mb-2">
+            <div class="col-5 fw-bold">Driver:</div>
+            <div class="col-7" id="rejectDriver"></div>
           </div>
-
-          <div class="modal-selected-info" id="selectedInfo">
-            <div class="modal-info-icon">
-              <i class="fas fa-info-circle"></i>
-            </div>
-            <div class="modal-info-content">
-              <div id="selectedLabel" class="modal-info-label">Select a driver to proceed</div>
-              <div id="walletInfo" class="modal-info-value"></div>
-            </div>
+          <div class="row">
+            <div class="col-5 fw-bold">Amount:</div>
+            <div class="col-7 text-danger fw-bold" id="rejectAmount"></div>
           </div>
-
-          <div class="modal-actions">
-            <button type="button" class="modal-btn-cancel" data-bs-dismiss="modal">
-              <i class="fas fa-times me-2"></i>
-              Cancel
-            </button>
-            <button type="submit" class="modal-btn-submit text text-black border border-black" id="submitDepositBtn" disabled>
-              <i class="fas fa-check-circle me-2"></i>
-              Confirm Deposit
-            </button>
-          </div>
+        </div>
+        <p class="mt-3 mb-0 text-muted small">
+          <i class="fas fa-info-circle me-1"></i>
+          No wallet update will occur.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-arrow-left me-1"></i>
+          Cancel
+        </button>
+        <form method="POST" id="rejectForm" style="display: inline; margin: 0;">
+          {% csrf_token %}
+          <input type="hidden" name="deposit_id" id="rejectDepositId">
+          <input type="hidden" name="action" value="reject">
+          <button type="submit" class="btn btn-danger">
+            <i class="fas fa-times me-1"></i>
+            Reject Deposit
+          </button>
         </form>
       </div>
     </div>
@@ -459,8 +577,52 @@
 <!-- SCRIPTS -->
 <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
 <script>
-const driverOptions = {{ driver_options|safe }};
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const tabName = this.dataset.tab;
+    
+    // Update URL without reload
+    const url = new URL(window.location);
+    url.searchParams.set('tab', tabName);
+    window.history.pushState({}, '', url);
+    
+    // Update active states
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    
+    this.classList.add('active');
+    document.getElementById(tabName + '-tab').classList.add('active');
+  });
+});
+
+// Modal functions for approve/reject
+function showApproveModal(depositId, orCode, amount, driverName) {
+  document.getElementById('approveDepositId').value = depositId;
+  document.getElementById('approveORCode').textContent = orCode;
+  document.getElementById('approveDriver').textContent = driverName;
+  document.getElementById('approveAmount').textContent = '₱' + amount;
+  
+  const modal = new bootstrap.Modal(document.getElementById('approveModal'));
+  modal.show();
+}
+
+function showRejectModal(depositId, orCode, amount, driverName) {
+  document.getElementById('rejectDepositId').value = depositId;
+  document.getElementById('rejectORCode').textContent = orCode;
+  document.getElementById('rejectDriver').textContent = driverName;
+  document.getElementById('rejectAmount').textContent = '₱' + amount;
+  
+  const modal = new bootstrap.Modal(document.getElementById('rejectModal'));
+  modal.show();
+}
+
+// Set active tab from URL on load
+const urlParams = new URLSearchParams(window.location.search);
+const activeTab = urlParams.get('tab') || 'wallets';
+if (activeTab !== 'wallets') {
+  document.querySelector(`[data-tab="${activeTab}"]`)?.click();
+}
 </script>
-<script src="{% static 'js/terminal/deposits.js' %}"></script>
 
 {% endblock %}

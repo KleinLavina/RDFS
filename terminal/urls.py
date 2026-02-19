@@ -1,4 +1,5 @@
 from django.urls import path
+from django.views.generic import RedirectView
 from . import views
 
 app_name = 'terminal'
@@ -8,8 +9,13 @@ urlpatterns = [
     path('deposit-history/', views.deposit_history, name='deposit_history'),
     path('deposits/', views.deposits, name='deposits'),
     path('deposit-receipt/<int:deposit_id>/', views.deposit_receipt, name='deposit_receipt'),
-    path('transactions/', views.transactions_view, name='transactions'),
-    path('past-transactions/', views.past_transactions_view, name='past_transactions'),
+    path('entry-fees/', views.entry_fees_view, name='entry_fees'),
+    path('past-entry-fees/', views.past_entry_fees_view, name='past_entry_fees'),
+    
+    # Backward compatibility redirects for old URLs
+    path('transactions/', RedirectView.as_view(pattern_name='terminal:entry_fees', permanent=True)),
+    path('past-transactions/', RedirectView.as_view(pattern_name='terminal:past_entry_fees', permanent=True)),
+    
     path('queue/', views.terminal_queue, name='terminal_queue'),
     path('queue-data/', views.queue_data, name='queue_data'),
     path('manage-queue/', views.manage_queue, name='manage_queue'),
@@ -36,5 +42,19 @@ urlpatterns = [
     path('api/settings/', views.queue_settings_api, name='queue_settings_api'),
 
     path("deposit-analytics/", views.deposit_analytics, name="deposit_analytics"),
-    path("deposit-vs-revenue/", views.deposit_vs_revenue, name="deposit_vs_revenue"),
+    
+    # Redirect old deposit-vs-revenue to reports app
+    path("deposit-vs-revenue/", RedirectView.as_view(url='/reports/deposits-vs-entry-fees/', permanent=True)),
+    
+    # --- Treasurer Routes ---
+    path('treasurer/request-deposit/', views.treasurer_request_deposit, name='treasurer_request_deposit'),
+    path('treasurer/deposit-history/', views.treasurer_receipts, name='treasurer_deposit_history'),
+    path('treasurer/deposit-details/<int:deposit_id>/', views.treasurer_deposit_details, name='treasurer_deposit_details'),
+    path('treasurer/deposit-receipt/<int:deposit_id>/', views.treasurer_deposit_receipt, name='treasurer_deposit_receipt'),
+    path('admin/approve-deposits/', views.admin_approve_deposits, name='admin_approve_deposits'),
+    
+    # --- AJAX Endpoints for Treasurer ---
+    path('ajax/search-drivers/', views.ajax_search_drivers, name='ajax_search_drivers'),
+    path('ajax/system-settings/', views.ajax_get_system_settings, name='ajax_get_system_settings'),
+    path('ajax/validate-or-code/', views.ajax_validate_or_code, name='ajax_validate_or_code'),
 ]
