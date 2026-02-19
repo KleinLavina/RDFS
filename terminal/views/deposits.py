@@ -393,31 +393,31 @@ def deposits(request):
         
         writer = csv.writer(output)
         writer.writerow([
-            'Reference Number',
+            'OR Code',
             'Date & Time',
             'Driver Name',
             'License Plate',
             'Amount',
             'Payment Method',
             'Status',
-            'Processed By',
+            'Approved By',
         ])
         
         for deposit in deposits_sorted:
             driver = deposit.wallet.vehicle.assigned_driver if deposit.wallet.vehicle else None
             driver_name = f"{driver.first_name} {driver.last_name}" if driver else "N/A"
             vehicle_plate = deposit.wallet.vehicle.license_plate if deposit.wallet.vehicle else "—"
-            processed_by = deposit.created_by.username if deposit.created_by else "N/A"
+            approved_by = deposit.approved_by.username if deposit.approved_by else "N/A"
             
             writer.writerow([
-                deposit.reference_number,
+                deposit.or_code or "—",
                 deposit.created_at.strftime("%Y-%m-%d %H:%M:%S"),
                 driver_name,
                 vehicle_plate,
                 f"₱{deposit.amount}",
                 deposit.payment_method.upper(),
                 deposit.status.capitalize(),
-                processed_by,
+                approved_by,
             ])
         
         response = HttpResponse(content_type="text/csv; charset=utf-8")
